@@ -28,8 +28,10 @@ package core.data.validation {
 					// patterns
 						'email'					:'Must be a valid e-mail',
 						'username'				:'Must be a valid username',
+						'password'				:'Must be a valid password',
 						'url'					:'Must be a valid URL',
 						'phone'					:'Must be a valid phone number',
+						'postcode'				:'Must be a valid postcode',
 						'creditcard'			:'Must be a valid credit card number',
 						'date'					:'Must be a valid date',
 						
@@ -37,7 +39,7 @@ package core.data.validation {
 						'alpha'					:'Must be letters',
 						'alphanumeric'			:'Must be letters and numbers',
 						'digits'				:'Must be digits',
-						'number'				:'Must be a number',
+						'numeric'				:'Must be a number',
 						
 					// string values
 						'match'					:'Must be "{arg1}"',
@@ -154,16 +156,101 @@ package core.data.validation {
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: validation methods
 		
-			// required
-			
+			// generic
+		
 				public function required(value:*):Boolean 
 				{
 					return ! (value === undefined || value === null || trim(value).length == 0);
 				}
-				
-				
-			// string length
-			
+		
+				public function invalid(value:String, arg:int):Boolean 
+				{
+					return true;
+				}			
+		
+	
+			// patterns
+		
+				public function email(value:String):Boolean
+				{
+					var rx:RegExp = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
+					return rx.test(value);
+				}
+		
+				public function username(value:String):Boolean 
+				{
+					return rangelength(value, 4, 24) && /^[a-z0-9_]$/i.test(value);
+				}			
+		
+				public function password(value:String):Boolean 
+				{
+					return minlength(value, 6, 24) && /^[a-z0-9_!£$%^&~]$/i.test(value);
+				}			
+		
+				public function url(value:String):Boolean 
+				{
+					return true;
+				}				
+		
+				public function	phone(value:*):Boolean
+				{
+					return /[-+ ()0-9]/.test(value);
+				}
+		
+				public function postcode(value:String):Boolean 
+				{
+					return /(GIR 0AA)|((([A-Z-[QVX]][0-9][0-9]?)|(([A-Z-[QVX]][A-Z-[IJZ]][0-9][0-9]?)|(([A-Z-[QVX]][0-9][A-HJKSTUW])|([A-Z-[QVX]][A-Z-[IJZ]][0-9][ABEHMNPRVWXY])))) [0-9][A-Z-[CIKMOV]]{2})/i.test(value)
+				}
+
+				public function creditcard(value:String):Boolean
+				{
+					return trim(value).replace(/\D+/g, '').length == 16;
+				}
+		
+				public function date(value:String):Boolean
+				{
+					return new Date(Date.parse(value)).toString() !== 'Invalid Date';
+				}				
+		
+	
+			// types
+		
+				public function alpha(value:String):Boolean 
+				{
+					return true;
+				}				
+		
+				public function alphanumeric(value:String):Boolean 
+				{
+					return true;
+				}		
+		
+				public function digits(value:String):Boolean 
+				{
+					return true;
+				}			
+		
+				public function numeric(value:*):Boolean
+				{
+					return /^(\d+|\d+\.\d+)$/.test(trim(value));
+				}
+		
+	
+			// string values
+		
+				public function match(value:String, arg:int):Boolean 
+				{
+					return true;
+				}				
+		
+				public function contain(value:String, arg:int):Boolean 
+				{
+					return true;
+				}			
+		
+	
+			// string lengths
+		
 				public function minlength(value:String, length:int):Boolean 
 				{
 					return trim(value).length >= length;
@@ -178,9 +265,10 @@ package core.data.validation {
 				{
 					return this.minlength(value, min) && this.maxlength(value, max);
 				}
-				
-			// numeric value	
-			
+		
+	
+			// numeric values
+		
 				public function min(value:int, length:int):Boolean 
 				{
 					return value >= length;
@@ -195,42 +283,45 @@ package core.data.validation {
 				{
 					return value >= min && value <= max;
 				}
-				
-			
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: type validation methods
 		
-			public function numeric(value:*):Boolean
-			{
-				return /^(\d+|\d+\.\d+)$/.test(trim(value));
-			}
-			
-			public function	phone(value:*):Boolean
-			{
-				return /[-+ ()0-9]/.test(value);
-			}
-			
-			public function email(value:String):Boolean
-			{
-				var rx:RegExp = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
-				return rx.test(value);
-			}
-			
-			public function postcode(value:String):Boolean 
-			{
-				return /(GIR 0AA)|((([A-Z-[QVX]][0-9][0-9]?)|(([A-Z-[QVX]][A-Z-[IJZ]][0-9][0-9]?)|(([A-Z-[QVX]][0-9][A-HJKSTUW])|([A-Z-[QVX]][A-Z-[IJZ]][0-9][ABEHMNPRVWXY])))) [0-9][A-Z-[CIKMOV]]{2})/.test(value)
-			}
-			
-			public function creditcard(value:String):Boolean
-			{
-				return trim(value).replace(/\D+/g, '').length == 16;
-			}
-			
+	
+			// option selects
 		
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: accessors
+				public function minselect(value:String, length:int):Boolean 
+				{
+					return true;
+				}			
 		
-			
+				public function maxselect(value:String, length:int):Boolean 
+				{
+					return true;
+				}			
+		
+				public function rangeselect(value:String, min:int, max:int):Boolean 
+				{
+					return true;
+				}		
+		
+	
+			// constraints
+		
+				public function equalto(value:String, arg:int):Boolean 
+				{
+					return value == arg;
+				}			
+		
+	
+			// custom
+		
+				public function question(value:String, arg:int):Boolean 
+				{
+					return value == arg;
+				}			
+		
+				public function captcha(value:String, arg:int):Boolean 
+				{
+					return value == arg;
+				}			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
