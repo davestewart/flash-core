@@ -11,7 +11,10 @@ package core.net
 	import flash.external.ExternalInterface;
 	
 	/**
-	 * Handles loading of all the application data
+	 * Easily handles loading multiple data sources
+	 * 
+	 * Wraps LoaderMax
+	 * 
 	 * @author Dave Stewart
 	 */
 	public class Loader extends EventDispatcher 
@@ -42,7 +45,7 @@ package core.net
 				this.name = name;
 				initialize();
 			}
-
+			
 			protected function initialize():void
 			{
 				queue = new LoaderMax({name:name, onProgress:onProgress, onComplete:onComplete, onError:onError});
@@ -107,41 +110,6 @@ package core.net
 				
 			// retrieving data
 				
-				public function getImage(name:String):Bitmap
-				{
-					var content:* = queue.getContent(name);
-					if (content && content.rawContent)
-					{
-						var bitmap:Bitmap = content.rawContent as Bitmap
-						return new Bitmap(bitmap.bitmapData, 'auto', true);
-					}
-					return null;
-				}
-			
-				public function getXML(name:String):XML 
-				{
-					// grab data
-						var data:String = queue.getContent(name);
-						
-					// remove doctype and xmlns
-						data = data
-							.replace(/<!DOCTYPE.*?>/, '')
-							.replace(/<html.+?>/i, '<html>');
-						var xml:XML = new XML(data);
-						
-					// return
-						return xml.body[0];
-				}
-
-				public function getJSON(name:String):Object 
-				{
-					// grab data
-						var data:String = queue.getContent(name);
-						
-					// return
-						return JSON.parse(data);
-				}
-
 				public static function getBitmap(url:String):Bitmap 
 				{
 					var content:* = LoaderMax.getContent(url);
@@ -153,6 +121,45 @@ package core.net
 					return null;
 				}
 				
+				public function getImage(name:String):Bitmap
+				{
+					var content:* = queue.getContent(name);
+					if (content && content.rawContent)
+					{
+						var bitmap:Bitmap = content.rawContent as Bitmap
+						return new Bitmap(bitmap.bitmapData, 'auto', true);
+					}
+					return null;
+				}
+			
+				public function getJSON(name:String):Object 
+				{
+					// grab data
+						var data:String = queue.getContent(name);
+						
+					// return
+						return JSON.parse(data);
+				}
+
+				public function getXML(name:String):XML 
+				{
+					// grab data
+						var data:String = queue.getContent(name);
+						
+					// remove doctype and xmlns
+						data = data
+							.replace(/<!DOCTYPE.*?>/, '')
+							.replace(/<html.+?>/i, '<html>');
+						
+					// return
+						return new XML(data)
+				}
+
+				public function getHTML(name:String):XML 
+				{
+					return getXML(name).body[0];
+				}
+
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
@@ -173,7 +180,7 @@ package core.net
 			 
 			public function onComplete(event:LoaderEvent):void 
 			{
-				//trace(event.target + " is complete!");
+				//trace(this, event.target + " is complete!");
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
 			  
