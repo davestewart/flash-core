@@ -68,14 +68,14 @@ package core.net.rest
 				// loader
 					loader					= new URLLoader();
 					loader.dataFormat		= 'text';
-					loader.addEventListener (IOErrorEvent.IO_ERROR, onIOError);
-					loader.addEventListener (HTTPStatusEvent.HTTP_STATUS, onHttpStatus);
-					loader.addEventListener (SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
-					loader.addEventListener (Event.COMPLETE, onComplete);
+					loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
+					loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHttpStatus);
+					loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
+					loader.addEventListener(Event.COMPLETE, onComplete);
 					// set the credentials
 				
 					// This gives a null exception when enabled
-					//	loader.addEventListener ( HTTPStatusEvent.HTTP_RESPONSE_STATUS, handleHttpResponseStatus );
+					//	loader.addEventListener(HTTPStatusEvent.HTTP_RESPONSE_STATUS, handleHttpResponseStatus);
 					
 				// content type
 					
@@ -174,7 +174,7 @@ package core.net.rest
 			public function set credentials(encoded:String):void
 			{
 				
-				if (encoded)
+				if(encoded)
 				{
 					// Set the other headers too
 						service.headers = 
@@ -208,7 +208,6 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			/// RESULTS EVENTS BELOW
 			protected function onResult(event:ResultEvent,token:Object=null):void
 			{
 				trace('Reached onResult handler');
@@ -219,7 +218,7 @@ package core.net.rest
 			protected function onFault(event:FaultEvent, token:Object = null):void
 			{
 				trace('Reached onfault handler');
-				switch (event.statusCode)
+				switch(event.statusCode)
 				{
 					// access denied
 					case 401:
@@ -258,46 +257,42 @@ package core.net.rest
 			
 			// Attempt to load some data
 			
-			protected function onIOError ( event:IOErrorEvent ):void
+			protected function onHttpStatus(event:HTTPStatusEvent):void
 			{
-				trace ( 'Reached handleIOError : Load failed: IO error: ' + event.text );
-				this.dispatchEvent(new RestErrorEvent(RestErrorEvent.IOERROR, event.target.data, -1));;
-			}
-			
-			protected function onHttpStatus ( event:HTTPStatusEvent ):void
-			{
-				trace('reached handlehttpstatus handler');
-				switch (event.status)
+				trace('HTTP Status: ' + event.status);
+				switch(event.status)
 				{
 					case 200:
-						// Ok, everything went good
-						trace('200, everything went good with http method');
-						this.dispatchEvent(new Event('SuccessfulChange'));
+						// Ok, everything went well
+						trace('200, everything went well with http method');
 						this.dispatchEvent(new RestEvent(RestEvent.SUCCESS, null, event.status));
 						break;
 							
 					default:
 						this.dispatchEvent(new RestEvent(RestEvent.SUCCESS, null, event.status));
-
-						
 				}
-				trace ( 'Load Status Result: HTTP Status = ' + event.status );
 			}
 			
-			protected function onSecurityError ( event:SecurityErrorEvent ):void
-			{
-				trace ( 'Load failed: Security Error: ' + event.text );
-			}
-			
-			protected function onComplete(event:Event ):void
+			protected function onComplete(event:Event):void
 			{
 				// loader has completed everything
-				trace ( 'The data has successfully loaded' );
+				trace('The data has successfully loaded');
 			}
 						
-			protected function onHttpResponseStatus (event:HTTPStatusEvent):void
+			protected function onIOError(event:IOErrorEvent):void
 			{
-				trace ( 'Load Response Status: HTTP Status = ' + event.toString() );
+				trace('Reached handleIOError : Load failed: IO error: ' + event.text);
+				this.dispatchEvent(new RestErrorEvent(RestErrorEvent.IOERROR, event.target.data, -1));;
+			}
+			
+			protected function onSecurityError(event:SecurityErrorEvent):void
+			{
+				trace('Load failed: Security Error: ' + event.text);
+			}
+			
+			protected function onHttpResponseStatus(event:HTTPStatusEvent):void
+			{
+				trace('Load Response Status: HTTP Status = ' + event.toString());
 			}
 			
 		

@@ -23,6 +23,7 @@ package core.media.video
 		
 			// elements
 				protected var video						:Video;
+				protected var container					:Sprite;
 				
 			// properties
 				protected var _connection				:NetConnection;             
@@ -30,11 +31,17 @@ package core.media.video
 				protected var _active					:Boolean;
 				protected var _flipped					:Boolean;
 				
+			// stream variables
+				protected var _streamName				:String;
+				protected var _videoWidth				:int;
+				protected var _videoHeight				:int;
+				protected var _duration					:int;
+				protected var _bufferTime				:Number;
+				protected var _metaData					:Object;
+				
 			// feedback
 				protected var _status					:String;
 				
-			// stream variables
-				protected var _bufferTime				:Number;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -52,14 +59,21 @@ package core.media.video
 		
 			protected function initialize():void 
 			{
-				bufferTime = 2;
+				_duration	= -1;
+				bufferTime	= 2;
 			}
 		
 			protected function build(width:Number, height:Number):void 
 			{
+				// container
+					container		= new Sprite();
+					container.name	= 'container';
+					addChild(container);
+					
 				// video
 					video			= new Video(width, height);
-					addChild(video);
+					video.name		= 'video';
+					container.addChild(video);
 			
 				// update
 					draw();
@@ -74,19 +88,43 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
+			public function load(streamName:String):void 
+			{
+				// set name
+					_streamName = streamName;
+					
+				// setup
+					setupStream();
+					
+				// attach the NetStream
+					video.attachNetStream(_stream);
+					
+				// bind to the initial playback event
+					_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoad);
+					
+				// play the movie you just recorded
+					_stream.play(streamName);
+			}
+		
 			public function play(streamName:String = null):void
 			{
 				// setup
-					setupStream();
+					if (streamName && streamName !== this.streamName)
+					{
+						_streamName = streamName;
+						setupStream();
+						video.attachNetStream(_stream);
+						_stream.play(streamName);
+					}
+				
+					else
+					{
+						resume();
+					}
 					
 				// flag
 					_active	= true;
 				
-				// attach the NetStream
-					video.attachNetStream(_stream);
-					
-				// play the movie you just recorded
-					_stream.play(streamName);
 			}
 			
 			public function replay():void
@@ -94,11 +132,30 @@ package core.media.video
 				_stream.seek(0);
 			}
 
+			public function pause():void
+			{
+				if (_stream)
+				{
+					_active	= false;
+					_stream.pause();
+				}
+			}
+			
+			public function resume():void 
+			{
+				if (_stream)
+				{
+					trace('resuming...')
+					_active	= true;
+					_stream.resume();
+				}
+			}
+		
 			public function stop():void
 			{
 				if (_stream)
 				{
-					dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code:'NetStream.Play.Complete' } ));
+					//dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code:'NetStream.Play.Complete' } ));
 					_active	= false;
 					_stream.pause();
 				}
@@ -110,11 +167,15 @@ package core.media.video
 				video.attachNetStream(null);
 				video.clear();
 				
-				if (_stream != null)
+				if (_stream)
 				{
 					_stream.removeEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
-					_stream.dispose();
-					_stream = null;
+					if (_connection)
+					{
+						_stream.dispose();
+					}
+					_stream			= null;
+					_streamName		= null;
 				}
 			}
 			
@@ -132,6 +193,9 @@ package core.media.video
 				video.height = value;
 				draw();
 			}
+			
+			public function get videoWidth():int { return _videoWidth; }
+			public function get videoHeight():int { return _videoHeight; }
 			
 			public function get flipped():Boolean { return _flipped; }
 			public function set flipped(value:Boolean):void 
@@ -151,17 +215,23 @@ package core.media.video
 				return _stream;
 			}
 			
+			public function get streamName():String { return _streamName; }
+			
 			public function get bufferTime():Number { return _bufferTime; }
 			public function set bufferTime(value:Number):void 
 			{
 				_bufferTime = value;
 			}
 			
+			public function get duration():int{ return _duration; }
+			
+			public function get metadata():Object { return _metaData; }
+			
 			public function get active():Boolean { return _active; }
 			
 			public function get status():String { return _status; }
 			
-		
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
@@ -179,10 +249,14 @@ package core.media.video
 					_stream.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
 					
 				// client
-					stream.client = this;
+					stream.client		= this;
 
 				// set the buffer time to 2 seconds
-					stream.bufferTime = _bufferTime;
+					stream.bufferTime	= _bufferTime;
+					
+				// kill old values
+					_duration			= 0;
+					_metaData			= null;
 			}
 		
 			protected function draw():void 
@@ -193,8 +267,8 @@ package core.media.video
 					graphics.drawRect(0, 0, width, height);
 					
 				// video
-					video.scaleX	= _flipped ? -1 : 1;
-					video.x			= _flipped ? video.width : 0;
+					container.scaleX	= _flipped ? -1 : 1;
+					container.x			= _flipped ? video.width : 0;
 			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -222,9 +296,18 @@ package core.media.video
 								break;
 					}
 			}
+			
+			protected function onLoad(event:NetStatusEvent):void 
+			{
+				if (event.info.code == 'NetStream.Play.Reset')
+				{
+					_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
+					pause();
+				}
+			}
 		
 			/**
-			 * Called by the NetStream instance
+			 * Called by the NetStream client
 			 * @param	data
 			 */
 			public function onPlayStatus(event:Object) :void
@@ -233,11 +316,18 @@ package core.media.video
 			}						
 			
 			/**
-			 * Called by the NetStream instance
+			 * Called by the NetStream client
 			 * @param	data
 			 */
 			public function onMetaData(data:Object) :void
 			{
+				_metaData = data;
+				if ('frameWidth' in data)
+				{
+					_videoWidth		= int(data.frameWidth);
+					_videoHeight	= int(data.frameHeight);
+					_duration		= int(data.duration);
+				}
 				data.code = 'NetStream.Play.MetaData';
 				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, data));
 			}						

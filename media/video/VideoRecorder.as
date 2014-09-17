@@ -1,5 +1,6 @@
 package core.media.video 
 {
+	import flash.events.Event;
 	import flash.events.NetStatusEvent;
 	import flash.events.StatusEvent;
 	import flash.media.Camera;
@@ -31,7 +32,6 @@ package core.media.video
 				protected var microphone				:Microphone;
 				
 			// camera variables
-				protected var _size						:Array;
 				protected var _quality					:int;
 				protected var _fps						:int;
 			
@@ -46,10 +46,15 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoRecorder(width:int = 320, height:int = 180, connection:NetConnection = null)
+			public function VideoRecorder(width:int = 320, height:int = 180, connection:NetConnection = null, setup:Boolean = true)
 			{
 				super(width, height, connection);
-				_size = [width, height];
+				_videoWidth		= width
+				_videoHeight	= height;
+				if (setup)
+				{
+					this.setup();
+				}
 			}
 		
 			override protected function initialize():void 
@@ -110,12 +115,7 @@ package core.media.video
 				if (camera)
 				{
 					// variables
-						var width	:int	= _size[0];
-						var height	:int	= _size[1];
-						var rate	:int	= width * height; // alternative bandwidth
-						
-					// set camera properties
-						camera.setMode(width, height, fps);
+						var rate:int = videoWidth * videoHeight; // alternative bandwidth
 						
 					// keyframes
 						camera.setKeyFrameInterval(keyframeInterval);
@@ -123,9 +123,24 @@ package core.media.video
 					// quality
 						camera.setQuality(bandwidth, quality);
 						
+					// size
+						camera.setMode(videoWidth, videoHeight, fps);
+						if (camera.width !== videoWidth)
+						{
+							trace('The camera could not be set to the required size!');
+						}
+						
+					// update values
+						_videoWidth		= camera.width;
+						_videoHeight	= camera.height;
+						_fps			= camera.fps;
+						
 					// debug
-						//trace('props:', width, height, bandwidth, quality, keyframeInterval);
-						//trace('rate:', rate)
+						trace('props:', videoWidth, videoHeight, bandwidth, quality, fps, keyframeInterval);
+						trace('rate:', rate);
+						
+					// event
+						dispatchEvent(new Event(Event.CHANGE));
 				}
 			}
 		
@@ -229,10 +244,23 @@ package core.media.video
 				updateCamera();
 			}
 			
-			public function get size():Array { return _size; }
+			public function get size():Array { return [videoWidth, videoHeight]; }
 			public function set size(value:Array):void 
 			{
-				_size = value;
+				_videoWidth		= value[0];
+				_videoHeight	= value[1];
+				updateCamera();
+			}
+			
+			public function set videoWidth(value:int):void 
+			{
+				_videoWidth = value;
+				updateCamera();
+			}
+			
+			public function set videoHeight(value:int):void 
+			{
+				_videoHeight = value;
 				updateCamera();
 			}
 			
@@ -281,6 +309,11 @@ package core.media.video
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
+		
+			override public function toString():String 
+			{
+				return '[object VideoRecorder videoWidth="' +videoWidth + '" videoHeight="' +videoHeight + '" fps="' +fps + '" quality="' +quality + '" bandwidth="' +bandwidth + '"]';
+			}
 		
 			protected function log(message:String, status:String = 'status'):void
 			{
