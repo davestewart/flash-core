@@ -82,7 +82,7 @@ package core.display.elements
 			
 			protected function complete():void 
 			{
-				addChild(new Document());
+				addChild(new Main());
 			}
 			
 			protected function error(event:IOErrorEvent):void 

@@ -1,4 +1,5 @@
-package core.utils.taskqueue {
+package core.utils.taskqueue 
+{
 	import flash.accessibility.Accessibility;
 	import flash.events.DataEvent;
 	import flash.events.Event;

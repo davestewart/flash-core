@@ -28,8 +28,11 @@ package core.media.video
 			// properties
 				protected var _connection				:NetConnection;             
 				protected var _stream					:NetStream;
+				
+			// play properties
 				protected var _active					:Boolean;
 				protected var _flipped					:Boolean;
+				protected var _paused					:Boolean;
 				
 			// stream variables
 				protected var _streamName				:String;
@@ -130,12 +133,14 @@ package core.media.video
 					}
 					
 				// flag
+					_paused	= false;
 					_active	= true;
-				
 			}
 			
 			public function replay():void
 			{
+				_active	= true;
+				_paused	= false;
 				_stream.seek(0);
 			}
 
@@ -143,7 +148,7 @@ package core.media.video
 			{
 				if (_stream)
 				{
-					_active	= false;
+					_paused	= true;
 					_stream.pause();
 				}
 			}
@@ -153,7 +158,7 @@ package core.media.video
 				if (_stream)
 				{
 					trace('resuming...')
-					_active	= true;
+					_paused	= false;
 					_stream.resume();
 				}
 			}
@@ -164,6 +169,7 @@ package core.media.video
 				{
 					//dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code:'NetStream.Play.Complete' } ));
 					_active	= false;
+					_paused	= false;
 					_stream.pause();
 				}
 				//close();
@@ -237,6 +243,8 @@ package core.media.video
 			public function get active():Boolean { return _active; }
 			
 			public function get status():String { return _status; }
+			
+			public function get paused():Boolean { return _paused; }
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------

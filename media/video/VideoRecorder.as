@@ -29,9 +29,6 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
-			// constants
-				public static const CAMERA_ERROR		:String			= 'VideoRecorder.CAMERA_ERROR';
-			
 			// properties
 				protected var camera					:Camera;
 				protected var microphone				:Microphone;
@@ -42,7 +39,6 @@ package core.media.video
 			
 			// recording variables
 				protected var _format					:String;
-				protected var _append					:Boolean;
 				
 			// stream variables
 				protected var _bandwidth				:int;
@@ -50,7 +46,7 @@ package core.media.video
 				
 			// setup flags
 				protected var _setup					:Boolean;
-				protected var _activated				:Boolean;
+				protected var _available				:Boolean;
 				
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
@@ -146,7 +142,7 @@ package core.media.video
 				// callbacks
 					function onCameraActivity(event:ActivityEvent):void 
 					{
-						_activated = true;
+						_available = true;
 						trace('camera activated successfully!');
 						camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
 						dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
@@ -161,9 +157,10 @@ package core.media.video
 					
 					function onActivationCheckTimeout():void
 					{
-						if ( ! _activated )
+						if ( ! _available )
 						{
-							dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
+							trace('could not activate camera!');
+							//dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
 						}
 					}
 					
@@ -226,49 +223,65 @@ package core.media.video
 		// { region: public methods
 		
 			// Start recording video to the server
-			public function record(streamName:String = null):Boolean
+			public function record(streamName:String = null, append:Boolean = false):Boolean
 			{
 				// debug
 					log('Recording...');
 					
-				// exit early if camera could not be activated
-					if ( ! _activated )
+				// exit early if camera is not available
+					if ( ! _available )
 					{
-						dispatchEvent(new ErrorEvent(CAMERA_ERROR, false, false, 'The camera could not be activated'));
+						dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
 						return false;
 					}
 					
 				// set active
 					_active = true;
+					_paused = false;
 					
-				// setup stream
-					setupStream();
-					
-				// add h264 settings
-					if (format == 'mp4')
+				// append
+					if (append )
 					{
-						var h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
-						h264Settings.setProfileLevel(H264Profile.BASELINE, H264Level.LEVEL_3_1);
-						stream.videoStreamSettings = h264Settings;
+						stream.publish(format + ':' + streamName, 'append');
 					}
-
-				// publish the stream by name
-					var mode:String = _append ? "append" : "record"; // can also have "live" and "default", but "record" has NetStream events we can bind to
-					stream.publish(format + ':' + streamName, mode);
-					
-				// add custom metadata to the header of the .flv file
-					var metaData:Object	= 
+					else
 					{
-						description : 'Recorded using WebcamRecording example.'
-					};
-					stream.send('@setDataFrame', 'onMetaData', metaData);
-					
-				// attach the camera and microphone to the server
-					stream.attachCamera(camera);
-					stream.attachAudio(microphone);
+						// setup stream
+							setupStream();
+							
+						// add h264 settings
+							if (format == 'mp4')
+							{
+								var h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
+								h264Settings.setProfileLevel(H264Profile.BASELINE, H264Level.LEVEL_3_1);
+								stream.videoStreamSettings = h264Settings;
+							}
+
+						// publish the stream by name
+							stream.publish(format + ':' + streamName, append ? 'append' : 'record'); // can also have "live" and "default", but "record" has NetStream events we can bind to
+							
+						// add custom metadata to the header of the .flv file
+							var metaData:Object	= 
+							{
+								description : 'Recorded using WebcamRecording example.'
+							};
+							stream.send('@setDataFrame', 'onMetaData', metaData);
+						
+						// TODO implement proper handlers for permissions: http://help.adobe.com/en_US/as3/dev/WSfffb011ac560372f3fa68e8912e3ab6b8cb-8000.html#WS5b3ccc516d4fbf351e63e3d118a9b90204-7d37
+						
+						// attach the camera and microphone to the server
+							stream.attachCamera(camera);
+							//stream.attachAudio(microphone);
+					}
 					
 				// return
 					return true;
+			}
+			
+			override public function pause():void 
+			{
+				super.pause();
+				stream.publish('null');
 			}
 
 			override public function stop():void
@@ -278,6 +291,7 @@ package core.media.video
 				
 				// set active
 					_active = false;
+					_paused = false;
 
 				// variables
 					var intervalId:Number;
@@ -372,6 +386,8 @@ package core.media.video
 				_keyframeInterval = value;
 				updateCamera();
 			}
+			
+			public function get available():Boolean { return _available; }
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
