@@ -1,5 +1,7 @@
 package core.media.video 
 {
+	import flash.events.ActivityEvent;
+	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
 	import flash.events.StatusEvent;
@@ -10,7 +12,9 @@ package core.media.video
 	import flash.media.Microphone;
 	import flash.net.NetConnection;
 	import flash.utils.clearInterval;
+	import flash.utils.clearTimeout;
 	import flash.utils.setInterval;
+	import flash.utils.setTimeout;
 	
 	/**
 	 * Instantiates a basic NetStreamVideo, then manages camera and publish locations
@@ -25,13 +29,14 @@ package core.media.video
 		// { region: variables
 		
 			// constants
-				
+				public static const CAMERA_ERROR		:String			= 'VideoRecorder.CAMERA_ERROR';
 			
 			// properties
 				protected var camera					:Camera;
 				protected var microphone				:Microphone;
 				
 			// camera variables
+				protected var _activated				:Boolean;
 				protected var _quality					:int;
 				protected var _fps						:int;
 			
@@ -89,6 +94,14 @@ package core.media.video
 						// attach video
 							video.attachCamera(camera);
 							
+						// detect inactivity if another application is using the camera
+							function onCameraActivity(event:ActivityEvent):void 
+							{
+								_activated = true;
+								camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
+							}
+						    camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
+							
 						// update camera
 							updateCamera();
 					}
@@ -127,6 +140,7 @@ package core.media.video
 						camera.setMode(videoWidth, videoHeight, fps);
 						if (camera.width !== videoWidth)
 						{
+							//dispatchEvent(new ErrorEvent(CAMERA_ERROR, false, false, 'The camera could not be activated'));
 							trace('The camera could not be set to the required size!');
 						}
 						
@@ -148,10 +162,17 @@ package core.media.video
 		// { region: public methods
 		
 			// Start recording video to the server
-			public function record(streamName:String = null):void
+			public function record(streamName:String = null):Boolean
 			{
 				// debug
 					log('Recording...');
+					
+				// exit early if camera could not be activated
+					if ( ! _activated )
+					{
+						dispatchEvent(new ErrorEvent(CAMERA_ERROR, false, false, 'The camera could not be activated'));
+						return false;
+					}
 					
 				// set active
 					_active = true;
@@ -181,6 +202,9 @@ package core.media.video
 				// attach the camera and microphone to the server
 					stream.attachCamera(camera);
 					stream.attachAudio(microphone);
+					
+				// return
+					return true;
 			}
 
 			override public function stop():void
@@ -304,8 +328,7 @@ package core.media.video
 					stream.publish('null');
 					stream.close();
 			}
-
-
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
@@ -319,7 +342,7 @@ package core.media.video
 			{
 				dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, message, status));
 			}
-		
+			
 	}
 
 }
