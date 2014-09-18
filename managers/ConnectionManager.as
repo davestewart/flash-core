@@ -1,12 +1,14 @@
-package core.managers {
+package core.managers 
+{
+	import core.net.NetStatus;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.NetStatusEvent;
 	import flash.net.*;
 	
-	import core.net.NetStatus;
-	import app.data.settings.ServerSettings;
+	import core.data.settings.ServerSettings;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart
