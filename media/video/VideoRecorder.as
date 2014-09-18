@@ -3,6 +3,7 @@ package core.media.video
 	import flash.events.ActivityEvent;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
+	import flash.events.MouseEvent;
 	import flash.events.NetStatusEvent;
 	import flash.events.StatusEvent;
 	import flash.media.Camera;
@@ -36,7 +37,6 @@ package core.media.video
 				protected var microphone				:Microphone;
 				
 			// camera variables
-				protected var _activated				:Boolean;
 				protected var _quality					:int;
 				protected var _fps						:int;
 			
@@ -47,29 +47,38 @@ package core.media.video
 			// stream variables
 				protected var _bandwidth				:int;
 				protected var _keyframeInterval			:int;
-			
+				
+			// setup flags
+				protected var _setup					:Boolean;
+				protected var _activated				:Boolean;
+				
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoRecorder(width:int = 320, height:int = 180, connection:NetConnection = null, setup:Boolean = true)
+			public function VideoRecorder(width:int = 320, height:int = 180, setup:Boolean = true, connection:NetConnection = null)
 			{
-				super(width, height, connection);
-				_videoWidth		= width
-				_videoHeight	= height;
-				if (setup)
-				{
-					this.setup();
-				}
+				// super
+					super(width, height, connection);
+					
+				// set video dimensions to the same as the video
+					_videoWidth		= this.width
+					_videoHeight	= this.height;
+					
+				// setup camera
+					if (setup)
+					{
+						this.setup();
+					}
 			}
 		
 			override protected function initialize():void 
 			{
+				format				= 'mp4';
 				fps					= 25;
 				quality				= 90;
 				bandwidth			= 0;
 				keyframeInterval	= 15;
 				bufferTime			= 20;
-				format				= 'mp4';
 				flipped				= true;
 			}
 
@@ -85,6 +94,12 @@ package core.media.video
 			
 			protected function setupCamera():void
 			{	
+				// don't set up twice!
+					if (_setup) return;
+					
+				// debug
+					trace('setup camera...');
+				
 				// get the default Flash camera and microphone
 					camera = Camera.getCamera();
 					
@@ -93,21 +108,17 @@ package core.media.video
 					{
 						// attach video
 							video.attachCamera(camera);
-							
-						// detect inactivity if another application is using the camera
-							function onCameraActivity(event:ActivityEvent):void 
-							{
-								_activated = true;
-								camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
-							}
-						    camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
+
+						// test to see if camera can be activated
+							setTimeout(testCamera, 500);
 							
 						// update camera
 							updateCamera();
 					}
 					else
 					{
-						throw new Error('No Camera Found');
+						dispatchEvent(new CameraEvent(CameraEvent.NO_CAMERA));
+						trace('No Camera Found');
 					}
 					
 				// set up the mic
@@ -120,9 +131,62 @@ package core.media.video
 					else
 					{
 						log('No Microphone Found', 'error');
+						dispatchEvent(new CameraEvent(CameraEvent.NO_MICROPHONE));
+					}
+					
+				// flag as already set up
+					_setup = true;
+			}
+			
+			protected function testCamera():void
+			{
+				// debug
+					trace('testing for camera...')
+				
+				// callbacks
+					function onCameraActivity(event:ActivityEvent):void 
+					{
+						_activated = true;
+						trace('camera activated successfully!');
+						camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
+						dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
+					}
+				
+					function onMouseMove(event:MouseEvent):void 
+					{
+						trace('mouse moved, checking for camera activation');
+						stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+						setTimeout(onActivationCheckTimeout, 500);
+					}
+					
+					function onActivationCheckTimeout():void
+					{
+						if ( ! _activated )
+						{
+							dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
+						}
+					}
+					
+					function onAddedToStage(event:Event):void 
+					{
+						trace('camera added to stage');
+						stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+					}
+				
+				// detect inactivity if another application is using the camera
+					camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
+							
+				// set up mousemove handler to detect when the dialog has been dismissed
+					if (stage)
+					{
+						stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+					}
+					else
+					{
+						addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 					}
 			}
-
+		
 			protected function updateCamera():void
 			{
 				if (camera)
@@ -140,7 +204,7 @@ package core.media.video
 						camera.setMode(videoWidth, videoHeight, fps);
 						if (camera.width !== videoWidth)
 						{
-							//dispatchEvent(new ErrorEvent(CAMERA_ERROR, false, false, 'The camera could not be activated'));
+							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
 							trace('The camera could not be set to the required size!');
 						}
 						
@@ -154,7 +218,7 @@ package core.media.video
 						trace('rate:', rate);
 						
 					// event
-						dispatchEvent(new Event(Event.CHANGE));
+						dispatchEvent(new CameraEvent(CameraEvent.SIZE_CHANGE));
 				}
 			}
 		
@@ -333,16 +397,16 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			override public function toString():String 
-			{
-				return '[object VideoRecorder videoWidth="' +videoWidth + '" videoHeight="' +videoHeight + '" fps="' +fps + '" quality="' +quality + '" bandwidth="' +bandwidth + '"]';
-			}
-		
 			protected function log(message:String, status:String = 'status'):void
 			{
 				dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, message, status));
 			}
 			
+			override public function toString():String 
+			{
+				return '[object VideoRecorder videoWidth="' +videoWidth + '" videoHeight="' +videoHeight + '" fps="' +fps + '" quality="' +quality + '" bandwidth="' +bandwidth + '"]';
+			}
+		
 	}
 
 }

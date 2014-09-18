@@ -49,12 +49,19 @@ package core.media.video
 		
 			public function VideoPlayer(width:int = 320, height:int = 180, connection:NetConnection = null) 
 			{
-				build(width, height);
-				initialize();
-				if (connection)
-				{
-					this.connection = connection;
-				};
+				// parameters
+					width	= width > 0 ? width : 320;
+					height	= height > 0 ? height : 180;
+				
+				// build
+					build(width, height);
+					initialize();
+					
+				// connect
+					if (connection)
+					{
+						this.connection = connection;
+					};
 			}
 		
 			protected function initialize():void 
