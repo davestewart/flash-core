@@ -10,6 +10,7 @@ package core.net.rest
 	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestHeader;
+	import mx.messaging.messages.AsyncMessage;
 	
 	import mx.rpc.AsyncResponder;
 	import mx.rpc.AsyncToken;
@@ -21,7 +22,11 @@ package core.net.rest
 	/**
 	 * ...
 	 * 
-	 * This class uses the Flex HTTPService, see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/http/HTTPService.html
+	 * This class uses the folowing Flex services:
+	 * 
+	 *  - HTTPService		http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/http/HTTPService.html
+	 *  - AsycResponder		http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncResponder.html
+	 * 
 	 * @author Dave Stewart
 	 */
 	public class RestClient extends EventDispatcher
@@ -37,6 +42,7 @@ package core.net.rest
 				public static const METHOD_PUT			:String = 'PUT';
 				
 			// content type constants
+				public static const TYPE_FORM			:String = HTTPService.CONTENT_TYPE_FORM;
 				public static const TYPE_VARS			:String = 'text/variables';
 				public static const TYPE_JSON			:String = 'application/json';
 				public static const TYPE_XML			:String = 'application/xml';
@@ -63,12 +69,12 @@ package core.net.rest
 		
 			public function RestClient(format:String = FORMAT_JSON, contentType:String = TYPE_JSON)
 			{
-				setup();
+				initialize();
 				this.contentType	= contentType;
 				this.format			= format;
 			}
 			
-			protected function setup():void 
+			protected function initialize():void 
 			{
 				// request
 					request			= new URLRequest();
@@ -79,10 +85,10 @@ package core.net.rest
 					
 				// loader
 					loader			= new URLLoader();
+					loader.addEventListener(Event.COMPLETE, onComplete);
 					loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 					loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHttpStatus);
 					loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
-					loader.addEventListener(Event.COMPLETE, onComplete);
 					
 				// settings
 					timeout			= 15;
@@ -100,72 +106,52 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function get(url:String):AsyncToken 
+			/**
+			 * Perform a a GET call on a URL
+			 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncToken.html
+			 * @param	url
+			 * @return 
+			 */
+			public function get(url:String, values:* = null):AsyncToken 
 			{
 				return send(url, null, METHOD_GET);
 			}
 			
-			public function post(url:String, values:Object = null):AsyncToken 
+			/**
+			 * Perform a POST call on a URL
+			 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncToken.html
+			 * @param	url
+			 * @param	values
+			 * @return
+			 */
+			public function post(url:String, data:* = null):AsyncToken 
 			{
-				return send(url, values, METHOD_POST);
+				return send(url, data, METHOD_POST);
 			}
 			
-			public function put(url:String, values:Object = null):AsyncToken 
+			/**
+			 * Perform a PUT call on a URL
+			 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncToken.html
+			 * @param	url
+			 * @param	values
+			 * @return
+			 */
+			public function put(url:String, data:* = null):AsyncToken 
 			{
-				return send(url, values, METHOD_PUT);
+				return send(url, data, METHOD_PUT);
 			}
 			
-			public function del(url:String, values:Object = null):AsyncToken 
+			/**
+			 * Perform a DELETE call on a URL
+			 * @param	url
+			 * @param	values
+			 * @return
+			 */
+			public function del(url:String, data:* = null):AsyncToken 
 			{
-				return send(url, values, METHOD_DELETE);
+				return send(url, data, METHOD_DELETE);
 			}
 		
-			public function send(url:String, values:Object = null, method:String = METHOD_GET):AsyncToken
-			{
-				// values
-					var asyncToken		:AsyncToken;
-					var iresponder		:IResponder;
-					var json			:String = values ? JSON.stringify(values) : null;
-				
-				// methods
-					service.method		= method;
-					request.method		= method;
-					
-				// setup
-					switch(method)
-					{
-						case RestClient.METHOD_GET:
-							service.url			= url;
-							iresponder			= new AsyncResponder(onResult, onFault, asyncToken);
-							asyncToken			= this.service.send();
-							asyncToken.addResponder(iresponder);
-							break;
-							
-						case RestClient.METHOD_POST:
-							service.url			= url;
-							iresponder			= new AsyncResponder(onResult, onFault, asyncToken);
-							asyncToken			= this.service.send(json);
-							asyncToken.addResponder(iresponder);
-							break;
-							
-						case RestClient.METHOD_PUT:
-							request.url			= url;
-							request.data		= unescape(json);
-							loader.load(request);
-							break;
-							
-						case RestClient.METHOD_DELETE:
-							request.url			= url;
-							request.data		= unescape(json);
-							loader.load(request);
-							break;
-						
-					}
-					
-				// return
-					return asyncToken;
-			}
-			
 					
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
@@ -258,10 +244,61 @@ package core.net.rest
 				service.requestTimeout	= value;
 			}
 			
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-		
+			protected function send(url:String, data:* = null, method:String = METHOD_GET):AsyncToken
+			{
+				// values
+					var asyncToken		:AsyncToken;
+					var responder		:IResponder;
+				
+				// methods
+					service.method		= method;
+					request.method		= method;
+					
+				// data
+					if (_format == TYPE_JSON)
+					{
+						var json:String = data ? JSON.stringify(data) : null;
+					}
+					
+				// setup
+					switch(method)
+					{
+						case METHOD_GET:
+							service.url			= url;
+							responder			= new AsyncResponder(onResult, onFault, asyncToken);
+							asyncToken			= service.send();
+							asyncToken.addResponder(responder);
+							break;
+							
+						case METHOD_POST:
+							service.url			= url;
+							responder			= new AsyncResponder(onResult, onFault, asyncToken);
+							asyncToken			= service.send(json);
+							asyncToken.addResponder(responder);
+							break;
+							
+						case METHOD_PUT:
+							request.url			= url;
+							request.data		= unescape(json);
+							loader.load(request);
+							break;
+							
+						case METHOD_DELETE:
+							request.url			= url;
+							request.data		= unescape(json);
+							loader.load(request);
+							break;
+						
+					}
+					
+				// return
+					return asyncToken;
+			}
+			
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
@@ -314,6 +351,21 @@ package core.net.rest
 			}
 			
 			
+			protected function onComplete(event:Event):void
+			{
+				// loader has completed everything
+				trace('The data has successfully loaded');
+				dispatchEvent(new RestEvent(RestEvent.SUCCESS, event.target.data, 200, null, null));
+			}
+			
+			
+			
+			protected function onIOError(event:IOErrorEvent):void
+			{
+				trace('Reached handleIOError : Load failed: IO error: ' + event.text);
+				this.dispatchEvent(new RestErrorEvent(RestErrorEvent.IOERROR, event.target.data, -1));;
+			}
+			
 			//request.requestHeaders.push(new URLRequestHeader({Accept:'application/json'}));
 			
 			//request.requestHeaders.push(new URLRequestHeader('X-HTTP-Method-Override', URLRequestMethod.PUT));
@@ -334,18 +386,6 @@ package core.net.rest
 					default:
 						this.dispatchEvent(new RestEvent(RestEvent.SUCCESS, null, event.status));
 				}
-			}
-			
-			protected function onComplete(event:Event):void
-			{
-				// loader has completed everything
-				trace('The data has successfully loaded');
-			}
-						
-			protected function onIOError(event:IOErrorEvent):void
-			{
-				trace('Reached handleIOError : Load failed: IO error: ' + event.text);
-				this.dispatchEvent(new RestErrorEvent(RestErrorEvent.IOERROR, event.target.data, -1));;
 			}
 			
 			protected function onSecurityError(event:SecurityErrorEvent):void

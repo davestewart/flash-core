@@ -1,6 +1,8 @@
 package core.services 
 {
+	import app.services.API;
 	import com.greensock.loading.DataLoader;
+	import core.net.rest.RestClient;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	
@@ -8,7 +10,7 @@ package core.services
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class Service extends EventDispatcher 
+	public class Service 
 	{
 		
 		
@@ -19,6 +21,7 @@ package core.services
 				
 			
 			// properties
+				protected var _client		:RestClient;
 				
 				
 			// variables
@@ -27,40 +30,21 @@ package core.services
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Service(target:flash.events.IEventDispatcher=null) 
+			public function Service(client:IHTTPClient, service:XML = null) 
 			{
-				super(target);
+				_client = client;
 				//initialize();
+			}
+			
+			protected function initialize():void 
+			{
+				
 			}
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function get(url:String, data:Object, callback:Function):void 
-			{
-				data.onComplete = callback;
-				new DataLoader(url, data);
-			}
-			
-			public function post(url:String, data:Object, callback:Function):void 
-			{
-				data.onComplete = callback;
-				new DataLoader(url, data);
-				
-			}
-			
-			public function remove(url:String, data:Object, callback:Function):void 
-			{
-				data.onComplete = callback;
-				new DataLoader(url, data);
-			}
-			
-			public function del(url:String, data:Object, callback:Function):void 
-			{
-				data.onComplete = callback;
-				new DataLoader(url, data);
-			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
