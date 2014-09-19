@@ -7,6 +7,7 @@ package core.net.rest
 	import flash.events.IOErrorEvent;
 	import flash.events.SecurityErrorEvent;
 	import flash.net.URLLoader;
+	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestHeader;
 	
@@ -19,6 +20,8 @@ package core.net.rest
 
 	/**
 	 * ...
+	 * 
+	 * This class uses the Flex HTTPService, see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/http/HTTPService.html
 	 * @author Dave Stewart
 	 */
 	public class RestClient extends EventDispatcher
@@ -33,46 +36,58 @@ package core.net.rest
 				public static const METHOD_DELETE		:String = 'DELETE';
 				public static const METHOD_PUT			:String = 'PUT';
 				
-			// format constants
-				public static const FORMAT_JSON			:String = 'application/json';
-		
+			// content type constants
+				public static const TYPE_VARS			:String = 'text/variables';
+				public static const TYPE_JSON			:String = 'application/json';
+				public static const TYPE_XML			:String = 'application/xml';
+				
+			// return format constants
+				public static const FORMAT_OBJECT		:String	= 'object';
+				public static const FORMAT_ARRAY		:String	= 'array';
+				public static const FORMAT_XML			:String	= 'xml';
+				public static const FORMAT_E4X			:String	= 'e4x';
+				public static const FORMAT_TEXT			:String	= 'text';
+				public static const FORMAT_JSON			:String	= 'json';
+
+			// variables
+				protected var service					:HTTPService;
+				protected var loader					:URLLoader;
+				protected var request					:URLRequest;
+				
 			// properties
-				private var service						:HTTPService;
-				private var loader						:URLLoader;
-				private var request						:URLRequest;
-									
+				protected var _format					:String;
+				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function RestClient(target:IEventDispatcher = null)
+			public function RestClient(format:String = FORMAT_JSON, contentType:String = TYPE_JSON)
 			{
-				super(target);
 				setup();
+				this.contentType	= contentType;
+				this.format			= format;
 			}
 			
 			protected function setup():void 
 			{
 				// request
-					request					= new URLRequest();
+					request			= new URLRequest();
 					
 				// connection
-					service					= new HTTPService();
-					service.resultFormat	= 'text';
+					service			= new HTTPService();
 					service.request.authenticate = false;
 					
-				// settings
-					contentType				= FORMAT_JSON;
-					timeout					= 15;
-					
 				// loader
-					loader					= new URLLoader();
-					loader.dataFormat		= 'text';
+					loader			= new URLLoader();
 					loader.addEventListener(IOErrorEvent.IO_ERROR, onIOError);
 					loader.addEventListener(HTTPStatusEvent.HTTP_STATUS, onHttpStatus);
 					loader.addEventListener(SecurityErrorEvent.SECURITY_ERROR, onSecurityError);
 					loader.addEventListener(Event.COMPLETE, onComplete);
-					// set the credentials
+					
+				// settings
+					timeout			= 15;
+					
+				// set the credentials
 				
 					// This gives a null exception when enabled
 					//	loader.addEventListener(HTTPStatusEvent.HTTP_RESPONSE_STATUS, handleHttpResponseStatus);
@@ -155,36 +170,79 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			public function set contentType(type:String):void
+			public function get format():String { return _format; }
+			public function set format(value:String):void 
 			{
-				switch(type)
+				_format = value;
+				switch (value) 
 				{
-					case RestClient.FORMAT_JSON:
-						service.contentType			= RestClient.FORMAT_JSON;
-						request.contentType			= RestClient.FORMAT_JSON;
-						var header:URLRequestHeader	= new URLRequestHeader('Accept', RestClient.FORMAT_JSON); 
+					case FORMAT_OBJECT:
+						service.resultFormat			= FORMAT_OBJECT;
+						loader.dataFormat				= URLLoaderDataFormat.BINARY;		
+						break;
+					
+					case FORMAT_ARRAY:
+						service.resultFormat			= FORMAT_ARRAY;
+						loader.dataFormat				= URLLoaderDataFormat.BINARY;		
+						break;
+					
+					case FORMAT_XML:
+						service.resultFormat			= FORMAT_XML;
+						loader.dataFormat				= URLLoaderDataFormat.TEXT;		
+						break;
+					
+					case FORMAT_E4X:
+						service.resultFormat			= FORMAT_E4X;
+						loader.dataFormat				= URLLoaderDataFormat.TEXT;		
+						break;
+					
+					case FORMAT_TEXT:
+						service.resultFormat			= FORMAT_TEXT;
+						loader.dataFormat				= URLLoaderDataFormat.TEXT;		
+						break;
+					
+					case FORMAT_JSON:
+						service.resultFormat			= FORMAT_TEXT;
+						loader.dataFormat				= URLLoaderDataFormat.TEXT;		
+						break;
+					
+					default:
+						throw new Error('Invalid format "' +value+ '"');
+				}
+			}
+		
+			public function set contentType(value:String):void
+			{
+				var header:URLRequestHeader; 
+				switch(value)
+				{
+					case TYPE_VARS:
+					case TYPE_JSON:
+					case TYPE_XML:
+						service.contentType		= value;
+						request.contentType		= value;
+						header					= new URLRequestHeader('Accept', value); 
 						request.requestHeaders.push(header);
 						break;
 						
 					default:
-						throw new Error('Invalid content type "' +type+ '"');
+						throw new Error('Invalid content-type "' +value+ '"');
 				}
 			}
 			
-			public function set credentials(encoded:String):void
+			public function set credentials(value:String):void
 			{
-				
-				if(encoded)
+				if(value.length)
 				{
 					// Set the other headers too
 						service.headers = 
 						{
 							'Accept'			: 'application/json',
-							'Authorization'		: 'Basic ' + encoded
+							'Authorization'		: 'Basic ' + value
 						};
 						
 					// url header
-						var urlheader:URLRequestHeader = new URLRequestHeader('Authorization', 'Basic ' + encoded);
+						var urlheader:URLRequestHeader = new URLRequestHeader('Authorization', 'Basic ' + value);
 						request.requestHeaders.push(urlheader);
 				}
 				
@@ -195,11 +253,11 @@ package core.net.rest
 			}
 			
 			public function get timeout():int{ return this.service.requestTimeout; }
-			public function set timeout(time:int):void
+			public function set timeout(value:int):void
 			{
-				service.requestTimeout	= time;
+				service.requestTimeout	= value;
 			}
-		
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
@@ -211,7 +269,12 @@ package core.net.rest
 			protected function onResult(event:ResultEvent,token:Object=null):void
 			{
 				trace('Reached onResult handler');
-				dispatchEvent(new RestEvent(RestEvent.SUCCESS, String(event.result), event.statusCode, null, event.token));
+				var data:* = event.result;
+				if (_format === FORMAT_JSON)
+				{
+					data = JSON.parse(String(data));
+				}
+				dispatchEvent(new RestEvent(RestEvent.SUCCESS, data, event.statusCode, null, event.token));
 			
 			}
 			

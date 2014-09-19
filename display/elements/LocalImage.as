@@ -16,8 +16,8 @@ package core.display.elements
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class Image extends Sprite 
-	{
+	public class LocalImage extends Sprite 
+	{`
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
@@ -37,7 +37,7 @@ package core.display.elements
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Image(select:Boolean = true) 
+			public function LocalImage(select:Boolean = true) 
 			{
 				// fileref
 					fileRef = new FileReference();

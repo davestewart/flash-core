@@ -1,16 +1,16 @@
 package core.managers 
 {
-	import core.net.NetStatus;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.NetStatusEvent;
 	import flash.net.*;
 	
+	import core.constants.NetStatus;
 	import core.data.settings.ServerSettings;
 	
 	/**
-	 * ...
+	 * Manages a single connection (server, username, password), its events, and provides a static endpoint to it
 	 * @author Dave Stewart
 	 */
 	public class ConnectionManager extends EventDispatcher 

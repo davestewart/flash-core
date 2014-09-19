@@ -82,7 +82,45 @@ package core.utils
 				return value.replace(/&([A-Za-z]+);|&#(\d+);/g, replace);
 		}
 		
-			
+		public static function phpSerialize(obj:Object, path:String = ''):String
+		{
+			// undefined
+				if (obj == undefined)
+				{
+					// fail gracefully
+				}
+
+			// array
+				else if (obj is Array)
+				{
+					// flash iterates from most recently-created property first, 
+					// so iterate through array backwards for correct output
+					for (var i:int = obj.length - 1; i >= 0; i--)
+					{
+						var name:String = path + '[' + i + ']';
+						serialize(obj[i], name);
+					}
+				}
+
+			// object
+				else if (obj is Object)
+				{
+					// no such joy for objects - properties will be reversed!
+					// Could do a pre-emptive collection loop, but why bother...?
+					for (var prop:String in obj)
+					{
+						var name:String = path + (path == '' ? prop : '[' + prop + ']');
+						serialize(obj[prop], name);
+					}
+				}
+
+			// value
+				else
+				{
+					this[path] = obj;
+				};
+
+		};			
 	}
 
 }

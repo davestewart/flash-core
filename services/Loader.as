@@ -1,5 +1,4 @@
-package core.net 
-{
+package core.services {
 	import com.greensock.*;
 	import com.greensock.events.LoaderEvent;
 	import com.greensock.loading.*;

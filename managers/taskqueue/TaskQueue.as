@@ -1,6 +1,5 @@
-package core.utils.taskqueue 
+package core.managers.taskqueue 
 {
-	import flash.accessibility.Accessibility;
 	import flash.events.DataEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -26,8 +25,8 @@ package core.utils.taskqueue
 				public static const ERROR			:String	= 'TaskQueue.ERROR';				
 			
 			// properties
-				protected var _scope			:*;
-				protected var _tasks			:Vector.<Function>;
+				protected var _scope				:*;
+				protected var _tasks				:Vector.<Function>;
 				
 			// variables
 				protected var _index				:int;

@@ -1,8 +1,8 @@
 package core.managers 
 {
 	import core.data.variables.FlashVars;
-	import core.net.Loader;
-	import core.utils.taskqueue.TaskQueue;
+	import core.services.Loader;
+	import core.managers.taskqueue.TaskQueue;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;

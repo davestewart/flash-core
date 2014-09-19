@@ -1,5 +1,7 @@
-package core.net 
-{
+package core.constants {
+	
+	import core.constants.NetStatus;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart
