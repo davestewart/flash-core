@@ -18,7 +18,7 @@ package core.net.rest
 			
 			// properties
 				protected var _server		:String;	
-				protected var _service		:String;	
+				protected var _name			:String;	
 				
 			// variables
 				
@@ -26,35 +26,35 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function RestService(server:String, service:String, format:String = FORMAT_JSON, contentType:String = TYPE_JSON)
+			public function RestService(server:String, name:String, reponseType:String = FORMAT_JSON, contentType:String = TYPE_JSON)
 			{
 				_server		= server;
-				_service	= service;
-				super(format, contentType);
+				_name		= name;
+				super(reponseType, contentType);
 			}
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			override public function get(endpoint:String):AsyncToken 
+			override public function get(endpoint:String, data:* = null, onResult:Function = null, onFault:Function = null):AsyncToken 
 			{
-				return super.get(getURL(endpoint));
+				return super.get(getURL(endpoint), data);
 			}
 			
-			override public function post(endpoint:String, values:Object = null):AsyncToken 
+			override public function post(endpoint:String, data:* = null):AsyncToken 
 			{
-				return super.post(getURL(endpoint), values);
+				return super.post(getURL(endpoint), data, onResult:Function = null, onFault:Function = null);
 			}
 			
-			override public function put(endpoint:String, values:Object = null):AsyncToken 
+			override public function put(endpoint:String, data:* = null):AsyncToken 
 			{
-				return super.put(getURL(endpoint), values);
+				return super.put(getURL(endpoint), data, onResult:Function = null, onFault:Function = null);
 			}
 			
-			override public function del(endpoint:String, values:Object = null):AsyncToken 
+			override public function del(endpoint:String, data:* = null):AsyncToken 
 			{
-				return super.del(getURL(endpoint), values);
+				return super.del(getURL(endpoint), data, onResult:Function = null, onFault:Function = null);
 			}
 
 			
@@ -67,10 +67,10 @@ package core.net.rest
 				_server = value.replace(/\/+/, '');
 			}
 			
-			public function get service():String { return _service; }
-			public function set service(value:String):void 
+			public function get name():String { return _name; }
+			public function set name(value:String):void 
 			{
-				_service = value.replace(/^\/+|\/+$/g, '');
+				_name = value.replace(/^\/+|\/+$/g, '');
 			}
 			
 		
@@ -79,7 +79,7 @@ package core.net.rest
 		
 			protected function getURL(endpoint:String):String 
 			{
-				return _server + _service.replace(/^\/*|\/*$/g, '/') + endpoint;
+				return _server + _name.replace(/^\/*|\/*$/g, '/') + endpoint;
 			}
 			
 		// ---------------------------------------------------------------------------------------------------------------------

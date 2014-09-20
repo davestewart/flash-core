@@ -8,10 +8,10 @@ package core.net.rest
 	 */
 	public interface IRestful 
 	{
-		public function get(url:String, values:*):AsyncToken
-		public function post(url:String, values:*):AsyncToken
-		public function put(url:String, values:*):AsyncToken
-		public function del(url:String, values:*):AsyncToken
+		public function get(url:String, data:*):AsyncToken
+		public function post(url:String, data:*):AsyncToken
+		public function put(url:String, data:*):AsyncToken
+		public function del(url:String, data:*):AsyncToken
 	}
 	
 }

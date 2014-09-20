@@ -13,7 +13,14 @@ package core.net.rest
 		public var message				:String;
 		public var token				:AsyncToken;
 		
-		public function RestEvent(type:String, data:*= null, statuscode:int = -1, message:String = null, token:AsyncToken = null, bubbles:Boolean = false, cancelable:Boolean = false)
+		public function RestEvent(
+									type			:String, 
+									data			:*					= null, 
+									statuscode		:int				= -1, 
+									message			:String				= null, 
+									token			:AsyncToken			= null, 
+									bubbles			:Boolean			= false, 
+									cancelable		:Boolean			= false)
 		{
 			super(type, bubbles, cancelable);
 			
