@@ -1,6 +1,6 @@
 package core.net.rest 
 {
-	import flash.display.Loader;
+	import core.utils.Base64;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
@@ -58,14 +58,19 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
+			public function authorize(name:String = '', password:String = ''):void
+			{
+				credentials = name ? Base64.encode(name + ':' + password) : null;
+			}
+			
 			/**
 			 * Perform a a GET call on a URL
 			 * @param	url
 			 * @return 
 			 */
-			public function get(url:String, data:* = null):AsyncToken
+			public function get(url:String, data:* = null, onSuccess:Function = null, onError:Function = null):AsyncToken
 			{
-				return send(url, data, METHOD_GET);
+				return send(url, data, METHOD_GET, onSuccess, onError);
 			}
 			
 			/**
@@ -74,9 +79,9 @@ package core.net.rest
 			 * @param	values
 			 * @return
 			 */
-			public function post(url:String, data:* = null):AsyncToken 
+			public function post(url:String, data:* = null, onSuccess:Function = null, onError:Function = null):AsyncToken 
 			{
-				return send(url, data, METHOD_POST);
+				return send(url, data, METHOD_POST, onSuccess, onError);
 			}
 			
 			/**
@@ -85,9 +90,9 @@ package core.net.rest
 			 * @param	values
 			 * @return
 			 */
-			public function put(url:String, data:* = null):AsyncToken 
+			public function put(url:String, data:* = null, onSuccess:Function = null, onError:Function = null):AsyncToken 
 			{
-				return send(url, data, METHOD_PUT);
+				return send(url, data, METHOD_PUT, onSuccess, onError);
 			}
 			
 			/**
@@ -96,9 +101,9 @@ package core.net.rest
 			 * @param	values
 			 * @return
 			 */
-			public function del(url:String, data:* = null):AsyncToken 
+			public function del(url:String, data:* = null, onSuccess:Function = null, onError:Function = null):AsyncToken 
 			{
-				return send(url, data, METHOD_DELETE);
+				return send(url, data, METHOD_DELETE, onSuccess, onError);
 			}
 		
 			/**
@@ -122,6 +127,12 @@ package core.net.rest
 					request				= new URLRequest(url);
 					request.contentType	= _contentType;
 					
+				// credentials
+					if (_credentials)
+					{
+						request.requestHeaders.push(new URLRequestHeader('Authorization', 'Basic ' + _credentials));
+					}
+
 				// data
 					if (data)
 					{
@@ -138,7 +149,7 @@ package core.net.rest
 						// add the data
 							request.data		= vars;
 					}
-
+					
 				// method
 					switch(method)
 					{
@@ -182,7 +193,7 @@ package core.net.rest
 				// return
 					return token;
 			}
-			
+
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
@@ -197,6 +208,12 @@ package core.net.rest
 			public function set responseType(value:String):void 
 			{
 				_responseType = value;
+			}
+			
+			public function get credentials():String { return _credentials; }
+			public function set credentials(value:String):void 
+			{
+				_credentials = value;
 			}
 			
 		
