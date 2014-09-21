@@ -22,10 +22,9 @@ package core.managers.taskqueue
 				public static const PROGRESS		:String	= 'TaskQueue.PROGRESS';
 				public static const COMPLETE		:String	= 'TaskQueue.COMPLETE';
 				public static const CANCEL			:String	= 'TaskQueue.CANCEL';
-				public static const ERROR			:String	= 'TaskQueue.ERROR';				
+				public static const ERROR			:String	= 'TaskQueue.ERROR';
 			
 			// properties
-				protected var _scope				:*;
 				protected var _tasks				:Vector.<Function>;
 				
 			// variables
@@ -35,15 +34,35 @@ package core.managers.taskqueue
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function TaskQueue(scope:*) 
+			public function TaskQueue() 
 			{
-				_scope = scope || this;
 				clear();
 			}
 			
-			public static function create(scope:*):TaskQueue 
+			public static function create():TaskQueue 
 			{
-				return new TaskQueue(scope);
+				return new TaskQueue();
+			}
+			
+			public static function build(tasks:Array, onComplete:Function, onError:Function = null):TaskQueue
+			{
+				// set up queue
+					var queue:TaskQueue = create().when(COMPLETE, onComplete);
+					
+				// add optional handlers
+					if (onError is Function)
+					{
+						queue.when(ERROR, onError);
+					}
+					
+				// add tasks
+					for each(var task:Function in tasks)
+					{
+						queue.add(task);
+					}
+					
+				// return
+					return queue;
 			}
 		
 
@@ -78,6 +97,10 @@ package core.managers.taskqueue
 				
 			// start execution
 			
+				/**
+				 * Starts loading, dispatching a START event
+				 * @return
+				 */
 				public function start():TaskQueue 
 				{
 					dispatchEvent(new Event(START));
@@ -85,28 +108,46 @@ package core.managers.taskqueue
 					return this;
 				}
 				
-				public function next():TaskQueue
+				/**
+				 * Continues with the next task, dispatching a PROGRESS event
+				 * @param	...rest
+				 * @return
+				 */
+				public function next(...rest):TaskQueue
 				{
-					if (_index < _tasks.length - 1)
-					{
-						_tasks[++_index]();
-						dispatchEvent(new Event(PROGRESS));
-					}
-					else
-					{
-						dispatchEvent(new Event(COMPLETE));
-					}
+					onNext();
 					return this;
 				}
 				
-				public function cancel():TaskQueue 
+				/**
+				 * Signals an error, but continues with the next task, dispatching ERROR and PROGRESS events
+				 * @param	...rest
+				 * @return
+				 */
+				public function error(...rest):TaskQueue
+				{
+					onNext(true);
+					return this;
+				}
+				
+				/**
+				 * Signals an error, and stops, dispatching a CANCEL event
+				 * @param	...rest
+				 * @return
+				 */
+				public function cancel(...rest):TaskQueue 
 				{
 					dispatchEvent(new Event(CANCEL));
 					return this;
 				}
 				
-				public function stop():TaskQueue
+				/**
+				 * Signals completion, and stops, dispatching a COMPLETE event
+				 * @return
+				 */
+				public function complete():TaskQueue
 				{
+					dispatchEvent(new Event(COMPLETE));
 					return this;
 				}
 				
@@ -140,7 +181,22 @@ package core.managers.taskqueue
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			
+			protected function onNext(error:Boolean = false):void 
+			{
+				if (_index < _tasks.length - 1)
+				{
+					if (error)
+					{
+						dispatchEvent(new Event(ERROR));
+					}
+					_tasks[++_index]();
+					dispatchEvent(new Event(PROGRESS));
+				}
+				else
+				{
+					complete();
+				}
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers

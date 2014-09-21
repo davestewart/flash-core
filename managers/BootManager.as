@@ -36,8 +36,9 @@ package core.managers
 			public function BootManager(root:DisplayObjectContainer = null) 
 			{
 				// task queue
-					queue = TaskQueue.create(this)
+					queue = TaskQueue.create()
 						.when(TaskQueue.COMPLETE, onComplete)
+						//.when(TaskQueue.CANCEL, onError)
 						.when(TaskQueue.ERROR, onError);
 						
 				// flashvars
@@ -76,7 +77,7 @@ package core.managers
 			protected function onError(event:Event):void 
 			{
 				log('bootstrap failed');
-				dispatchEvent(new Event(TaskQueue.ERROR));
+				dispatchEvent(new Event(TaskQueue.ERROR)); // event ?
 				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
 			}
 			

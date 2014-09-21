@@ -175,6 +175,7 @@ package core.services {
 			public function onProgress(event:LoaderEvent):void 
 			{
 				//trace('"' + name + '" progress: ' + Math.floor(event.target.progress * 100) + '%');
+				dispatchEvent(event);
 			}
 			 
 			public function onComplete(event:LoaderEvent):void 
