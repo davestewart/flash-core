@@ -9,6 +9,10 @@ package core.utils
 	 */
 	public class TextUtils 
 	{
+		/**
+		 * Fixes textfields that have the last line clipped
+		 * @param	target
+		 */
 		public static function fix(target:TextField):void
 		{
 			// autosize
