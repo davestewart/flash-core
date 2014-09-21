@@ -2,7 +2,7 @@ package core.services
 {
 	import app.services.API;
 	import com.greensock.loading.DataLoader;
-	import core.net.rest.RestClient;
+	import core.net.rest.old.RestClient;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	

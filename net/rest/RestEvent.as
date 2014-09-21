@@ -1,40 +1,37 @@
-package core.net.rest
+package core.net.rest 
 {
 	import flash.events.Event;
 	
-	import mx.rpc.AsyncToken;
-	
-	public class RestEvent extends Event
+	/**
+	 * ...
+	 * @author Dave Stewart
+	 */
+	public class RestEvent extends Event 
 	{
-		public static const SUCCESS		:String				= 'RestEvent.SUCCESS';
-
+		
+		static public const SUCCESS		:String		= 'RestEvent.SUCCESS';
+		static public const ERROR		:String		= 'RestEvent.ERROR';
+		
+		public var event				:Event;
 		public var data					:*;
-		public var statuscode			:int;
-		public var message				:String;
-		public var token				:AsyncToken;
 		
-		public function RestEvent(
-									type			:String, 
-									data			:*					= null, 
-									statuscode		:int				= -1, 
-									message			:String				= null, 
-									token			:AsyncToken			= null, 
-									bubbles			:Boolean			= false, 
-									cancelable		:Boolean			= false)
-		{
+		public function RestEvent(type:String, data:*, event:Event, bubbles:Boolean=false, cancelable:Boolean=false) 
+		{ 
 			super(type, bubbles, cancelable);
-			
-			this.data			= data;
-			this.statuscode		= statuscode;
-			this.message		= message;
-			this.token			= token;
-		}
-
+			this.event	= event;
+			this.data	= data;
+		} 
 		
-		public override function clone():Event
-		{
-			return new RestEvent(type, data, statuscode, message, token);
+		public override function clone():Event 
+		{ 
+			return new RestEvent(type, data, event, bubbles, cancelable);
+		} 
+		
+		public override function toString():String 
+		{ 
+			return formatToString("RestEvent", "data", "event", "type", "bubbles", "cancelable", "eventPhase"); 
 		}
-	
+		
 	}
+	
 }

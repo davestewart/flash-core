@@ -1,5 +1,4 @@
-package core.net.rest 
-{
+package core.net.rest.old {
 	import mx.rpc.AsyncToken;
 	
 	/**

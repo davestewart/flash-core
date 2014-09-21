@@ -1,37 +1,21 @@
 package core.net.rest 
 {
+	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.HTTPStatusEvent;
-	import flash.events.IEventDispatcher;
 	import flash.events.IOErrorEvent;
-	import flash.events.SecurityErrorEvent;
 	import flash.net.URLLoader;
-	import flash.net.URLLoaderDataFormat;
 	import flash.net.URLRequest;
 	import flash.net.URLRequestHeader;
 	import flash.net.URLVariables;
-	import mx.messaging.messages.AsyncMessage;
 	
-	import mx.rpc.AsyncResponder;
-	import mx.rpc.AsyncToken;
-	import mx.rpc.IResponder;
-	import mx.rpc.events.FaultEvent;
-	import mx.rpc.events.ResultEvent;
-	import mx.rpc.http.HTTPService;
-
 	/**
 	 * ...
-	 * 
-	 * This class uses the folowing Flex services:
-	 * 
-	 *  - HTTPService		http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/http/HTTPService.html
-	 *  - AsycResponder		http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncResponder.html
-	 * 
 	 * @author Dave Stewart
 	 */
-	public class RestClient extends EventDispatcher
+	public class RestClient extends EventDispatcher 
 	{
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
@@ -42,33 +26,23 @@ package core.net.rest
 				public static const METHOD_DELETE		:String = 'DELETE';
 				public static const METHOD_PUT			:String = 'PUT';
 				
-			// request (content type) constants 
-				// @see http://en.wikipedia.org/wiki/Internet_media_type
+			// types constants @see http://en.wikipedia.org/wiki/Internet_media_type
+				public static const TYPE_TEXT			:String	= 'text/plain';
 				public static const TYPE_FORM			:String = 'application/x-www-form-urlencoded';
-				public static const TYPE_XML			:String = 'application/xml';
 				public static const TYPE_JSON			:String = 'application/json';
+				public static const TYPE_XML			:String = 'application/xml';
 				
-			// response (format) constants
-				public static const FORMAT_OBJECT		:String	= 'object';
-				public static const FORMAT_ARRAY		:String	= 'array';
-				public static const FORMAT_XML			:String	= 'xml';
-				public static const FORMAT_E4X			:String	= 'e4x';
-				public static const FORMAT_TEXT			:String	= 'text';
-				public static const FORMAT_JSON			:String	= 'json';
-
-			// variables
-				protected var service					:HTTPService;
-				
-			// variables
+			// properties
 				protected var _contentType				:String;
 				protected var _responseType				:String;
 				protected var _credentials				:String;
+				
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function RestClient(responseType:String = FORMAT_JSON, contentType:String = TYPE_FORM)
+			public function RestClient(responseType:String = TYPE_TEXT, contentType:String = TYPE_FORM)
 			{
 				initialize();
 				this.contentType	= contentType;
@@ -77,31 +51,25 @@ package core.net.rest
 			
 			protected function initialize():void 
 			{
-				// connection
-					service			= new HTTPService();
-					
-				// settings
-					timeout			= 15;
+				
 			}
 
-
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
 			/**
 			 * Perform a a GET call on a URL
-			 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncToken.html
 			 * @param	url
 			 * @return 
 			 */
-			public function get(url:String, data:* = null):AsyncToken 
+			public function get(url:String, data:* = null):AsyncToken
 			{
 				return send(url, data, METHOD_GET);
 			}
 			
 			/**
 			 * Perform a POST call on a URL
-			 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncToken.html
 			 * @param	url
 			 * @param	values
 			 * @return
@@ -113,7 +81,6 @@ package core.net.rest
 			
 			/**
 			 * Perform a PUT call on a URL
-			 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncToken.html
 			 * @param	url
 			 * @param	values
 			 * @return
@@ -125,7 +92,6 @@ package core.net.rest
 			
 			/**
 			 * Perform a DELETE call on a URL
-			 * @see http://help.adobe.com/en_US/FlashPlatform/reference/actionscript/3/mx/rpc/AsyncToken.html
 			 * @param	url
 			 * @param	values
 			 * @return
@@ -135,124 +101,26 @@ package core.net.rest
 				return send(url, data, METHOD_DELETE);
 			}
 		
-					
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: accessors
-		
-			
-			public function get contentType():String { return _contentType; }
-			public function set contentType(value:String):void
+			/**
+			 * 
+			 * @param	url
+			 * @param	data
+			 * @param	method
+			 * @param	onLoadComplete
+			 * @param	onLoadError
+			 * @return
+			 */
+			public function send(url:String, data:* = null, method:String = METHOD_GET, onSuccess:Function = null, onError:Function = null):AsyncToken 
 			{
-				switch(value)
-				{
-					case TYPE_FORM:
-					case TYPE_JSON:
-					case TYPE_XML:
-						service.contentType		= value;
-						//service.headers.Accept	= value;
-						break;
-						
-					default:
-						throw new Error('Invalid content-type "' +value+ '"');
-				}
-			}
-			
-			public function get responseType():String { return _responseType; }
-			public function set responseType(value:String):void 
-			{
-				_responseType = value;
-				switch (value) 
-				{
-					case FORMAT_OBJECT:
-					case FORMAT_ARRAY:
-					case FORMAT_XML:
-					case FORMAT_E4X:
-					case FORMAT_TEXT:
-						service.resultFormat			= _responseType;
-						break;
-					
-					case FORMAT_JSON:
-						service.resultFormat			= FORMAT_TEXT;
-						break;
-					
-					default:
-						throw new Error('Invalid format "' +value+ '"');
-				}
-			}
-		
-			public function get credentials():String { return _credentials }
-			public function set credentials(value:String):void
-			{
-				if(value.length)
-				{
-					service.request.authenticate	= true; // possibly not needed
-					service.headers.Authorization	= 'Basic ' + value;
-				}
-				else
-				{
-					this.service.request.authenticate = false;
-					delete service.headers.Authorization;;
-				}
-			}
-			
-			public function get timeout():int{ return this.service.requestTimeout; }
-			public function set timeout(value:int):void
-			{
-				service.requestTimeout	= value;
-			}
-			
-			
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: protected methods
-		
-			public function send(url:String, data:* = null, method:String = METHOD_GET):AsyncToken
-			{
-				// values
-					var asyncToken		:AsyncToken;
-					var responder		:IResponder;
-				
-				// methods
-					service.method		= method;
-					
-				// data
-					if (_responseType == TYPE_JSON)
-					{
-						var json:String = data ? JSON.stringify(data) : null;
-					}
-					
-				// setup
-					switch(method)
-					{
-						case METHOD_GET:
-							service.url			= url;
-							responder			= new AsyncResponder(onResult, onFault, asyncToken);
-							asyncToken			= service.send();
-							asyncToken.addResponder(responder);
-							break;
-							
-						case METHOD_POST:
-							service.url			= url;
-							responder			= new AsyncResponder(onResult, onFault, asyncToken);
-							asyncToken			= service.send(json);
-							asyncToken.addResponder(responder);
-							break;
-							
-					}
-					
-				// return
-					return asyncToken;
-			}
-			
-			public function send2(url:String, data:* = null, method:String = METHOD_GET, onResult:Function = null, onFault:Function = null):AsyncToken 
-			{
-				// debug
-					// @see http://stackoverflow.com/questions/6853095/need-to-use-httpservice-rather-than-urlrequest-to-send-data-content-type-is-mes
-					// @See http://stackoverflow.com/questions/3641148/how-to-send-put-http-request-in-flex
-					
 				// variables
 					var token			:AsyncToken;
-					var responder		:IResponder;
+					var request			:URLRequest;
+					var loader			:URLLoader;
 					var vars			:URLVariables;
+					
+				// request
+					request				= new URLRequest(url);
+					request.contentType	= _contentType;
 					
 				// data
 					if (data)
@@ -264,23 +132,23 @@ package core.net.rest
 							if (method == METHOD_GET)
 							{
 								url		+= (url.indexOf('?') > -1 ? '&' : '?') + vars.toString();
-								data	= null;
+								vars	= null;
 							}
+							
+						// add the data
+							request.data		= vars;
 					}
-					
-				// tidy up overrides
-					delete service.headers['X-HTTP-Method-Override'];
-					
+
 				// method
 					switch(method)
 					{
 						case METHOD_GET:
-								service.method		= METHOD_GET;
+								request.method = method;
 							break;
 							
 						case METHOD_POST:
-								service.method		= METHOD_POST;
-								if ( ! vars )
+								request.method = method;
+								if ( ! request.data )
 								{
 									throw new Error('Attempting to call a POST URL with no data');
 								}
@@ -288,116 +156,90 @@ package core.net.rest
 						
 						case METHOD_PUT:
 						case METHOD_DELETE:
-								// override service method
-								// @see http://stackoverflow.com/questions/3641148/how-to-send-put-http-request-in-flex
-								// @see http://www.hanselman.com/blog/HTTPPUTOrDELETENotAllowedUseXHTTPMethodOverrideForYourRESTServiceWithASPNETWebAPI.aspx
-								service.method		= METHOD_POST;
-								service.headers['X-HTTP-Method-Override'] = method;
+								request.method = METHOD_POST;
+								request.requestHeaders.push(new URLRequestHeader('X-HTTP-Method-Override', method));
 							break;
 						
 						default:
 					}
 					
-				// url
+				// set up the token
+					token	= new AsyncToken(url, method, _responseType, onSuccess, onError);
 
-				// send
-					service.url		= url;
-					token			= service.send(vars);
+				// set up the loader
+					loader	= new URLLoader();
 					
-				// debug
-					trace()
-					trace('url: ' + service.url);
-					trace('method: ' + service.method);
-					trace('contentType: ' + service.contentType);
-					trace('resultFormat: ' + service.resultFormat);
-					trace('headers: ' + getVariables(service.headers));
-					trace()
+				// global handlers
+					loader.addEventListener(IOErrorEvent.IO_ERROR, this.onError);
 					
-				// token variables
-					token.date		= new Date();
-					token.url		= service.url;
+				// local handlers
+					loader.addEventListener(Event.COMPLETE, token.onSuccess);
+					loader.addEventListener(IOErrorEvent.IO_ERROR, token.onError);
 					
-				// client callback
-					responder		= new AsyncResponder(this.onResult, this.onFault, token);
-					token.addResponder(responder);
-					
-				// request callback
-					if (onResult !== null)
-					{
-						responder	= new AsyncResponder(onResult, onFault, token);
-						token.addResponder(responder);
-					}
-
+				// load
+					loader.load(request);
+				
 				// return
 					return token;
 			}
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: accessors
+		
+			public function get contentType():String { return _contentType; }
+			public function set contentType(value:String):void 
+			{
+				_contentType = value;
+			}
+			
+			public function get responseType():String { return _responseType; }
+			public function set responseType(value:String):void 
+			{
+				_responseType = value;
+			}
+			
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: protected methods
+		
+
+					
+		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onResult(event:ResultEvent,token:Object=null):void
+			protected function onError(error:IOErrorEvent):void 
 			{
-				trace('Reached onResult handler');
-				var data:* = event.result;
-				if (_responseType === FORMAT_JSON)
-				{
-					data = JSON.parse(String(data));
-				}
-				dispatchEvent(new RestEvent(RestEvent.SUCCESS, data, event.statusCode, null, event.token));
-			
+				trace('RestClient error, event.target.data: ', error.target.data);
+				trace(error);
 			}
-			
-			protected function onFault(event:FaultEvent, token:Object = null):void
-			{
-				trace('Reached onfault handler');
-				switch(event.statusCode)
-				{
-					
-					case 401: // access denied
-						dispatchEvent(new RestErrorEvent(RestErrorEvent.ACCESS_DENIED, event, event.statusCode, event.fault.faultString, event.token));
-						break;
-						
-					
-					case 201: // item created
-					case 422: // already exists
-						dispatchEvent(new RestErrorEvent(RestErrorEvent.FAILURE, event, event.statusCode, String(event.message.body), event.token));
-						break;
-					
-					// unknown
-					default:
-						dispatchEvent(new RestErrorEvent(RestErrorEvent.FAILURE, null, event.statusCode, event.fault.faultString, event.token));
-						break;
-				}
-
-				trace(event.fault.faultString);
-				
-			}
-			
-			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
 			protected function getVariables(data:*):URLVariables
 			{
-				if (data is URLVariables)
-				{
-					return data.toString().length > 0 ? data : null;
-				}
-				else if (data is Object)
-				{
-					var hasdata		:Boolean;
-					var vars		:URLVariables = new URLVariables();
-					for (var name:String in data)
+				// URL variables
+					if (data is URLVariables)
 					{
-						hasdata = true;
-						vars[name] = data[name];
+						return data.toString().length > 0 ? data : null;
 					}
-				}
-				return hasdata ? vars : null;
+					
+				// plain object
+					else
+					{
+						var hasData		:Boolean;
+						var vars		:URLVariables = new URLVariables();
+						for (var name:String in data)
+						{
+							hasData = true;
+							vars[name] = data[name];
+						}
+					}
+				
+				// return
+					return hasData ? vars : null;
 			}
-			
 			
 	}
 
