@@ -42,18 +42,17 @@ package core.media.audio
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function AudioPlayer(url:String = null) 
+			public function AudioPlayer(url:String = null, autoplay:Boolean = true, tick:int = 100) 
 			{
 				// setup timer for progress events
-					timer = new Timer(100);
+					timer = new Timer(tick);
 					timer.addEventListener(TimerEvent.TIMER, onTimer);
 					
 				// load
 					if (url)
 					{
-						load(url);
+						load(url, autoplay);
 					}
-					
 			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -61,24 +60,36 @@ package core.media.audio
 		
 			public function load(url:String, autoplay:Boolean = true):void 
 			{
-				request 	= new URLRequest(url);
-				sound		= new Sound(request);
-				if (autoplay)
-				{
-					play();
-				}
+				// stop any previous sounds
+					if (channel)
+					{
+						stopChannel();
+					}
+					
+				// load new sound
+					request 	= new URLRequest(url);
+					sound		= new Sound(request);
+					if (autoplay)
+					{
+						play();
+					}
 			}
 			
 			public function play(seconds:Number = 0):void
 			{
-				if (channel)
-				{
-					stopChannel();
-				}
-				_state		= PLAYING;
-				channel		= sound.play(_position || seconds * 1000);
-				channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
-				timer.start();
+				// stop any previous sond from playing
+					if (channel)
+					{
+						stopChannel();
+					}
+					
+				// update state
+					_state		= PLAYING;
+					
+				// play the sound and add events
+					channel		= sound.play(_position || seconds * 1000);
+					channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+					timer.start();
 			}
 			
 			public function pause():void
