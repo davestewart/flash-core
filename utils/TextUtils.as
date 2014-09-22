@@ -9,6 +9,41 @@ package core.utils
 	 */
 	public class TextUtils 
 	{
+		
+		/**
+		 *
+		 * @param	tf
+		 * @param	size
+		 * @param	color
+		 * @param	font
+		 * @return
+		 */
+		public static function initializeText(tf:TextField = null, size:int = 11, color:Number = 0x000000, fontName:String = 'Arial'):TextFormat
+		{
+			// text format
+				var fmt:TextFormat		= new TextFormat(fontName, size, color);
+				fmt.align				= TextFormatAlign.LEFT;
+				fmt.color				= color;
+				fmt.size				= size;
+				
+			// if a textfield is passed in, update it
+				if (tf != null)
+				{
+					tf.autoSize				= TextFieldAutoSize.LEFT;
+					tf.antiAliasType		= AntiAliasType.ADVANCED;
+					tf.thickness			= -50;
+					tf.sharpness			= 300;
+					tf.embedFonts			= true;
+					tf.selectable			= false;
+					tf.textColor			= color;
+					tf.defaultTextFormat	= fmt;
+					tf.setTextFormat(fmt);
+				}
+				
+			// return the textformat for us on other textfields
+				return fmt;
+		}
+
 		/**
 		 * Fixes textfields that have the last line clipped
 		 * @param	target
