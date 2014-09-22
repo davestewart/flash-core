@@ -90,7 +90,7 @@ package core.managers.taskqueue
 				
 				public function clear():TaskQueue 
 				{
-					_index	= 0;
+					_index	= -1;
 					_tasks	= new Vector.<Function>;
 					return this;
 				}

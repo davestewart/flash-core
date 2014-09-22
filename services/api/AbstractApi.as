@@ -34,7 +34,7 @@ package core.services.api
 				// do not insantiate this class directly!
 			}
 		
-			public function initialize(config:XML, env:String = 'dev'):void
+			public function initialize(config:XML, env:String = 'dev'):Boolean
 			{
 				// debug
 					trace('initializing API...');
@@ -43,6 +43,9 @@ package core.services.api
 					_config			= config;
 					_env			= env;
 					_server			= getServerXML(env);
+					
+				// return
+					return true;
 			}
 			
 		
