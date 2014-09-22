@@ -61,9 +61,14 @@ package core.media.video
 					initialize();
 					
 				// connect
-					if (connection)
+					if (connection is NetConnection)
 					{
 						this.connection = connection;
+					}
+					else
+					{
+						this.connection = new NetConnection();
+						this.connection.connect(null);
 					};
 			}
 		
@@ -83,6 +88,7 @@ package core.media.video
 				// video
 					video			= new Video(width, height);
 					video.name		= 'video';
+					video.smoothing	= true
 					container.addChild(video);
 			
 				// update
