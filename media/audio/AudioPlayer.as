@@ -8,6 +8,7 @@ package core.media.audio
 	import flash.media.SoundChannel;
 	import flash.net.URLRequest;
 	import flash.utils.Timer;
+	import core.media.events.MediaEvent;
 	
 	/**
 	 * ...
@@ -26,6 +27,7 @@ package core.media.audio
 				public static const PLAYING		:String	= 'AudioPlayer.PLAYING';
 				public static const PAUSED		:String	= 'AudioPlayer.PAUSED';
 				public static const STOPPED		:String	= 'AudioPlayer.STOPPED';				
+				public static const CLOSED		:String	= 'AudioPlayer.CLOSED';				
 			
 			// properties
 				protected var request			:URLRequest;
@@ -47,6 +49,9 @@ package core.media.audio
 				// setup timer for progress events
 					timer = new Timer(tick);
 					timer.addEventListener(TimerEvent.TIMER, onTimer);
+					
+				// state
+					_state = STOPPED;
 					
 				// load
 					if (url)
@@ -104,6 +109,20 @@ package core.media.audio
 				play(_position || 0);
 			}
 			
+			public function stop():void 
+			{
+				pause();
+				_state		= STOPPED;
+				position	= 0;
+			}
+			
+			public function close():void 
+			{
+				_state
+				stopChannel();
+				sound.close();
+			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
@@ -112,19 +131,39 @@ package core.media.audio
 			
 				public function get length():Number { return sound.length / 1000; }
 				
-				public function get position():Number { return length == 0 ? 0 : channel.position; }
+				public function get position():Number 
+				{ 
+					return length == 0 
+						? 0 
+						: channel 
+							? channel.position 
+							: 0;
+				}
 				public function set position(value:Number):void
 				{
-					play(value / 1000);
+					state == PLAYING
+						? play(value / 1000)
+						: _position = value;
+					onTimer();
 				}
 				
 				public function get seconds():Number { return channel.position / 1000; }
 				public function set seconds(value:Number):void
 				{
-					play(value);
+					state == PLAYING
+						? play(value)
+						: _position = value * 1000;
+					onTimer();
 				}
 				
-				public function get progress():Number { return sound.length == 0 ? 0 : channel.position / sound.length; }
+				public function get progress():Number 
+				{
+					return sound.length == 0 || state == STOPPED
+						? 0 
+						: channel 
+							? channel.position / sound.length 
+							: 0;
+				}
 				
 			// behaviour
 			
@@ -161,15 +200,15 @@ package core.media.audio
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onTimer(event:TimerEvent):void 
+			protected function onTimer(event:TimerEvent = null):void 
 			{
-				dispatchEvent(new AudioEvent(AudioEvent.PROGRESS));
+				dispatchEvent(new MediaEvent(MediaEvent.PROGRESS));
 			}
 		
 			protected function onPlaybackComplete(event:Event):void 
 			{
 				// events
-					dispatchEvent(new AudioEvent(AudioEvent.COMPLETE));
+					dispatchEvent(new MediaEvent(MediaEvent.COMPLETE));
 					
 				// state
 					_position	= 0;

@@ -1,4 +1,5 @@
-package core.media.video {
+package core.media.events 
+{
 	import flash.events.Event;
 	
 	/**

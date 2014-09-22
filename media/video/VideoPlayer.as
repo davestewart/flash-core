@@ -1,6 +1,7 @@
 package core.media.video 
 {
 	import flash.display.Sprite;
+	import flash.events.Event;
 	import flash.events.NetStatusEvent;
 	import flash.media.Video;
 	import flash.net.NetConnection;
@@ -104,6 +105,10 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
+			/**
+			 * Play the stream, but pause it immediately upon loading
+			 * @param	streamName
+			 */
 			public function load(streamName:String):void 
 			{
 				// set name
@@ -114,6 +119,16 @@ package core.media.video
 					
 				// attach the NetStream
 					video.attachNetStream(_stream);
+					
+				// callback
+					function onLoad(event:NetStatusEvent):void 
+					{
+						if (event.info.code == 'NetStream.Play.Reset')
+						{
+							_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
+							pause();
+						}
+					}
 					
 				// bind to the initial playback event
 					_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoad);
@@ -177,6 +192,7 @@ package core.media.video
 					_active	= false;
 					_paused	= false;
 					_stream.pause();
+					dispatchEvent(new Event(Event.COMPLETE));
 				}
 				//close();
 			}
@@ -299,7 +315,10 @@ package core.media.video
 			{
 				// forward event
 					dispatchEvent(event);
-				
+					
+				// debug
+					//trace('>' + event.info.code);
+					
 				// status
 					_status = event.info.description;
 					
@@ -318,22 +337,18 @@ package core.media.video
 					}
 			}
 			
-			protected function onLoad(event:NetStatusEvent):void 
-			{
-				if (event.info.code == 'NetStream.Play.Reset')
-				{
-					_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
-					pause();
-				}
-			}
-		
 			/**
-			 * Called by the NetStream client
+			 * Called by the NetStream client, playback only
 			 * @param	data
 			 */
 			public function onPlayStatus(event:Object) :void
 			{
+				trace(event.code);
 				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, event));
+				if (event.code == 'NetStream.Play.Complete')
+				{
+					stop();
+				}
 			}						
 			
 			/**
