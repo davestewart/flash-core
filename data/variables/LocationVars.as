@@ -6,7 +6,7 @@ package core.data.variables
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class URLVars
+	public class LocationVars
 	{
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: Variables
