@@ -65,15 +65,15 @@ package core.utils
 		 */
 		public static function formatToString(instance:*, className:String, names:String):String
 		{
-			// trim and split names list on non-word characters
-				var props	:Array	= names.replace(/(^\W+|\W+$)/g, '').split(/\W+/g);
+			// variables
+				var props	:Array	= names.match(/\w+/g);
+				var pairs	:Array	= [];
 				
 			// loop through supplied properties and create outout
-				var pairs	:Array	= [];
 				for each(var prop:String in props)
 				{
 					var value	:*			= instance[prop];
-					pairs.push(prop + '= "' + value.replace('"', '\"') + '"');
+					pairs.push(prop + '="' + String(value).replace('"', '\"') + '"');
 				}
 				
 			// return

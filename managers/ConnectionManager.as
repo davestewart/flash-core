@@ -115,7 +115,7 @@ package core.managers
 			protected function onConnectionStatus(event:NetStatusEvent):void
 			{
 				// debug
-					trace('CONNECTION MANAGER: ' + event.info.code+' (' + event.info.description + ')');
+					log(event.info.code+' (' + event.info.description + ')');
 					
 				// forward event
 					dispatchEvent(event);
@@ -124,12 +124,13 @@ package core.managers
 					switch(event.info.code)
 					{
 						case NetStatus.NetConnection_Connect_Success:
+							log('Connected to: ' + _settings.server);
 							dispatchEvent(new Event(Event.CONNECT));
 							return;
 						
 						case NetStatus.NetConnection_Connect_Failed:
+							log('Not connected to: ' + _settings.server);
 							dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
-							trace("Connection failed: Try rtmp://[server ip]/[app name]");
 							break;
 						
 						case NetStatus.NetConnection_Connect_Rejected:
@@ -145,6 +146,10 @@ package core.managers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
+			protected function log(message:String):void 
+			{
+				trace('ConnectionManager: ' + message);
+			}
 			
 	}
 

@@ -167,6 +167,9 @@ package core.net.rest
 				// add token event handlers
 					loader.addEventListener(Event.COMPLETE, token.onSuccess);
 					loader.addEventListener(IOErrorEvent.IO_ERROR, token.onError);
+				
+				// debug
+					trace('RestClient: ' + method + ' > ' + url);
 					
 				// load
 					loader.load(request);
