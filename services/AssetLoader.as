@@ -50,21 +50,64 @@ package core.services {
 				queue = new LoaderMax({name:name, onProgress:onProgress, onComplete:onComplete, onError:onError});
 			}
 			
+			/**
+			 * Convenience method to load one or many URLs in one shot
+			 * 
+			 * @param	url
+			 * @param	callback
+			 * @return
+			 */
+			static public function load(src:*, onComplete:Function, onProgress:Function = null):AssetLoader
+			{
+				// variables
+					var name	:String			= 'asset';
+					var loader	:AssetLoader	= new AssetLoader();
+					
+				// callbacks
+					function onOneComplete(event:LoaderEvent):void
+					{
+						onComplete(loader.queue.getContent(src));
+					}
+					
+					function onManyComplete(event:Event):void
+					{
+						onComplete(loader);
+					}
+					
+				// setup
+					src is Array
+						? loader
+							.addMany(src)
+							.addEventListener(Event.COMPLETE, onManyComplete)
+						: loader
+							.add(src, name, onOneComplete);
+						
+				// progress
+					if (onProgress != null)
+					{
+						loader.addEventListener(LoaderEvent.PROGRESS, onProgress); 
+					}
+				
+				// load
+					return loader.load();
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
 			// starting and stopping
 			
-				public function clear():void 
+				public function clear():AssetLoader 
 				{
 					queue.empty();
+					return this;
 				}
 				
-				public function load():void 
+				public function load():AssetLoader 
 				{
 					//trace('Starting load of "' + name + '" (' +queue.getChildren().length+ ' items)');
 					queue.load();
+					return this;
 				}
 				
 			// loading
@@ -75,17 +118,19 @@ package core.services {
 					{
 						for each(var url:String in urls)
 						{
-							add(url);
+							add(url, '');
 						}
 					}
 					return this;
 				}
 				
-				public function add(url:String, name:String = null):*
+				public function add(url:String, name:String = null, onComplete:Function = null):*
 				{
 					return /\.xml$/.test(url)
-						? addXML(url, name)
-						: addImage(url, name);
+						? addXML(url, name, onComplete)
+						: /\.json$/.test(url)
+							? addJSON(url, name, onComplete)
+							: addImage(url, name, onComplete);
 				}
 							
 				public function addImage(url:String, name:String = null, onComplete:Function = null):ImageLoader
@@ -95,19 +140,26 @@ package core.services {
 					return queue.append(loader) as ImageLoader;
 				}
 				
-				public function addXML(url:String, name:String = null):XMLLoader
+				public function addXML(url:String, name:String = null, onComplete:Function = null):XMLLoader
 				{
-					var loader:XMLLoader = new XMLLoader(url, { name:name } );
-					return queue.append(loader) as XMLLoader
+					var loader:XMLLoader = new XMLLoader(url, { name:name, onComplete:onComplete } );
+					return queue.append(loader) as XMLLoader;
 				}
 				
-				public function addJSON(url:String, name:String = null):DataLoader
+				public function addJSON(url:String, name:String = null, onComplete:Function = null):DataLoader
 				{
-					var loader:DataLoader= new DataLoader(url, { name:name } );
-					return queue.append(loader) as DataLoader
+					var loader:DataLoader= new DataLoader(url, { name:name, onComplete:onComplete } );
+					return queue.append(loader) as DataLoader;
 				}
 				
 			// retrieving data
+			
+				public function get(src:*):*
+				{
+					return typeof src == 'number'
+						? queue.content[src]
+						: queue.getContent(src);
+				}
 				
 				public static function getBitmap(url:String):Bitmap 
 				{
