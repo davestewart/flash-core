@@ -160,7 +160,9 @@ package core.data.validation {
 		
 				public function required(value:*):Boolean 
 				{
-					return ! (value === undefined || value === null || trim(value).length == 0);
+					return value is Boolean
+						? value === true
+						: ! (value === undefined || value === null || trim(value).length == 0);
 				}
 		
 				public function invalid(value:String, arg:int):Boolean 
@@ -173,8 +175,7 @@ package core.data.validation {
 		
 				public function email(value:String):Boolean
 				{
-					var rx:RegExp = new RegExp("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?");
-					return rx.test(value);
+					return /^[^@]+@[^@]{2,}\.[^@]{2,}$/.test(value);
 				}
 		
 				public function username(value:String):Boolean 
@@ -184,7 +185,7 @@ package core.data.validation {
 		
 				public function password(value:String):Boolean 
 				{
-					return minlength(value, 6, 24) && /^[a-z0-9_!£$%^&~]$/i.test(value);
+					return rangelength(value, 6, 24) && /^[a-z0-9_!£$%^&~]$/i.test(value);
 				}			
 		
 				public function url(value:String):Boolean 
@@ -199,7 +200,8 @@ package core.data.validation {
 		
 				public function postcode(value:String):Boolean 
 				{
-					return /(GIR 0AA)|((([A-Z-[QVX]][0-9][0-9]?)|(([A-Z-[QVX]][A-Z-[IJZ]][0-9][0-9]?)|(([A-Z-[QVX]][0-9][A-HJKSTUW])|([A-Z-[QVX]][A-Z-[IJZ]][0-9][ABEHMNPRVWXY])))) [0-9][A-Z-[CIKMOV]]{2})/i.test(value)
+					var rx:RegExp = new RegExp('^(GIR ?0AA|[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9ABEHMNPRV-Y])?)|[0-9][A-HJKPS-UW]) ?[0-9][ABD-HJLNP-UW-Z]{2})$', 'i');
+					return rx.test(value);
 				}
 
 				public function creditcard(value:String):Boolean
@@ -305,7 +307,7 @@ package core.data.validation {
 	
 			// constraints
 		
-				public function equalto(value:String, arg:int):Boolean 
+				public function equalto(value:String, arg:String):Boolean 
 				{
 					return value == arg;
 				}			
@@ -313,12 +315,12 @@ package core.data.validation {
 	
 			// custom
 		
-				public function question(value:String, arg:int):Boolean 
+				public function question(value:String, arg:String):Boolean 
 				{
 					return value == arg;
 				}			
 		
-				public function captcha(value:String, arg:int):Boolean 
+				public function captcha(value:String, arg:String):Boolean 
 				{
 					return value == arg;
 				}			
