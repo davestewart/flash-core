@@ -19,7 +19,6 @@ package core.net.rest
 			
 			// properties
 				protected var _server		:String;	
-				protected var _path			:String;	
 				
 			// variables
 				
@@ -27,26 +26,17 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function RestService(server:String, path:String = '', reponseType:String = RestClient.TYPE_JSON, contentType:String = RestClient.TYPE_FORM)
+			public function RestService(server:String, reponseType:String = RestClient.TYPE_JSON, contentType:String = RestClient.TYPE_FORM)
 			{
 				// properties
 					this.server		= server;
-					this.path		= path;
 					
 				// objects
 					_client			= new RestClient(reponseType, contentType);
 					_client.addEventListener(RestEvent.SUCCESS, onSuccess);
 					_client.addEventListener(RestEvent.ERROR, onError);
-					
-				// initialize
-					initialize();
 			}
 		
-			protected function initialize():void 
-			{
-				
-			}
-			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
@@ -66,20 +56,11 @@ package core.net.rest
 				_server = value;
 			}
 			
-			/**
-			 * Set or get the name of the service, i.e. "users"
-			 */
-			public function get path():String { return _path; }
-			public function set path(value:String):void 
-			{
-				_path = value;
-			}
-			
 			public function get client():RestClient { return _client; }
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: protected methods
+		// { region: rest methods
 		
 			protected function get(endpoint:String, data:* = null, onSuccess:Function = null, onError:Function = null):AsyncToken 
 			{
@@ -101,40 +82,56 @@ package core.net.rest
 				return _client.del(getURL(endpoint, data), data, onSuccess, onError);
 			}
 			
-			protected function getURL(endpoint:String, data:*):String 
+			
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: url-building functions
+		
+			protected function getURL(endpoint:String, params:*):String 
 			{
-				// replacement function
-					function replace(input:String, a:String, b:String, index:int, all:String):String
-					{
-						return data[a || b] || a || b;
-					}
-					
 				// variables
-					var server		:String		= _server;
-					var path		:String		= _path;
-					var fullpath	:String;
-					
-				// set up the sever
-					server		= server
-									.replace(/\/*$/, '/'); // add a trailing slash to the server
-					
-				// get the name, if there is one
-					if (path != '')
-					{
-						path	= path
-									.replace(/^\/+/g, '') // remove any leading slash from the service name
-									.replace(/\/*$/g, '/') // add a trailing slash to the service name
-					}
-						
-				// build end point
-					fullpath	= (path + endpoint)
-									.replace(/\/+/, '/') // replace any double-slashes that might have crept in
-									.replace(/{(\w+)}|:(\w+)\b/g, replace); // replace placeholders with values
+					var server	:String		= _server.replace(/\/*$/, '/'); // add trailing slash
+					var path	:String		= getPath(endpoint, params).replace(/^\/+/, ''); // trim leading slash
 					
 				// return
-					return server + fullpath;
+					return server + path;
 			}
 			
+			protected function getPath(path:String, ...params):String 
+			{
+				// variables
+					var data	:Object;
+					var param	:String;
+					var rx		:RegExp;
+					
+				// replace by property
+					if (typeof params[0] == 'object')
+					{
+						function replaceFn(input:String, a:String, b:String, index:int, all:String):String
+						{
+							return a in data
+									? data[a]
+									: b in data
+										? data[b]
+										: input;
+						}
+						data = params[0];
+						path = path.replace(/{(\w+)}|:(\w+)\b/g, replaceFn);
+					}
+					
+				// replace by index
+					else
+					{
+						while (params.length)
+						{
+							param	= params.shift();
+							rx		= /{(\w+)}|:(\w+)\b/;
+							path	= path.replace(rx, param);
+						}
+					}
+					
+				// return the result
+					return path;
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
@@ -155,7 +152,7 @@ package core.net.rest
 		
 			override public function toString():String
 			{
-				return '[object Service server="' +server+ '" path="' +path+ '" responseType="' +client.responseType+ '" contentType="' +client.contentType+ '"]';
+				return '[object Service server="' +server+ '" responseType="' +client.responseType+ '" contentType="' +client.contentType+ '"]';
 			}
 	}
 
