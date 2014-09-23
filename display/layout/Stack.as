@@ -12,7 +12,7 @@ package core.display.layout
 	 * Override in subclasses to change show/hide method, for example, to animate a cross-fade
 	 * @author Dave Stewart
 	 */
-	public class Stack extends Sprite
+	public class Stack extends Element
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -27,6 +27,7 @@ package core.display.layout
 			// properties
 				protected var elements		:Vector.<DisplayObject>;
 				protected var element		:DisplayObject;
+				protected var lastElement	:DisplayObject;
 				
 			// variables
 				
@@ -36,7 +37,7 @@ package core.display.layout
 		
 			public function Stack(parent:DisplayObjectContainer = null) 
 			{
-				parent.addChild(this);
+				super(parent);
 				elements = new Vector.<DisplayObject>;
 			}
 
@@ -67,13 +68,13 @@ package core.display.layout
 					if (elements.length == 1)
 					{
 						element = child;
+						_showElement(child, true);
 					}
 					
 				// if more than one element has been added, hide newly-added elements
 					else
 					{
-						child.visible = false;
-						child.alpha = 0;
+						_hideElement(child, true);
 					}
 					return child;
 			}
@@ -83,6 +84,7 @@ package core.display.layout
 				var element:DisplayObject = getElement(id);
 				if (element)
 				{
+					_showElement(element);
 					var index:int = elements.indexOf(element);
 					elements.splice(index, 1);
 				}
@@ -102,7 +104,30 @@ package core.display.layout
 				}
 				return this;
 			}
-		
+			
+			/**
+			 * Gets an element by name or index
+			 * @param	id
+			 * @return 
+			 */
+			public function getElement(id:*):DisplayObject
+			{
+				var element:DisplayObject = id is int
+					? elements[id]
+					: id is String
+						? getChildByName(id)
+						: id is DisplayObject
+							? id
+							: null;
+							
+				if (element == null)
+				{
+					throw new Error('Invalid element identifier:' + id);
+				}
+				
+				return element;
+			}
+			
 			/**
 			 * Shows a new element, and automatically hides the current one
 			 * @param	id
@@ -124,8 +149,11 @@ package core.display.layout
 						_hideElement(this.element);
 					}
 					
-				// update properties and show element
-					this.element = element;
+				// update properties
+					this.lastElement	= this.element;
+					this.element		= element;
+					
+				// show element
 					_showElement(element);
 					dispatchEvent(new Event(Event.CHANGE));
 			}
@@ -143,7 +171,7 @@ package core.display.layout
 				}
 			}
 			
-			public function clear():void 
+			override public function clear():void 
 			{
 				while (numChildren) 
 				{
@@ -190,18 +218,22 @@ package core.display.layout
 						? elements.indexOf(element)
 						: -1;
 			}
+			
+			public function get length():int
+			{
+				return numChildren;
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-		
-			protected function _showElement(element:DisplayObject):void
+			protected function _showElement(element:DisplayObject, immediate:Boolean = false):void
 			{
 				element.visible = true;
 				element.alpha	= 1;
 			}
 		
-			protected function _hideElement(element:DisplayObject):void
+			protected function _hideElement(element:DisplayObject, immediate:Boolean = false):void
 			{
 				element.visible = false;
 				element.alpha	= 0;
@@ -220,29 +252,6 @@ package core.display.layout
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			/**
-			 * Gets an element by name or index
-			 * @param	id
-			 * @return 
-			 */
-			protected function getElement(id:*):DisplayObject
-			{
-				var element:DisplayObject = id is int
-					? elements[id]
-					: id is String
-						? getChildByName(id)
-						: id is DisplayObject
-							? id
-							: null;
-							
-				if (element == null)
-				{
-					throw new Error('Invalid element identifier:' + id);
-				}
-				
-				return element;
-			}
-			
 			
 	}
 

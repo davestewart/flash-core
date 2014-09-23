@@ -16,7 +16,7 @@ package core.services {
 	 * 
 	 * @author Dave Stewart
 	 */
-	public class Loader extends EventDispatcher 
+	public class AssetLoader extends EventDispatcher 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -39,7 +39,7 @@ package core.services {
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Loader(name:String = 'loader') 
+			public function AssetLoader(name:String = 'loader') 
 			{
 				this.name = name;
 				initialize();
@@ -69,7 +69,7 @@ package core.services {
 				
 			// loading
 			
-				public function addMany(urls:*):Loader 
+				public function addMany(urls:*):AssetLoader 
 				{
 					if (urls is XMLList || urls is Array)
 					{

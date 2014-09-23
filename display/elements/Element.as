@@ -73,6 +73,16 @@ package core.display.elements
 				return child;
 			}
 			
+			public function addChildren(...elements):DisplayObject 
+			{
+				for each(var element:DisplayObject in elements)
+				{
+					super.addChild(element);
+				}
+				invalidate();
+				return this;
+			}
+			
 			public function clear():void
 			{
 				while (numChildren > 0)

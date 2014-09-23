@@ -1,5 +1,4 @@
-package core.display.elements 
-{
+package core.display.images {
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.Loader;

@@ -1,7 +1,7 @@
-package core.display.elements 
-{
+package core.display.images {
 	import com.greensock.layout.AutoFitArea;
 	import com.greensock.layout.ScaleMode;
+	import core.display.elements.Element;
 	import flash.display.Bitmap;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -12,7 +12,7 @@ package core.display.elements
 	import flash.net.URLRequest;
 	
 	/**
-	 * Creates an Image element, optionally 
+	 * A container class for BitMaps, with built-in loading, scaling and cropping functionality
 	 * 
 	 * @author Dave Stewart
 	 */
@@ -27,20 +27,27 @@ package core.display.elements
 				public static const	FIT		:String		= 'Image.FIT';
 		
 			// properties
-				protected var loader	:Loader;
-				protected var image		:DisplayObject;
-				protected var area		:AutoFitArea;
-				
-			// variables
-				protected var _src		:*;
-				protected var _bounds	:Rectangle;
-				protected var _mode		:String;
-				protected var _crop		:Boolean;
+				protected var loader		:Loader;
+				protected var image			:DisplayObject;
+				protected var area			:AutoFitArea;
+					
+			// variables	
+				protected var _src			:*;
+				protected var _bounds		:Rectangle;
+				protected var _mode			:String;
+				protected var _crop			:Boolean;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
+			/**
+			 * 
+			 * @param	src
+			 * @param	parent
+			 * @param	mode
+			 * @param	crop
+			 */
 			public function Image(src:*, parent:DisplayObjectContainer = null, mode:String = '', crop:Boolean = true)
 			{
 				_src		= src;

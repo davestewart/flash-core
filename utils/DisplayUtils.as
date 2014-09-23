@@ -1,5 +1,6 @@
 ﻿package core.utils 
 {
+	import assets.layout.BackgroundAsset;
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -18,6 +19,114 @@
 	 */
 	public class DisplayUtils
 	{
+		
+		public static function replace(target:*, properties:String, Def:Class, ...params):*
+		{
+			return match(ObjectUtils.create(Def, params), target, properties);
+		}
+
+		public static function match(source:*, target:DisplayObject, properties:*):* 
+		{
+			
+			// ---------------------------------------------------------------------------------------------------------
+			// setup
+
+				// variables
+					var	src		:DisplayObject;
+					var	trg		:DisplayObject;
+					
+				// parameters
+					var props	:Array = properties is Array ? properties : String(properties).match(/\w+/g);
+					
+					
+			// ---------------------------------------------------------------------------------------------------------
+			// many elements passed in
+			
+				if (source is Array)
+				{
+					for each(src in source)
+					{
+						match(src, target, props);
+					}
+					return source[0]; // return the first item
+				}
+				
+			
+			// ---------------------------------------------------------------------------------------------------------
+			// one element passed in
+
+				// variables
+					src		= source;
+					trg		= target;
+					
+				// do the matching
+					for each(var prop:String in props)
+					{
+						switch(prop)
+						{
+							// parent
+								case 'parent':
+									trg.parent.addChild(src);
+									break;	
+									
+							// index
+								case 'index':
+									(src.parent || trg.parent).addChildAt(src, trg.parent.getChildIndex(trg));
+									break;	
+									
+							// hide
+								case 'hide':
+									trg.visible		= false;
+									break;	
+									
+							// position
+								case 'pos':
+								case 'position':
+									src.x			= trg.x;
+									src.y			= trg.y;
+									break;	
+									
+							// scale
+								case 'scale':
+									src.scaleX		= trg.scaleX;
+									src.scaleY		= trg.scaleY;
+									break;	
+									
+							// size	
+								case 'size':	
+									src.width		= trg.width;
+									src.height		= trg.height;
+									break;	
+									
+							// bounds
+								case 'bounds':
+									src.x			= trg.x;
+									src.y			= trg.y;
+									src.width		= trg.width;
+									src.height		= trg.height;
+								break;	
+									
+							// size proportional	
+								case 'WIDTH':	
+									src.width		= trg.width;
+									src.scaleY		= src.scaleX;
+									break;
+									
+								case 'HEIGHT':	
+									src.width		= trg.width;
+									src.scaleX		= src.scaleY;
+									break;
+								
+							// anything else
+								default:
+									src[prop]		= trg[prop];
+						}
+					}
+					
+				// return
+					return source;
+		}
+		
 		/**
 		 * Draws a rectangle around the display object in case you can't see it on the stage
 		 * @param	element

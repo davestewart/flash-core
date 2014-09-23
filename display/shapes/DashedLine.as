@@ -1,4 +1,5 @@
-package {
+package core.display.shapes
+{
 	import flash.geom.Point;
 	import flash.display.LineScaleMode;
 	import flash.display.Graphics;

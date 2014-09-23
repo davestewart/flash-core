@@ -77,6 +77,15 @@ package core.managers.taskqueue
 					return this;
 				}
 				
+				public function addMany(...tasks):TaskQueue 
+				{
+					for each(var task:Function in tasks)
+					{
+						add(task);
+					}
+					return this;
+				}
+				
 				public function remove(task:*):void 
 				{
 					var index:int = task is Function
@@ -153,9 +162,9 @@ package core.managers.taskqueue
 				
 			// event handlers
 			
-				public function then(task:Function):TaskQueue
+				public function then(task:Function, skip:Boolean = false):TaskQueue
 				{
-					return add(task);
+					return skip ? this : add(task);
 				}
 			
 				public function when(event:String, handler:Function):TaskQueue 

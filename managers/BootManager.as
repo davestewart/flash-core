@@ -1,7 +1,7 @@
 package core.managers 
 {
 	import core.data.variables.FlashVars;
-	import core.services.Loader;
+	import core.services.AssetLoader;
 	import core.managers.taskqueue.TaskQueue;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.ErrorEvent;
@@ -24,7 +24,7 @@ package core.managers
 				protected var queue				:TaskQueue;
 				
 			// loading
-				protected var loader			:Loader;
+				protected var loader			:AssetLoader;
 				
 			// data
 				public var flashvars			:FlashVars;
@@ -49,6 +49,12 @@ package core.managers
 					
 			}
 			
+			public function add(task:Function):BootManager
+			{
+				queue.then(task);
+				return this;
+			}
+			
 			public function start():void 
 			{
 				queue.start();
@@ -60,7 +66,7 @@ package core.managers
 				{
 					loader.queue.dispose();
 				}
-				loader = new Loader();
+				loader = new AssetLoader();
 			}
 			
 		

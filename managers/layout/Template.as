@@ -1,4 +1,4 @@
-package core.utils 
+package core.managers.layout 
 {
 	import core.utils.LayoutUtils;
 	import flash.display.DisplayObject;
