@@ -4,6 +4,7 @@ package core.net.rest
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.events.IOErrorEvent;
+	import flash.net.URLLoader;
 	import flash.net.URLVariables;
 	
 	/**
@@ -18,23 +19,25 @@ package core.net.rest
 		// { region: variables
 		
 			// properties
-				protected var _data		:*;
-				protected var _date		:Date;
-				protected var _url		:String;
-				protected var _format	:String;
-				protected var _method	:String;
+				protected var _data			:*;
+				protected var _date			:Date;
+				protected var _url			:String;
+				protected var _responseType	:String;
+				protected var _method		:String;
+				protected var _loader		:URLLoader;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function AsyncToken(url:String, method:String, format:String, onSuccess:Function = null, onError:Function = null) 
+			public function AsyncToken(url:String, method:String, format:String, loader:URLLoader, onSuccess:Function = null, onError:Function = null) 
 			{
 				// properties
+					_date		= new Date();
 					_url		= url;
 					_method		= method;
-					_format		= format;
-					_date		= new Date();
+					_responseType		= format;
+					_loader		= loader;
 					
 				// handlers
 					if (onSuccess !== null)
@@ -53,13 +56,26 @@ package core.net.rest
 		
 			public function get date():Date { return _date; }
 
-			public function get data():* { return _data; }
+			public function get loader():URLLoader { return _loader; }
 			
 			public function get url():String { return _url; }
 			
-			public function get format():String { return _format; }
-			
 			public function get method():String { return _method; }
+			
+			public function get data():* { return _data; }
+			
+			public function get responseType():String { return _responseType; }
+			
+			public function get format():String
+			{
+				switch(_responseType)
+				{
+					case RestClient.TYPE_TEXT:	return 'text';
+					case RestClient.TYPE_JSON:	return 'json';
+					case RestClient.TYPE_XML:	return 'xml';
+				}
+				return 'object';
+			}
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -67,41 +83,48 @@ package core.net.rest
 		
 			public function onSuccess(event:Event):void
 			{
-				if (_format !== RestClient.TYPE_TEXT)
-				{
-					try
+				// cleanup
+					releaseListeners();
+					
+				// convert response
+					if (_responseType !== RestClient.TYPE_TEXT)
 					{
-						switch(format)
+						try
 						{
-							case RestClient.TYPE_FORM:
-								_data = new URLVariables(event.target.data);
-								break;
-							
-							case RestClient.TYPE_JSON:
-								_data = JSON.parse(event.target.data);
-								break;
-							
-							case RestClient.TYPE_XML:
-								_data = new XML(event.target.data);
-								break;
+							switch(responseType)
+							{
+								case RestClient.TYPE_FORM:
+									_data = new URLVariables(event.target.data);
+									break;
+								
+								case RestClient.TYPE_JSON:
+									_data = JSON.parse(event.target.data);
+									break;
+								
+								case RestClient.TYPE_XML:
+									_data = new XML(event.target.data);
+									break;
+							}
+						}
+						catch (error:Error)
+						{
+							var message:String = 'The REST response could not be parsed. Expected "' + responseType + '" but got: \n ' + event.target.data;
+							trace('\n' + message);
+							throw(new Error(message));
 						}
 					}
-					catch (error:Error)
+					else
 					{
-						var message:String = 'The REST response could not be parsed. Expected "' + format + '" but got: \n ' + event.target.data;
-						trace('\n' + message);
-						throw(new Error(message));
+						_data = event.target.data;
 					}
-				}
-				else
-				{
-					_data = event.target.data;
-				}
-				dispatchEvent(new RestEvent(RestEvent.SUCCESS, _data, event));
+					
+				// dispatch
+					dispatchEvent(new RestEvent(RestEvent.SUCCESS, _data, event));
 			}
-		
+			
 			public function onError(event:IOErrorEvent):void
 			{
+				releaseListeners();
 				dispatchEvent(new RestEvent(RestEvent.ERROR, event.target.data, event));
 			}
 			
@@ -110,9 +133,15 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
+			protected function releaseListeners():void 
+			{
+				_loader.removeEventListener(Event.COMPLETE, onSuccess);
+				_loader.removeEventListener(IOErrorEvent.IO_ERROR, onError);
+			}
+		
 			override public function toString():String
 			{
-				return '[object AysncToken url="' +url+ '" method="' +method+ '" format="' +format+ '" date="' +date+ '"]';
+				return '[object AysncToken url="' +url+ '" method="' +method+ '" bytes="' +_loader.bytesTotal+ '" format="' +format+ '" responseType="' +responseType+ '" date="' +date+ '"]';
 			}
 			
 	}

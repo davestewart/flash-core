@@ -29,7 +29,7 @@ package core.net.rest
 		
 		public override function toString():String 
 		{ 
-			return formatToString("RestEvent", "data", "event", "type", "bubbles", "cancelable", "eventPhase"); 
+			return formatToString("RestEvent", "event", "type", "bubbles", "cancelable", "eventPhase"); 
 		}
 		
 	}

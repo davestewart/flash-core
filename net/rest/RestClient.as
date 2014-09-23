@@ -23,8 +23,8 @@ package core.net.rest
 			// method constants
 				public static const METHOD_GET			:String = 'GET';
 				public static const METHOD_POST			:String = 'POST';
-				public static const METHOD_DELETE		:String = 'DELETE';
 				public static const METHOD_PUT			:String = 'PUT';
+				public static const METHOD_DELETE		:String = 'DELETE';
 				
 			// types constants @see http://en.wikipedia.org/wiki/Internet_media_type
 				public static const TYPE_TEXT			:String	= 'text/plain';
@@ -37,6 +37,8 @@ package core.net.rest
 				protected var _responseType				:String;
 				protected var _credentials				:String;
 				
+			// debugging
+				public var debug						:Boolean;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -51,7 +53,7 @@ package core.net.rest
 			
 			protected function initialize():void 
 			{
-				
+				// override in subclass
 			}
 
 			
@@ -76,7 +78,9 @@ package core.net.rest
 			/**
 			 * Perform a POST call on a URL
 			 * @param	url
-			 * @param	values
+			 * @param	data
+			 * @param	onSuccess
+			 * @param	onError
 			 * @return
 			 */
 			public function post(url:String, data:* = null, onSuccess:Function = null, onError:Function = null):AsyncToken 
@@ -115,56 +119,26 @@ package core.net.rest
 			 * @param	onLoadError
 			 * @return
 			 */
-			public function send(url:String, data:* = null, method:String = METHOD_GET, onSuccess:Function = null, onError:Function = null):AsyncToken 
+			public function send(url:String, values:* = null, method:String = METHOD_GET, onSuccess:Function = null, onError:Function = null):AsyncToken 
 			{
 				// variables
-					var token			:AsyncToken;
-					var request			:URLRequest;
-					var loader			:URLLoader;
-					var vars			:URLVariables;
+					var token				:AsyncToken;
+					var data				:URLVariables;
+					var request				:URLRequest;
+					var loader				:URLLoader;
 					
-				// request
-					request				= new URLRequest(url);
-					request.contentType	= _contentType;
-					
-				// credentials
-					if (_credentials)
-					{
-						request.requestHeaders.push(new URLRequestHeader('Authorization', 'Basic ' + _credentials));
-					}
-
 				// data
-					if (data)
-					{
-						// convert data to URLVariables
-							vars = getVariables(data);
-							
-						// if it's a GET route, add the data to the URL
-							if (method == METHOD_GET)
-							{
-								url		+= (url.indexOf('?') > -1 ? '&' : '?') + vars.toString();
-								vars	= null;
-							}
-							
-						// add the data
-							request.data		= vars;
-					}
+					data					= getVariables(values);
+						
+				// request
+					request					= new URLRequest(url);
+					request.contentType		= _contentType;
+					request.method			= method;
+					request.data			= data.toString() == '' ? ' ' : data; // prevents server 404-ing if no data
 					
-				// method
+				// add method override headers for PUT and DELETE
 					switch(method)
 					{
-						case METHOD_GET:
-								request.method = method;
-							break;
-							
-						case METHOD_POST:
-								request.method = method;
-								if ( ! request.data )
-								{
-									throw new Error('Attempting to call a POST URL with no data');
-								}
-							break;
-						
 						case METHOD_PUT:
 						case METHOD_DELETE:
 								request.method = METHOD_POST;
@@ -174,16 +148,23 @@ package core.net.rest
 						default:
 					}
 					
-				// set up the token
-					token	= new AsyncToken(url, method, _responseType, onSuccess, onError);
+				// credentials
+					if (_credentials)
+					{
+						request.requestHeaders.push(new URLRequestHeader('Authorization', 'Basic ' + _credentials));
+					}
 
 				// set up the loader
-					loader	= new URLLoader();
+					loader					= new URLLoader();
 					
-				// global handlers
+				// set up the token
+					token					= new AsyncToken(url, method, _responseType, loader, onSuccess, onError);
+					
+				// add client event handlers
+					loader.addEventListener(Event.COMPLETE, this.onSuccess);
 					loader.addEventListener(IOErrorEvent.IO_ERROR, this.onError);
 					
-				// local handlers
+				// add token event handlers
 					loader.addEventListener(Event.COMPLETE, token.onSuccess);
 					loader.addEventListener(IOErrorEvent.IO_ERROR, token.onError);
 					
@@ -193,7 +174,7 @@ package core.net.rest
 				// return
 					return token;
 			}
-
+			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
@@ -225,11 +206,36 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onError(error:IOErrorEvent):void 
+			protected function onSuccess(event:Event):void 
 			{
-				trace('RestClient error, event.target.data: ', error.target.data);
-				trace(error);
+				// forward the event
+					dispatchEvent(event);
+					
+				// output data if debugging
+					if (debug)
+					{
+						trace('RestClient.SUCCESS:', event);
+						trace('---------------------------------------------------------------------------------------------');
+						trace(event.target.data);
+						trace('---------------------------------------------------------------------------------------------');
+					}
 			}
+			
+			protected function onError(event:IOErrorEvent):void 
+			{
+				// forward the event
+					dispatchEvent(event);
+					
+				// output data if debugging
+					if (debug)
+					{
+						trace('RestClient.ERROR:', event);
+						trace('---------------------------------------------------------------------------------------------');
+						trace(event.target.data);
+						trace('---------------------------------------------------------------------------------------------');
+					}
+			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
@@ -239,23 +245,24 @@ package core.net.rest
 				// URL variables
 					if (data is URLVariables)
 					{
-						return data.toString().length > 0 ? data : null;
+						return data;
 					}
 					
 				// plain object
 					else
 					{
-						var hasData		:Boolean;
-						var vars		:URLVariables = new URLVariables();
-						for (var name:String in data)
+						var vars:URLVariables = new URLVariables();
+						if (data)
 						{
-							hasData = true;
-							vars[name] = data[name];
+							for (var name:String in data)
+							{
+								vars[name] = data[name];
+							}
 						}
 					}
 				
 				// return
-					return hasData ? vars : null;
+					return vars;
 			}
 			
 	}
