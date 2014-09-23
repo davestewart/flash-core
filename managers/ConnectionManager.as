@@ -91,6 +91,10 @@ package core.managers
 		
 			public function get connection():NetConnection 
 			{
+				if ( ! _connection )
+				{
+					throw new Error('A connection was requested, but one has not yet been set up! Did you remember to do this?');
+				}
 				return _connection;
 			}
 			

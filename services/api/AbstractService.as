@@ -11,10 +11,10 @@ package core.services.api {
 	public class AbstractService extends RestService 
 	{
 		/*
-			RestClient
-				RestService
-					AbstractService				- sets up a service using XML
-						Concrete Service		- 
+			RestClient					- 
+				RestService				- 
+					AbstractService		- sets up a service using XML
+						Service			- your service, with your own endpoint methods
 		 */
 		
 		// ---------------------------------------------------------------------------------------------------------------------

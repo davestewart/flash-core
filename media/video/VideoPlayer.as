@@ -14,6 +14,9 @@ package core.media.video
 	/**
 	 * Instantiates a basic NetStreamVideo, then manages playback
 	 * 
+	 * Encoding live video to H.264/AVC with Flash Player 11
+	 * http://www.adobe.com/devnet/adobe-media-server/articles/encoding-live-video-h264.html
+	 * 
 	 * @author Dave Stewart
 	 */
 	public class VideoPlayer extends Sprite 

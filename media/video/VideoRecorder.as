@@ -104,7 +104,7 @@ package core.media.video
 					if(camera != null)
 					{
 						// attach video
-							//video.attachCamera(camera);
+							video.attachCamera(camera);
 
 						// test to see if camera can be activated
 							setTimeout(testCamera, 500);
