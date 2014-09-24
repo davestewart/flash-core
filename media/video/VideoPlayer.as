@@ -181,7 +181,7 @@ package core.media.video
 			{
 				if (_stream)
 				{
-					trace('resuming...')
+					trace('VideoPlayer: resuming...')
 					_paused	= false;
 					_stream.resume();
 				}

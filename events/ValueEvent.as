@@ -12,7 +12,7 @@ package core.events {
 		
 		public static const CHANGE		:String		= 'ValueEvent.CHANGE';
 		
-		public function ValueEvent(name:String, value:*, bubbles:Boolean = false, cancelable:Boolean = false)
+		public function ValueEvent(name:String, value:*, bubbles:Boolean = true, cancelable:Boolean = false)
 		{ 
 			super(CHANGE, bubbles, cancelable);
 			this.value = value;

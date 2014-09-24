@@ -55,8 +55,14 @@ package core.display.layout
 			 * @param	child
 			 * @return
 			 */
-			public function addElement(child:DisplayObject):DisplayObject 
+			public function addElement(child:DisplayObject, name:String = null):* 
 			{
+				// name the new element
+					if (name)
+					{
+						child.name = name;
+					}
+					
 				// add child to list if not already added
 					if (elements.indexOf(child) == -1)
 					{
