@@ -1,4 +1,4 @@
-package core.services.api {
+package core.data.models {
 	/**
 	 * ...
 	 * @author Dave Stewart

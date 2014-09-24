@@ -1,13 +1,12 @@
-package core.services {
-	import com.greensock.*;
+package core.managers 
+{
 	import com.greensock.events.LoaderEvent;
 	import com.greensock.loading.*;
-	import com.greensock.loading.display.*;
 	import com.greensock.plugins.*;
+	import core.managers.AssetManager;
 	import flash.display.Bitmap;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.external.ExternalInterface;
 	
 	/**
 	 * Easily handles loading multiple data sources
@@ -16,7 +15,7 @@ package core.services {
 	 * 
 	 * @author Dave Stewart
 	 */
-	public class AssetLoader extends EventDispatcher 
+	public class AssetManager extends EventDispatcher 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -39,7 +38,7 @@ package core.services {
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function AssetLoader(name:String = 'loader') 
+			public function AssetManager(name:String = 'loader') 
 			{
 				this.name = name;
 				initialize();
@@ -57,11 +56,11 @@ package core.services {
 			 * @param	callback
 			 * @return
 			 */
-			static public function load(src:*, onComplete:Function, onProgress:Function = null):AssetLoader
+			static public function load(src:*, onComplete:Function, onProgress:Function = null):AssetManager
 			{
 				// variables
 					var name	:String			= 'asset';
-					var loader	:AssetLoader	= new AssetLoader();
+					var loader	:AssetManager	= new AssetManager();
 					
 				// callbacks
 					function onOneComplete(event:LoaderEvent):void
@@ -97,13 +96,13 @@ package core.services {
 		
 			// starting and stopping
 			
-				public function clear():AssetLoader 
+				public function clear():AssetManager 
 				{
 					queue.empty();
 					return this;
 				}
 				
-				public function load():AssetLoader 
+				public function load():AssetManager 
 				{
 					//trace('Starting load of "' + name + '" (' +queue.getChildren().length+ ' items)');
 					queue.load();
@@ -112,7 +111,7 @@ package core.services {
 				
 			// loading
 			
-				public function addMany(urls:*):AssetLoader 
+				public function addMany(urls:*):AssetManager 
 				{
 					if (urls is XMLList || urls is Array)
 					{
