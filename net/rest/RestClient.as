@@ -1,6 +1,7 @@
 package core.net.rest 
 {
 	import core.utils.Base64;
+	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IOErrorEvent;
@@ -207,6 +208,9 @@ package core.net.rest
 		
 			protected function onSuccess(event:Event):void 
 			{
+				// cleanup
+					cleanup(event.target);
+				
 				// forward the event
 					dispatchEvent(event);
 					
@@ -222,6 +226,9 @@ package core.net.rest
 			
 			protected function onError(event:IOErrorEvent):void 
 			{
+				// cleanup
+					cleanup(event.target);
+				
 				// forward the event
 					dispatchEvent(event);
 					
@@ -233,6 +240,12 @@ package core.net.rest
 						trace(event.target.data);
 						trace('---------------------------------------------------------------------------------------------');
 					}
+			}
+			
+			protected function cleanup(target:*):void 
+			{
+				target.addEventListener(Event.COMPLETE, this.onSuccess);
+				target.addEventListener(IOErrorEvent.IO_ERROR, this.onError);
 			}
 			
 		
