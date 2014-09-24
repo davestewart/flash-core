@@ -88,7 +88,7 @@ package core.net.rest
 			protected function onSuccess(event:Event):void
 			{
 				// cleanup
-					releaseListeners();
+					cleanup();
 					
 				// convert response
 					if (_responseType !== RestClient.TYPE_TEXT)
@@ -128,7 +128,7 @@ package core.net.rest
 			
 			protected function onError(event:IOErrorEvent):void
 			{
-				releaseListeners();
+				cleanup();
 				dispatchEvent(new RestEvent(RestEvent.ERROR, event.target.data, event));
 			}
 			
@@ -137,7 +137,7 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			protected function releaseListeners():void 
+			protected function cleanup():void 
 			{
 				_loader.removeEventListener(Event.COMPLETE, onSuccess);
 				_loader.removeEventListener(IOErrorEvent.IO_ERROR, onError);
