@@ -166,7 +166,7 @@ package core.net.rest
 					loader.addEventListener(IOErrorEvent.IO_ERROR, this.onError);
 					
 				// debug
-					trace('RestClient: ' + method + ' > ' + url);
+					trace('RestClient: [' + method + '] ' + url);
 					
 				// load
 					loader.load(request);

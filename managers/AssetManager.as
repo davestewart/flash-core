@@ -160,7 +160,7 @@ package core.managers
 						: queue.getContent(src);
 				}
 				
-				public static function getBitmap(url:String):Bitmap 
+				public function getBitmap(url:String):Bitmap 
 				{
 					var content:* = LoaderMax.getContent(url);
 					if (content && content.rawContent)
