@@ -1,4 +1,4 @@
-﻿package core.utils 
+﻿package core.utils.display 
 {
 	import assets.layout.BackgroundAsset;
 	import flash.display.BitmapData;
@@ -12,6 +12,7 @@
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
+	import core.utils.ObjectUtils;
 
 	/**
 	 * ...

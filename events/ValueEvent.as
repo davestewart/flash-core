@@ -1,4 +1,5 @@
-package core.events {
+package core.events
+{
 	import flash.events.Event;
 	
 	/**
@@ -15,9 +16,8 @@ package core.events {
 		public function ValueEvent(name:String, value:*, bubbles:Boolean = true, cancelable:Boolean = false)
 		{ 
 			super(CHANGE, bubbles, cancelable);
-			this.value = value;
 			this.name = name;
-			
+			this.value = value;
 		} 
 		
 		public override function clone():Event 

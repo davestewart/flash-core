@@ -40,8 +40,8 @@ package core.net.rest
 					_loader			= loader;
 					
 				// internal handlers
-					_loader.addEventListener(Event.COMPLETE, this.onSuccess);
-					_loader.addEventListener(IOErrorEvent.IO_ERROR, this.onError);
+					_loader.addEventListener(Event.COMPLETE, this.onSuccess, false, 1);
+					_loader.addEventListener(IOErrorEvent.IO_ERROR, this.onError, false, 1);
 					
 				// external handlers
 					if (onSuccess !== null)
@@ -87,9 +87,6 @@ package core.net.rest
 		
 			protected function onSuccess(event:Event):void
 			{
-				// cleanup
-					cleanup();
-					
 				// convert response
 					if (_responseType !== RestClient.TYPE_TEXT)
 					{
@@ -124,12 +121,15 @@ package core.net.rest
 					
 				// dispatch
 					dispatchEvent(new RestEvent(RestEvent.SUCCESS, _data, event));
+					
+				// cleanup
+					cleanup();
 			}
 			
 			protected function onError(event:IOErrorEvent):void
 			{
-				cleanup();
 				dispatchEvent(new RestEvent(RestEvent.ERROR, event.target.data, event));
+				cleanup();
 			}
 			
 			

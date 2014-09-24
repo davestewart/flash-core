@@ -1,5 +1,4 @@
-package core.utils 
-{
+package core.utils.display {
 	import flash.display.DisplayObject;
 	import flash.display.Stage;
 	import flash.geom.Rectangle;

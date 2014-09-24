@@ -1,6 +1,6 @@
 package core.net.rest 
 {
-	import core.utils.Base64;
+	import core.utils.data.Base64;
 	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -128,14 +128,25 @@ package core.net.rest
 					var request				:URLRequest;
 					var loader				:URLLoader;
 					
-				// data
-					data					= getVariables(values);
-						
-				// request
-					request					= new URLRequest(url);
-					request.contentType		= _contentType;
-					request.method			= method;
-					request.data			= data.toString() == '' ? ' ' : data; // prevents server 404-ing if no data
+				// if a URLRequest (i.e. a pre-built multipart-form request) is passed in, use it
+					if (values is URLRequest)
+					{
+						request			= values;
+						request.url		= url;
+					}
+					
+				// otherwise, build a new request
+					else
+					{
+						// data
+							data					= getVariables(values);
+								
+						// request
+							request					= new URLRequest(url);
+							request.contentType		= _contentType;
+							request.method			= method;
+							request.data			= data.toString() == '' ? ' ' : data; // prevents server 404-ing if no data
+					}
 					
 				// add method override headers for PUT and DELETE
 					switch(method)
@@ -208,9 +219,6 @@ package core.net.rest
 		
 			protected function onSuccess(event:Event):void 
 			{
-				// cleanup
-					cleanup(event.target);
-				
 				// forward the event
 					dispatchEvent(event);
 					
@@ -222,15 +230,16 @@ package core.net.rest
 						trace(event.target.data);
 						trace('---------------------------------------------------------------------------------------------');
 					}
+					
+				// cleanup
+					cleanup(event.target);
+				
 			}
 			
 			protected function onError(event:IOErrorEvent):void 
 			{
-				// cleanup
-					cleanup(event.target);
-				
 				// forward the event
-					dispatchEvent(event);
+					//dispatchEvent(event);
 					
 				// output data if debugging
 					if (debug)
@@ -240,6 +249,9 @@ package core.net.rest
 						trace(event.target.data);
 						trace('---------------------------------------------------------------------------------------------');
 					}
+					
+				// cleanup
+					cleanup(event.target);
 			}
 			
 			protected function cleanup(target:*):void 

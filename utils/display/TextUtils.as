@@ -1,5 +1,4 @@
-package core.utils 
-{
+package core.utils.display {
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFormat;

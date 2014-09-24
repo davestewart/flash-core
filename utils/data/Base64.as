@@ -1,5 +1,4 @@
-package core.utils
-{
+package core.utils.data {
 
 	import flash.utils.ByteArray;
 	

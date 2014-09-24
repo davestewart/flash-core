@@ -1,6 +1,6 @@
 package core.managers.layout 
 {
-	import core.utils.LayoutUtils;
+	import core.utils.display.LayoutUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.text.TextField;
