@@ -33,13 +33,17 @@ package core.net.rest
 			public function AsyncToken(url:String, method:String, format:String, loader:URLLoader, onSuccess:Function = null, onError:Function = null) 
 			{
 				// properties
-					_date		= new Date();
-					_url		= url;
-					_method		= method;
-					_responseType		= format;
-					_loader		= loader;
+					_date			= new Date();
+					_url			= url;
+					_method			= method;
+					_responseType	= format;
+					_loader			= loader;
 					
-				// handlers
+				// internal handlers
+					_loader.addEventListener(Event.COMPLETE, this.onSuccess);
+					_loader.addEventListener(IOErrorEvent.IO_ERROR, this.onError);
+					
+				// external handlers
 					if (onSuccess !== null)
 					{
 						addEventListener(RestEvent.SUCCESS, onSuccess, false, 0, true);
@@ -81,7 +85,7 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			public function onSuccess(event:Event):void
+			protected function onSuccess(event:Event):void
 			{
 				// cleanup
 					releaseListeners();
@@ -122,7 +126,7 @@ package core.net.rest
 					dispatchEvent(new RestEvent(RestEvent.SUCCESS, _data, event));
 			}
 			
-			public function onError(event:IOErrorEvent):void
+			protected function onError(event:IOErrorEvent):void
 			{
 				releaseListeners();
 				dispatchEvent(new RestEvent(RestEvent.ERROR, event.target.data, event));
