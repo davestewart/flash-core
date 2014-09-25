@@ -94,6 +94,7 @@ package core.media.audio
 				// play the sound and add events
 					channel		= sound.play(_position || seconds * 1000);
 					channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+					channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 					timer.start();
 			}
 			
