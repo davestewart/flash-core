@@ -32,7 +32,7 @@ package core.media.video
 		
 			// properties
 				protected var camera					:Camera;
-				protected var microphone				:Microphone;
+				//protected var microphone				:Microphone;
 				
 			// camera variables
 				protected var _quality					:int;
@@ -119,6 +119,7 @@ package core.media.video
 					}
 					
 				// set up the mic
+				/*
 					microphone = Microphone.getMicrophone();
 					if( microphone != null)
 					{
@@ -130,6 +131,7 @@ package core.media.video
 						log('No Microphone Found', 'error');
 						dispatchEvent(new CameraEvent(CameraEvent.NO_MICROPHONE));
 					}
+				*/
 					
 				// flag as already set up
 					_setup = true;
