@@ -201,11 +201,19 @@ package core.media.video
 						camera.setQuality(bandwidth, quality);
 						
 					// size
-						camera.setMode(videoWidth, videoHeight, fps);
-						if (camera.width !== videoWidth)
+						
+						// @TODO make more robust
+						// try to set it at 16:9 with 1280 x 720
+						camera.setMode(1280, 720, fps);
+						if (camera.width !== 1280)
 						{
-							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
-							trace('The camera could not be set to the required size!');
+							camera.setMode(videoWidth, videoHeight, fps);
+							if (camera.width !== videoWidth)
+							{
+								camera.setMode(videoWidth, videoHeight, fps);
+								dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
+								trace('The camera could not be set to the required size!');
+							}
 						}
 						
 					// update values
