@@ -10,7 +10,44 @@ package core.utils
 	public class StringUtils 
 	{
 		
-		
+		static public function populate(input:String, ...params):String 
+		{
+			// variables
+				var output	:String	= String(input);
+				var data	:Object;
+				var param	:String;
+				var rx		:RegExp;
+				
+			// replace by property
+				if (typeof params[0] == 'object')
+				{
+					function replaceFn(input:String, a:String, b:String, index:int, all:String):String
+					{
+						return a in data
+								? data[a]
+								: b in data
+									? data[b]
+									: input;
+					}
+					data = params[0];
+					output = output.replace(/{(\w+)}|:(\w+)\b/g, replaceFn);
+				}
+				
+			// replace by index
+				else
+				{
+					while (params.length)
+					{
+						param	= params.shift();
+						rx		= /{(\w+)}|:(\w+)\b/;
+						output	= output.replace(rx, param);
+					}
+				}
+				
+			// return the result
+				return output;
+		}
+	
 		public static function pad(value:*, length:int = 3, char:String = '0', right:Boolean = false):String
 		{
 			value = String(value);

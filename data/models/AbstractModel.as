@@ -34,12 +34,18 @@ package core.data.models {
 			/**
 			 * Initializes the model with incoming data
 			 * 
-			 * To override 1:1 mapping of properties, for example to create custom classes, create 
-			 * public methods prefixed with "set_", e.g. to create custom classes for a "users" property:
+			 * To override 1:1 mapping of properties, and create your own structures, add a custom handler
+			 * by adding a public function named set_<property_name>()
+			 * 
+			 * For example, this method would build a custom Users vector from an Array of Objects:
 			 * 
 			 *      public function set_users(data:Array):void
 			 * 		{
-			 * 			// custom code to parse input data...
+			 * 			users = new Vector.<UserModel>();
+			 * 			for each(var user in data)
+			 * 			{
+			 * 				users.push(UserModel(user);
+			 * 			}
 			 * 		}
 			 * 
 			 * @param	data
