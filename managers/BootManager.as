@@ -1,7 +1,6 @@
 package core.managers 
 {
 	import app.controllers.AppController;
-	import app.events.AppEvent;
 	import core.data.variables.FlashVars;
 	import core.events.ActionEvent;
 	import core.managers.AssetManager;
