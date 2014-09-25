@@ -128,6 +128,12 @@ package core.net.rest
 					var request				:URLRequest;
 					var loader				:URLLoader;
 					
+				// throw error if a Function is passed as the second argument
+					if (values is Function)
+					{
+						throw new TypeError('The parameter "values" passed to send() cannot be a Function');
+					}
+					
 				// if a URLRequest (i.e. a pre-built multipart-form request) is passed in, use it
 					if (values is URLRequest)
 					{

@@ -13,13 +13,37 @@ package core.utils
 		static public function populate(input:String, ...params):String 
 		{
 			// variables
-				var output	:String	= String(input);
+				var output	:String = String(input);
 				var data	:Object;
 				var param	:String;
 				var rx		:RegExp;
 				
+			// determine if we've got an Object, an Array, or parameters
+				if (params.length == 1)
+				{
+					// Array
+						if (params[0] is Array)
+						{
+							params = params[0];
+							while (params[0] is Array)
+							{
+								params = params[0]; // recursively resolve arrays
+							}
+						}
+						
+					// Object
+						else if (typeof params[0] == 'object')
+						{
+							data = params[0];
+						}
+				}
+				else
+				{
+					// parameters
+				}
+				
 			// replace by property
-				if (typeof params[0] == 'object')
+				if (data)
 				{
 					function replaceFn(input:String, a:String, b:String, index:int, all:String):String
 					{
@@ -29,7 +53,6 @@ package core.utils
 									? data[b]
 									: input;
 					}
-					data = params[0];
 					output = output.replace(/{(\w+)}|:(\w+)\b/g, replaceFn);
 				}
 				
