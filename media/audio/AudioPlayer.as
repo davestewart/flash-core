@@ -8,7 +8,7 @@ package core.media.audio
 	import flash.media.SoundChannel;
 	import flash.net.URLRequest;
 	import flash.utils.Timer;
-	import core.media.events.MediaEvent;
+	import core.events.MediaEvent;
 	
 	/**
 	 * ...

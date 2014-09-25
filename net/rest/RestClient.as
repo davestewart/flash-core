@@ -1,6 +1,6 @@
 package core.net.rest 
 {
-	import core.utils.data.Base64;
+	import core.utils.Base64;
 	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;

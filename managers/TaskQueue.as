@@ -1,5 +1,4 @@
-package core.managers.taskqueue 
-{
+package core.managers {
 	import flash.events.DataEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;

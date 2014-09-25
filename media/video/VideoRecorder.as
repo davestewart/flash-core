@@ -16,7 +16,7 @@ package core.media.video
 	import flash.utils.clearTimeout;
 	import flash.utils.setInterval;
 	import flash.utils.setTimeout;
-	import core.media.events.CameraEvent;
+	import core.events.CameraEvent;
 	
 	/**
 	 * Instantiates a basic NetStreamVideo, then manages camera and publish locations

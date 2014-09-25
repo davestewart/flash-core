@@ -1,5 +1,4 @@
-package core.managers.layout 
-{
+package core.utils.display {
 	import core.utils.display.LayoutUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
