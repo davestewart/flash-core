@@ -98,6 +98,9 @@ package core.net.rest
 			
 			protected function getPath(path:String, ...params):String 
 			{
+				// parameters
+					path		= String(path);
+				
 				// variables
 					var data	:Object;
 					var param	:String;

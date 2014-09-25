@@ -37,6 +37,7 @@ package core.media.video
 				protected var _active					:Boolean;
 				protected var _flipped					:Boolean;
 				protected var _paused					:Boolean;
+				protected var _repeat					:Boolean;
 				
 			// stream variables
 				protected var _streamName				:String;
@@ -271,6 +272,12 @@ package core.media.video
 			
 			public function get paused():Boolean { return _paused; }
 			
+			public function get repeat():Boolean { return _repeat; }
+			public function set repeat(value:Boolean):void 
+			{
+				_repeat = value;
+			}
+			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
@@ -350,7 +357,7 @@ package core.media.video
 				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, event));
 				if (event.code == 'NetStream.Play.Complete')
 				{
-					stop();
+					_repeat ? replay() : stop();
 				}
 			}						
 			

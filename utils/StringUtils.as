@@ -16,7 +16,7 @@ package core.utils
 			value = String(value);
 			while (value.length < length)
 			{
-				value = right ? str + char : char + str;
+				value = right ? value + char : char + value;
 			}
 			return value;
 		}
@@ -147,23 +147,21 @@ package core.utils
 				return value.replace(/&([A-Za-z]+);|&#(\d+);/g, replace);
 		}
 		
+		
 		public static function phpSerialize(obj:Object, path:String = ''):String
 		{
-			// undefined
-				if (obj == undefined)
-				{
-					// fail gracefully
-				}
-
+			// variables
+				var name:String;
+			
 			// array
-				else if (obj is Array)
+				if (obj is Array)
 				{
 					// flash iterates from most recently-created property first, 
 					// so iterate through array backwards for correct output
 					for (var i:int = obj.length - 1; i >= 0; i--)
 					{
-						var name:String = path + '[' + i + ']';
-						serialize(obj[i], name);
+						name = path + '[' + i + ']';
+						path = phpSerialize(obj[i], name);
 					}
 				}
 
@@ -174,18 +172,41 @@ package core.utils
 					// Could do a pre-emptive collection loop, but why bother...?
 					for (var prop:String in obj)
 					{
-						var name:String = path + (path == '' ? prop : '[' + prop + ']');
-						serialize(obj[prop], name);
+						name = path + (path == '' ? prop : '[' + prop + ']');
+						path = phpSerialize(obj[prop], name);
 					}
 				}
 
 			// value
-				else
-				{
-					this[path] = obj;
-				};
+				return path;
 
-		};			
+		};
+		
+
+		static public function guid(value:Array = null):String 
+		{
+			 // variables
+				var uid			:Array		= new Array();
+				var chars		:Array		= new Array( 48,49,50,51,52,53,54,55,56,57,65,66,67,68,69,70 );
+				var separator	:uint		= 45;
+				var template	:Array		= value || new Array( 8,4,4,4,12 );
+				 
+			// generate
+				for ( var a:uint = 0; a < template.length; a++ ) 
+				{
+					for ( var b:uint = 0; b < template[a]; b++ ) 
+					{
+						uid.push( chars[ Math.floor( Math.random() *  chars. length ) ] );
+					}
+					if ( a < template.length - 1 ) 
+					{
+						uid.push( separator ); 
+					}
+				}
+				
+			// return
+				return String.fromCharCode.apply( null, uid );
+		}
 	}
 
 }
