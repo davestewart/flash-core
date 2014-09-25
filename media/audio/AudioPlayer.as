@@ -23,6 +23,7 @@ package core.media.audio
 		
 			// constants
 				public static const LOADING		:String	= 'AudioPlayer.LOADING';
+				public static const LOADED		:String	= 'AudioPlayer.LOADED';
 				public static const BUFFERING	:String	= 'AudioPlayer.BUFFERING';
 				public static const PLAYING		:String	= 'AudioPlayer.PLAYING';
 				public static const PAUSED		:String	= 'AudioPlayer.PAUSED';
@@ -74,6 +75,7 @@ package core.media.audio
 				// load new sound
 					request 	= new URLRequest(url);
 					sound		= new Sound(request);
+					sound.addEventListener(Event.COMPLETE, onSoundLoaded);
 					if (autoplay)
 					{
 						play();
@@ -199,6 +201,11 @@ package core.media.audio
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
+		
+			protected function onSoundLoaded(event:Event):void
+			{
+				dispatchEvent(new MediaEvent(MediaEvent.LOADED));
+			}
 		
 			protected function onTimer(event:TimerEvent = null):void 
 			{
