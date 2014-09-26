@@ -28,29 +28,41 @@ package core.managers
 			// loading
 				protected var loader			:AssetManager;
 				
+			// environment
+				protected var _env					:String;
+				public function get env():String { return _env; }
+
 			// data
-				public var flashvars			:FlashVars;
+				protected var _flashvars			:FlashVars;
+				public function get flashvars():FlashVars { return _flashvars; }
+				
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function BootManager(root:DisplayObjectContainer = null) 
+			public function BootManager(root:DisplayObjectContainer = null, environment:String = '') 
 			{
-				// task queue
-					queue = TaskQueue.create()
-						.when(TaskQueue.COMPLETE, onComplete)
-						//.when(TaskQueue.CANCEL, onError)
-						.when(TaskQueue.ERROR, onError);
-						
 				// flashvars
 					if (root)
 					{
-						flashvars = new FlashVars(root);
+						_flashvars = new FlashVars(root);
 					}
-					
+				
+				// set base environment from flashvars
+					_env = flashvars.env || flashvars.environment || environment;
+						
+				// task queue
+					queue = TaskQueue.create()
+						.when(TaskQueue.COMPLETE, onComplete)
+						.when(TaskQueue.ERROR, onError)
+						.when(TaskQueue.CANCEL, onError);
 			}
 			
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: public methods
+		
 			public function add(task:Function):BootManager
 			{
 				queue.then(task);
@@ -60,6 +72,21 @@ package core.managers
 			public function start():void 
 			{
 				queue.start();
+			}
+			
+			public function cancel():void 
+			{
+				queue.cancel();
+			}
+			
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: protected methods
+		
+		
+			protected function next(...rest):void 
+			{
+				queue.next();
 			}
 			
 			protected function reset():void 
@@ -77,17 +104,25 @@ package core.managers
 		
 			protected function onComplete(event:Event):void 
 			{
-				log('bootstrap complete!');
+				trace('bootstrap complete');
 				dispatchEvent(event);
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
 			
 			protected function onError(event:Event):void 
 			{
-				log('bootstrap failed');
+				trace('bootstrap failed');
 				dispatchEvent(new Event(TaskQueue.ERROR)); // event ?
 				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
 			}
+			
+			protected function onCancel(event:Event):void 
+			{
+				trace('bootstrap cancelled');
+				dispatchEvent(new Event(TaskQueue.CANCEL));
+				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+			}
+			
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -97,6 +132,7 @@ package core.managers
 			{
 				dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, message));
 			}
+			
 		
 			
 	}

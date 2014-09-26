@@ -29,12 +29,12 @@ package core.data.variables
 				var value:* = this[name];
 				if (value != undefined)
 				{
-					trace('flashvar "' + name + '": ' + value);
+					trace('FlashVars: "' + name + '": ' + value);
 					return value;
 				}
 				else
 				{
-					trace('flashvar "' + name + '" is not set');
+					trace('FlashVars: "' + name + '" is not set');
 					return defaultValue;
 				}
 			}
@@ -57,11 +57,11 @@ package core.data.variables
 				// print
 					if (total)
 					{
-						trace('\n' + total + ' flashvars were loaded:\n' + str);
+						trace('\nFlashVars: ' + total + ' values:\n' + str);
 					}
 					else
 					{
-						trace('No flashvars were loaded');
+						trace('FlashVars: no values');
 					}
 			}
 			
