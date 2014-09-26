@@ -47,6 +47,7 @@ package core.media.video
 				
 			// setup flags
 				protected var _setup					:Boolean;
+				protected var _ready					:Boolean;
 				protected var _available				:Boolean;
 				
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -134,6 +135,7 @@ package core.media.video
 				*/
 					
 				// flag as already set up
+					_ready = true;
 					_setup = true;
 			}
 			
@@ -391,6 +393,8 @@ package core.media.video
 			}
 			
 			public function get available():Boolean { return _available; }
+			
+			public function get ready():Boolean { return _ready; }
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
