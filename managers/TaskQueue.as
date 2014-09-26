@@ -1,9 +1,7 @@
-package core.managers {
-	import flash.events.DataEvent;
-	import flash.events.Event;
+package core.managers 
+{
 	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
-	import flash.events.ProgressEvent;
+	import core.events.TaskEvent;
 	
 	/**
 	 * ...
@@ -12,16 +10,8 @@ package core.managers {
 	public class TaskQueue extends EventDispatcher 
 	{
 		
-		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
-		
-			// constants
-				public static const START			:String	= 'TaskQueue.START';
-				public static const PROGRESS		:String	= 'TaskQueue.PROGRESS';
-				public static const COMPLETE		:String	= 'TaskQueue.COMPLETE';
-				public static const CANCEL			:String	= 'TaskQueue.CANCEL';
-				public static const ERROR			:String	= 'TaskQueue.ERROR';
 			
 			// properties
 				protected var _tasks				:Vector.<Function>;
@@ -46,12 +36,12 @@ package core.managers {
 			public static function build(tasks:Array, onComplete:Function, onError:Function = null):TaskQueue
 			{
 				// set up queue
-					var queue:TaskQueue = create().when(COMPLETE, onComplete);
+					var queue:TaskQueue = create().when(TaskEvent.COMPLETE, onComplete);
 					
 				// add optional handlers
 					if (onError is Function)
 					{
-						queue.when(ERROR, onError);
+						queue.when(TaskEvent.ERROR, onError);
 					}
 					
 				// add tasks
@@ -111,7 +101,8 @@ package core.managers {
 				 */
 				public function start():TaskQueue 
 				{
-					dispatchEvent(new Event(START));
+					dispatchEvent(new TaskEvent(TaskEvent.START));
+					dispatchEvent(new TaskEvent(TaskEvent.PROGRESS, 0));
 					next();
 					return this;
 				}
@@ -145,7 +136,7 @@ package core.managers {
 				 */
 				public function cancel(...rest):TaskQueue 
 				{
-					dispatchEvent(new Event(CANCEL));
+					dispatchEvent(new TaskEvent(TaskEvent.CANCEL));
 					return this;
 				}
 				
@@ -155,7 +146,7 @@ package core.managers {
 				 */
 				public function complete():TaskQueue
 				{
-					dispatchEvent(new Event(COMPLETE));
+					dispatchEvent(new TaskEvent(TaskEvent.COMPLETE));
 					return this;
 				}
 				
@@ -186,6 +177,11 @@ package core.managers {
 				return _tasks.length;
 			}
 		
+			public function get progress():Number
+			{
+				return index / length;
+			}
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
@@ -195,10 +191,12 @@ package core.managers {
 				{
 					if (error)
 					{
-						dispatchEvent(new Event(ERROR));
+						dispatchEvent(new TaskEvent(TaskEvent.ERROR, error));
 					}
 					_tasks[++_index]();
-					dispatchEvent(new Event(PROGRESS));
+					
+					// this appears to be buggy - check index update - are they 1 less than they should be?
+					//dispatchEvent(new TaskEvent(TaskEvent.PROGRESS, progress));
 				}
 				else
 				{

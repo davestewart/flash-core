@@ -3,6 +3,7 @@ package core.managers
 	import app.controllers.AppController;
 	import core.data.variables.FlashVars;
 	import core.events.ActionEvent;
+	import core.events.TaskEvent;
 	import core.managers.AssetManager;
 	import core.managers.TaskQueue;
 	import flash.display.DisplayObjectContainer;
@@ -54,9 +55,10 @@ package core.managers
 						
 				// task queue
 					queue = TaskQueue.create()
-						.when(TaskQueue.COMPLETE, onComplete)
-						.when(TaskQueue.ERROR, onError)
-						.when(TaskQueue.CANCEL, onError);
+						.when(TaskEvent.COMPLETE, onComplete)
+						.when(TaskEvent.PROGRESS, onProgress)
+						.when(TaskEvent.ERROR, onError)
+						.when(TaskEvent.CANCEL, onError);
 			}
 			
 		
@@ -102,25 +104,31 @@ package core.managers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onComplete(event:Event):void 
+			protected function onProgress(event:TaskEvent):void 
 			{
-				trace('bootstrap complete');
-				dispatchEvent(event);
-				dispatchEvent(new Event(Event.COMPLETE));
+				dispatchEvent(new TaskEvent(TaskEvent.PROGRESS, event.data));
 			}
 			
-			protected function onError(event:Event):void 
+			protected function onComplete(event:TaskEvent):void 
 			{
-				trace('bootstrap failed');
-				dispatchEvent(new Event(TaskQueue.ERROR)); // event ?
-				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+				trace('BootManager: bootstrap complete');
+				///dispatchEvent(event);
+				dispatchEvent(new TaskEvent(TaskEvent.PROGRESS, queue.progress));
+				dispatchEvent(new TaskEvent(TaskEvent.COMPLETE));
 			}
 			
-			protected function onCancel(event:Event):void 
+			protected function onError(event:TaskEvent):void 
 			{
-				trace('bootstrap cancelled');
-				dispatchEvent(new Event(TaskQueue.CANCEL));
-				dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+				trace('BootManager: bootstrap failed');
+				//dispatchEvent(new Event(TaskEvent.ERROR)); // event ?
+				dispatchEvent(new TaskEvent(TaskEvent.ERROR));
+				//dispatchEvent(new ErrorEvent(ErrorEvent.ERROR));
+			}
+			
+			protected function onCancel(event:TaskEvent):void 
+			{
+				trace('BootManager: bootstrap cancelled');
+				dispatchEvent(new TaskEvent(TaskEvent.CANCEL));
 			}
 			
 			
@@ -130,7 +138,7 @@ package core.managers
 		
 			protected function log(message:String):void 
 			{
-				dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, message));
+				dispatchEvent(new TaskEvent(TaskEvent.STATUS, message, false, false));
 			}
 			
 		

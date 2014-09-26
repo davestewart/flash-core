@@ -196,18 +196,22 @@ package core.managers
 					// grab data
 						var data:String = queue.getContent(name);
 						
-					// remove doctype and xmlns
-						data = data
-							.replace(/<!DOCTYPE.*?>/, '')
-							.replace(/<html.+?>/i, '<html>');
-						
 					// return
 						return new XML(data)
 				}
 
 				public function getHTML(name:String):XML 
 				{
-					return getXML(name).body[0];
+					// grab data
+						var data:String = queue.getContent(name);
+						
+					// remove doctype and xmlns
+						data = String(data)
+							.replace(/<!DOCTYPE.*?>/, '')
+							.replace(/<html.+?>/i, '<html>');
+						
+					// return
+						return new XML(data)
 				}
 
 		// ---------------------------------------------------------------------------------------------------------------------
