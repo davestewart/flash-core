@@ -132,7 +132,7 @@ package core.media.audio
 		
 			// time
 			
-				public function get length():Number { return sound.length / 1000; }
+				public function get length():Number { return sound ? sound.length / 1000 : 0; }
 				
 				public function get position():Number 
 				{ 
