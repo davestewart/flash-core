@@ -11,7 +11,7 @@ package core.utils
 	public class ObjectUtils
 	{
 		
-		public static function create(Def:Class, ...params):*
+		static public function create(Def:Class, ...params):*
 		{
 			// unfortunately, constructor.apply(this, params) in not possible in AS3, so we have to do it manually...
 			switch(params.length)
@@ -41,14 +41,29 @@ package core.utils
 			}
 		}
 		
-		public static function describe(obj:*):void 
+		static public function describe(obj:*):void 
 		{
 			trace(obj + ' :')
 			var description:XML = describeType(obj);
 			for each (var a:XML in description.accessor) trace('	' + a.@name + " : " + a.@type);
 		}
 		
-		public static function extend(a:Object, b:Object):Object
+		static public function inspect( obj : * , level : int = 0 ):void
+		{
+			var tabs:String = "";
+			for (var i:int = 0; i < level; i++)
+			{
+				tabs += "\t"
+			};
+			
+			for (var prop:String in obj)
+			{
+				trace(tabs + "[" + prop + "] -> " + obj[ prop ]);
+				inspect(obj[prop], level + 1);
+			}
+		}
+		
+		static public function extend(a:Object, b:Object):Object
 		{
 			for (var prop:String in b)
 			{
@@ -63,7 +78,7 @@ package core.utils
 		 * @param	names
 		 * @return
 		 */
-		public static function formatToString(instance:*, className:String, names:String):String
+		static public function formatToString(instance:*, className:String, names:String):String
 		{
 			// variables
 				var props	:Array	= names.match(/\w+/g);
