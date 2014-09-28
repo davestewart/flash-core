@@ -174,8 +174,10 @@ package core.display.components
 						
 					// offset element
 						element.x			= - element.width / 2;
-						element.y			= - element.height / 2;			
-
+						element.y			= - element.height / 2;
+						
+					// document hack
+						x = -parent.x;
 				}
 			}
 			
