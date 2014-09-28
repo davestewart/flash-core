@@ -117,7 +117,7 @@ package core.managers
 					{
 						for each(var url:String in urls)
 						{
-							add(url, '');
+							add(url);
 						}
 					}
 					return this;
