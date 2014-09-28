@@ -210,11 +210,11 @@ package core.media.video
 						trace("Camera aspect ratio = ", aspectRatio);
 						
 						if (aspectRatio == "16:9")
-							camera.setMode(640, 360, 25);
+							camera.setMode(1280, 720, 25);
 						else
 							camera.setMode(640, 480, 25);
 							
-						if (camWidth !== videoWidth)
+						if (camWidth < videoWidth)
 						{
 							camera.setMode(videoWidth, videoHeight, fps);
 							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
