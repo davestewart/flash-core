@@ -89,12 +89,15 @@ package core.display.images {
 		
 			public function reset():void 
 			{
-				image.x = image.y = 0;
-				image.scaleX = image.scaleY = 1;
-				if (area)
+				if (image)
 				{
-					area.destroy();
-					area = null;
+					image.x = image.y = 0;
+					image.scaleX = image.scaleY = 1;
+					if (area)
+					{
+						area.destroy();
+						area = null;
+					}
 				}
 			}
 			
