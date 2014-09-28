@@ -17,7 +17,7 @@ package core.display.components
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class Modal extends Element 
+	public class Modal extends Sprite 
 	{
 		
 		
@@ -75,12 +75,13 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Modal(parent:DisplayObjectContainer = null)
+			public function Modal(parent:DisplayObjectContainer)
 			{
-				super(parent);
+				parent.addChild(this);
+				build();
 			}
 			
-			override protected function build():void 
+			protected function build():void 
 			{
 				// vsiibility
 					alpha		= 0;
@@ -124,7 +125,7 @@ package core.display.components
 					show();
 			}
 			
-			override public function show():void 
+			public function show():void 
 			{
 				// properties
 					container.scaleX = container.scaleY = outScale;
@@ -135,7 +136,7 @@ package core.display.components
 					TweenLite.to(container, 0.4, { delay:0.2, autoAlpha:1, scaleX:1, scaleY:1, ease:Cubic.easeOut } );
 			}
 			
-			override public function hide():void 
+			public function hide():void 
 			{
 				TweenLite.to(container, 0.4, { autoAlpha:0, scaleX:outScale, scaleY:outScale, ease:Cubic.easeOut } );
 				TweenLite.to(this, 0.3, {  delay:0.2, autoAlpha:0, ease:Cubic.easeIn } );
@@ -156,7 +157,7 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			override protected function draw():void 
+			protected function draw():void 
 			{
 				if (parent)
 				{	
@@ -188,7 +189,7 @@ package core.display.components
 				draw();
 			}
 			
-			private function onBackgroundMouseDown(event:MouseEvent):void 
+			protected function onBackgroundMouseDown(event:MouseEvent):void 
 			{
 				cancel();
 			}

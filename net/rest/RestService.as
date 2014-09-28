@@ -27,13 +27,13 @@ package core.net.rest
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function RestService(server:String, reponseType:String = RestClient.TYPE_JSON, contentType:String = RestClient.TYPE_FORM)
+			public function RestService(server:String, reponseType:String = '', contentType:String = '')
 			{
 				// properties
 					this.server		= server;
 					
 				// objects
-					_client			= new RestClient(reponseType, contentType);
+					_client			= new RestClient(reponseType || RestClient.TYPE_JSON, contentType || RestClient.TYPE_FORM);
 					_client.addEventListener(RestEvent.SUCCESS, onSuccess);
 					_client.addEventListener(RestEvent.ERROR, onError);
 			}
