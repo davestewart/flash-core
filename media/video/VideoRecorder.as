@@ -16,6 +16,7 @@ package core.media.video
 	import flash.utils.clearTimeout;
 	import flash.utils.setInterval;
 	import flash.utils.setTimeout;
+	import flash.external.ExternalInterface;
 	import core.events.CameraEvent;
 	
 	/**
@@ -193,14 +194,8 @@ package core.media.video
 			{
 				if (camera)
 				{
-					// variables
-						var rate:int = videoWidth * videoHeight; // alternative bandwidth
-						
 					// keyframes
 						camera.setKeyFrameInterval(keyframeInterval);
-						
-					// quality
-						camera.setQuality(bandwidth, quality);
 						
 					// size
 						
@@ -211,8 +206,8 @@ package core.media.video
 						var ratio:Number = gcd (camWidth, camHeight);
 						var aspectRatio:String = camWidth / ratio +":" + camHeight / ratio;
 						
-						//trace("Dimensions = ", camWidth, "x", camHeight);
-						//trace("Aspect     = ", aspectRatio);
+						trace("Camera dimensions = ", camWidth, "x", camHeight);
+						trace("Camera aspect ratio = ", aspectRatio);
 						
 						if (aspectRatio == "16:9")
 							camera.setMode(640, 360, 25);
@@ -225,6 +220,12 @@ package core.media.video
 							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
 							trace('The camera could not be set to the required size!');
 						}
+						
+					// variables
+						var rate:int = camera.width * camera.height; // alternative bandwidth
+						
+					// quality
+						camera.setQuality(bandwidth, quality);
 						
 					// update values
 						_videoWidth		= camera.width;
