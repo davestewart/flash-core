@@ -45,7 +45,7 @@ package core.display.components
 				return instance;
 			}
 			
-			static public function show(element:DisplayObject):void 
+			static public function show(element:DisplayObject, onComplete:Function = null, onCancel:Function = null):void 
 			{
 				instance.update(element);
 			}
@@ -98,7 +98,7 @@ package core.display.components
 						container.removeChildAt(0);
 				
 				// add new child
-					container.addChild(element);
+					container.addChildAt(element, 0);
 				
 				// draw
 					draw();
@@ -139,10 +139,15 @@ package core.display.components
 					background.width = stage.stageWidth;
 					background.height = stage.stageHeight;
 					
+					x = -parent.x;
+					
+					if (container.numChildren == 0) return;
+					
 					var height:Number = Math.min(HEIGHT, stage.stageHeight);
+					var element:DisplayObject = container.getChildAt(0);
 					
 					container.x = background.width / 2 - container.width / 2;
-					container.y = height / 2 - container.height / 2;			
+					container.y = height / 2 - element.height / 2;
 				}
 			}
 			
