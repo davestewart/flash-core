@@ -205,11 +205,10 @@ package core.media.video
 					// size
 						
 						// @TODO make more robust
-						// try to set it at 16:9 with 1280 x 720
 						camera.setMode(1280, 720, fps);
-						if (camera.width !== 1280)
+						if (camera.height !== 720)
 						{
-							camera.setMode(videoWidth, videoHeight, fps);
+							camera.setMode(640, 360, fps);
 							if (camera.width !== videoWidth)
 							{
 								camera.setMode(videoWidth, videoHeight, fps);

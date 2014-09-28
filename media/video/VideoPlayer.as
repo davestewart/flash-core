@@ -1,5 +1,6 @@
 package core.media.video 
 {
+	import core.display.shapes.Square;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
@@ -85,6 +86,8 @@ package core.media.video
 		
 			protected function build(width:Number, height:Number):void 
 			{
+				trace("VideoPlayer.build");
+				
 				// container
 					container		= new Sprite();
 					container.name	= 'container';
@@ -95,6 +98,10 @@ package core.media.video
 					video.name		= 'video';
 					video.smoothing	= true
 					container.addChild(video);
+					
+					var vidMask:Square = new Square(640, 360);
+					addChild(vidMask);
+					container.mask = vidMask;
 			
 				// update
 					draw();
@@ -314,9 +321,11 @@ package core.media.video
 			protected function draw():void 
 			{
 				// background
+					/*
 					graphics.clear();
 					graphics.beginFill(0x000000, 0.1);
 					graphics.drawRect(0, 0, width, height);
+					*/
 					
 				// video
 					container.scaleX	= _flipped ? -1 : 1;
