@@ -204,17 +204,26 @@ package core.media.video
 						
 					// size
 						
-						// @TODO make more robust
-						camera.setMode(1280, 720, fps);
-						if (camera.height !== 720)
+						camera.setMode(4000, 2250, 25);
+				
+						var camWidth:Number = camera.width;
+						var camHeight:Number = camera.height;
+						var ratio:Number = gcd (camWidth, camHeight);
+						var aspectRatio:String = camWidth / ratio +":" + camHeight / ratio;
+						
+						//trace("Dimensions = ", camWidth, "x", camHeight);
+						//trace("Aspect     = ", aspectRatio);
+						
+						if (aspectRatio == "16:9")
+							camera.setMode(640, 360, 25);
+						else
+							camera.setMode(640, 480, 25);
+							
+						if (camWidth !== videoWidth)
 						{
-							camera.setMode(640, 360, fps);
-							if (camera.width !== videoWidth)
-							{
-								camera.setMode(videoWidth, videoHeight, fps);
-								dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
-								trace('The camera could not be set to the required size!');
-							}
+							camera.setMode(videoWidth, videoHeight, fps);
+							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
+							trace('The camera could not be set to the required size!');
 						}
 						
 					// update values
@@ -435,6 +444,12 @@ package core.media.video
 			override public function toString():String 
 			{
 				return '[object VideoRecorder videoWidth="' +videoWidth + '" videoHeight="' +videoHeight + '" fps="' +fps + '" quality="' +quality + '" bandwidth="' +bandwidth + '"]';
+			}
+			
+			// get the greatest common divisor
+			protected function gcd (a:Number, b:Number):Number
+			{
+				return (b == 0) ? a : gcd (b, a%b);
 			}
 		
 	}
