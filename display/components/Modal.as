@@ -159,7 +159,7 @@ package core.display.components
 		
 			protected function draw():void 
 			{
-				if (parent)
+				if (stage && element)
 				{	
 					// update background
 						background.width	= stage.stageWidth;

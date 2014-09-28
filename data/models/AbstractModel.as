@@ -109,7 +109,7 @@ package core.data.models {
 		
 			public function toString():String
 			{
-				return '[object AbstractModel"]';
+				return '[object AbstractModel]';
 			}
 	}
 
