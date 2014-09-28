@@ -144,30 +144,30 @@
 				}
 				
 			// new bounds
-				var bounds:Rectangle	= element.getBounds(element);
-				
-			// create rect
-				rect					= new Sprite();
-				rect.name				= '__rect';
-				rect.mouseEnabled		= false;
+				var bounds:Rectangle		= element.getBounds(element);
+					
+			// create rect	
+				rect						= new Sprite();
+				rect.name					= '__rect';
+				rect.mouseEnabled			= false;
 				
 				rect.graphics.lineStyle(lineThickness, color);
 				rect.graphics.beginFill(color, alpha);
 				rect.graphics.drawRect(bounds.x - 1, bounds.y - 1, bounds.width + 2, bounds.height + 2);
 				
 			// add rect
-				element.alpha = 1;
-				element.visible = true;
+				element.alpha				= 1;
+				element.visible				= true;
 				element.addChild(rect);
 				
 			// add textfield
 				var tf:TextField			= new TextField();
-				tf.x						= bounds.x + 5;
-				tf.y						= bounds.y + 5;
 				tf.textColor				= color;
 				tf.autoSize					= 'left';
-				tf.defaultTextFormat		= new TextFormat('_sans', 12, color);
-				tf.text						= element.name + ' ' + String(element);
+				tf.defaultTextFormat		= new TextFormat('_sans', 10, 0xFFFFFF);
+				tf.backgroundColor			= color;
+				tf.background				= true;
+				tf.text						= ' ' + element.name + ' ' + String(element) + ' ';
 				rect.addChild(tf);
 				
 			// make parents visible

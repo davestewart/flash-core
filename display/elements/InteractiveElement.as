@@ -1,50 +1,68 @@
-package core.display.layout 
+package core.display.elements 
 {
-	import core.display.elements.Element;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.display.Sprite;
 	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class VBox extends Element
+	public class InteractiveElement extends Element 
 	{
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
-			// stage intances
+			// constants
 				
 			
+			// properties
+				
+				
 			// variables
-				protected var _spacing:int;
 				
 			
-		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VBox(parent:DisplayObjectContainer, spacing:int = 3, elements:Array = null) 
+			public function InteractiveElement(element:DisplayObject = null, parent:DisplayObjectContainer = null)
 			{
-				super(parent);
-				_spacing = spacing;
-				if (elements)
+				if (element)
 				{
-					for (var i:int = 0; i < elements.length; i++) 
-					{
-						addChild(elements[i]);
-					}
+					setElement(element)
 				}
+				super(parent);
 			}
-			
+		
+			override protected function initialize():void 
+			{
+				buttonMode		= true;
+				useHandCursor	= true;
+				mouseChildren	= false;
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			
+			public function setElement(element:DisplayObject):void 
+			{
+				// move to element location
+					x					= element.x;
+					y					= element.y;
+					rotation			= element.rotation;
+					if (element.parent)
+					{
+						var index:int = element.parent.getChildIndex(element);
+						element.parent.addChildAt(this, index);
+					}
+					
+				// reset element
+					element.x			= 0;
+					element.y			= 0;
+					element.rotation	= 0;
+					addChild(element);
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
@@ -54,23 +72,7 @@ package core.display.layout
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected override function draw():void 
-			{
-				// super
-					super.draw();
-				
-				// variables
-					var child		:DisplayObject;
-					var lastChild	:DisplayObject;
-
-				// align elements
-					for (var i:int = 1; i < numChildren; i++)
-					{
-						child		= getChildAt(i);
-						lastChild	= getChildAt(i - 1);
-						child.y		= lastChild.y + lastChild.height + _spacing;
-					}
-			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers

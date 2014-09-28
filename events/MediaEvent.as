@@ -13,7 +13,9 @@ package core.events {
 		public static const PAUSE			:String	= 'MediaEvent.PAUSE';
 		public static const UNPAUSE			:String	= 'MediaEvent.UNPAUSE';
 		public static const STOP			:String	= 'MediaEvent.STOP';
+		
 		public static const PROGRESS		:String	= 'MediaEvent.PROGRESS';
+		public static const BUFFERING		:String	= 'MediaEvent.BUFFERING';
 		public static const COMPLETE		:String	= 'MediaEvent.COMPLETE';
 		public static const LOADED			:String	= 'MediaEvent.LOADED';		
 		

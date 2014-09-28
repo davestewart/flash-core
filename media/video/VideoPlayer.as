@@ -201,6 +201,11 @@ package core.media.video
 				//close();
 			}
 		
+			public function clear():void 
+			{
+				video.clear();
+			}
+			
 			public function close():void 
 			{
 				video.attachNetStream(null);

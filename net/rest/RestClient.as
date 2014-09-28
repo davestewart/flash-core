@@ -134,6 +134,9 @@ package core.net.rest
 						throw new TypeError('The parameter "values" passed to send() cannot be a Function');
 					}
 					
+				// use a methods URLRequest understands
+				
+					
 				// if a URLRequest (i.e. a pre-built multipart-form request) is passed in, use it
 					if (values is URLRequest)
 					{
@@ -149,8 +152,7 @@ package core.net.rest
 								
 						// request
 							request					= new URLRequest(url);
-							request.contentType		= _contentType;
-							request.method			= method;
+							request.contentType		= contentType;
 							request.data			= data.toString() == '' ? ' ' : data; // prevents server 404-ing if no data
 					}
 					
@@ -164,6 +166,7 @@ package core.net.rest
 							break;
 						
 						default:
+							request.method = method;
 					}
 					
 				// credentials

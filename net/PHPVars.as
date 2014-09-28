@@ -49,6 +49,7 @@ package core.net
 					var values:Array = [];
 					for (var name:String in __data)
 					{
+						trace(name, __data[name])
 						values.push(name + '=' + escape(__data[name]));
 					}
 					
