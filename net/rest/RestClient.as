@@ -1,5 +1,6 @@
 package core.net.rest 
 {
+	import core.net.PHPVariables;
 	import core.utils.Base64;
 	import flash.display.Loader;
 	import flash.events.Event;
@@ -47,14 +48,13 @@ package core.net.rest
 		
 			public function RestClient(responseType:String = TYPE_TEXT, contentType:String = TYPE_FORM)
 			{
-				initialize();
 				this.contentType	= contentType;
 				this.responseType	= responseType;
 			}
 			
-			protected function initialize():void 
+			static public function factory(responseType:String = TYPE_TEXT, contentType:String = TYPE_FORM):RestClient 
 			{
-				// override in subclass
+				return new RestClient(responseType, contentType);
 			}
 
 			
@@ -275,27 +275,7 @@ package core.net.rest
 		
 			protected function getVariables(data:*):URLVariables
 			{
-				// URL variables
-					if (data is URLVariables)
-					{
-						return data;
-					}
-					
-				// plain object
-					else
-					{
-						var vars:URLVariables = new URLVariables();
-						if (data)
-						{
-							for (var name:String in data)
-							{
-								vars[name] = data[name];
-							}
-						}
-					}
-				
-				// return
-					return vars;
+				return data is URLVariables ? data : new PHPVariables(data);
 			}
 			
 	}

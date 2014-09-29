@@ -1,12 +1,8 @@
 package core.net 
 {
 	import flash.net.URLVariables;
-	
-	
 	/**
 	 * @name		PHPVariables
-	 * @type		AS2 Class
-	 * version		1.0
 	 * @desc		Send complex datatypes (arrays, objects) to a PHP script, as serialized name/value pairs
 	 * @example		
 					// Flash
@@ -44,7 +40,7 @@ package core.net
 	 * @email		dev@davestewart.io
 	 * @web			www.davestewart.io
 	 */
-	public dynamic class PHPVariables extends URLVariables 
+	dynamic public class PHPVariables extends URLVariables
 	{
 		
 		
@@ -58,20 +54,20 @@ package core.net
 				
 				
 			// variables
-				
+			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function PHPVariables(source:* = null)
+			dynamic public function PHPVariables(data:*) 
 			{
-				for (var name:String in source)
+				for (var name:String in data)
 				{
-					this[name] = source[name];
+					this[name] = data[name];
 				}
 			}
 		
-		
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
@@ -79,27 +75,41 @@ package core.net
 			{
 				super.decode(source);
 			}
-			
-			override public function toString():String 
+		
+			override public function toString():String
 			{
-				return serialize(this);
+				// serialize
+					var data:Object = serialize(this);
+					
+				// collect values
+					var values:Array = [];
+					for (var name:String in data)
+					{
+						values.push(name + '=' + escape(data[name]));
+					}
+					
+				// return
+					return values.sort().join('&');
 			}
-		
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: accessors
-		
+
 			
-		
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: protected methods
+		// { region: static methods
 		
-			static public function serialize(input:*, path:String = ''):String
+			/**
+			 * Static serialize method
+			 * @param	input
+			 * @return	The serialized values as a hash of names/value pairs
+			 */
+			static public function serialize(input:*, path:String = null, data:Object = null):Object
 			{
-				// variables
-					var name	:String;
-					var prop	:String;
-					var output	:String		= '';
+				// parameters
+					data	= data || { };
+					path	= path || '';
 				
+				// variables
+					var name:String;
+					
 				// undefined
 					if(input == undefined)
 					{
@@ -109,35 +119,35 @@ package core.net
 				// array
 					else if(input is Array)
 					{
-						output += '[';
 						for (var i:int = 0; i < input.length; i++)
 						{
 							name = path + '[' +i+']';
-							output += serialize(input[i], name);
+							PHPVariables.serialize(input[i], name, data);
 						}
-						output += ']';
 					}
 						
 				// object
 					else if(typeof input == 'object')
 					{
-						for(prop in input)
+						for(var prop:String in input)
 						{
 							name = path + (path == '' ? prop : '[' +prop+ ']');
-							output += serialize(input[prop], name);
+							PHPVariables.serialize(input[prop], name, data);
 						}
 					}
 						
 				// value
 					else
 					{
-						output = String(input);
+						data[path] = input;
 					};
 					
 				// return
-					return path + '=' + output;
-			}
+					return data;
+			};	
+		
 			
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
