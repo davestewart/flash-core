@@ -1,4 +1,7 @@
-package core.data.validation {
+package core.data.validation 
+{
+	
+	import flash.errors.IllegalOperationError;
 	/**
 	 * ...
 	 * @author Dave Stewart
@@ -8,21 +11,12 @@ package core.data.validation {
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: variables
+		// { region: messages
 		
-			// constants
-				
-			
-			// properties
-				public var model			:Object;
-				public var errors			:Object;
-				public var state			:Boolean;
-				
-			// validation messages
-				public var messages			:Object = 
+				public var messages:Object = 
 				{
 					// generic
-						'required'				:'This field is required',
+						'required'				:'Required',
 						'invalid'				:'The input appears to be invalid',
 						
 					// patterns
@@ -30,10 +24,12 @@ package core.data.validation {
 						'username'				:'Must be a valid username',
 						'password'				:'Must be a valid password',
 						'url'					:'Must be a valid URL',
-						'phone'					:'Must be a valid phone number',
-						'postcode'				:'Must be a valid postcode',
 						'creditcard'			:'Must be a valid credit card number',
 						'date'					:'Must be a valid date',
+						
+					// locality
+						'phone'					:'Must be a valid phone number',
+						'postcode'				:'Must be a valid postcode',
 						
 					// types
 						'alpha'					:'Must be letters',
@@ -46,18 +42,21 @@ package core.data.validation {
 						'contain'				:'Must contain "{arg1}"',
 						
 					// string lengths
+						'length'				:'Must be {arg1} character(s)',
 						'minlength'				:'Must be a minimum length of {arg1}',
 						'maxlength'				:'Must be a maximum length of {arg1}',
 						'rangelength'			:'Must be a length between {arg1} and {arg2}',
 						
 					// numeric values
+						'value'					:'Must be {arg1}',
 						'min'					:'Must be at least {arg1}',
 						'max'					:'Must be at most {arg1}',
 						'range'					:'Must be between {arg1} and {arg2}',
 						
 					// option selects
-						'minselect'				:'Select at least {arg1} options',
-						'maxselect'				:'Select no more than {arg1} options',
+						'select'				:'Select {arg1} option(s)',
+						'minselect'				:'Select at least {arg1} option(s)',
+						'maxselect'				:'Select no more than {arg1} option(s)',
 						'rangeselect'			:'Select between {arg1} and {arg2} options',
 						
 					// constraints
@@ -67,7 +66,19 @@ package core.data.validation {
 						'question'				:'Must answer the question',
 						'captcha'				:'Must complete the captcha'
 				};
+				
+				
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: variables
+		
+			// constants
+				
 			
+			// properties
+				public var model			:Object;
+				public var errors			:Object;
+				public var state			:Boolean;
+				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
@@ -144,7 +155,7 @@ package core.data.validation {
 							}
 							else
 							{
-								throw new Error('The Validator method "' +method+ '" does not exist');
+								throw new IllegalOperationError('The Validator method "' +method+ '" does not exist');
 							}
 					}
 					
@@ -193,17 +204,6 @@ package core.data.validation {
 					return true;
 				}				
 		
-				public function	phone(value:*):Boolean
-				{
-					return /[-+ ()0-9]/.test(value);
-				}
-		
-				public function postcode(value:String):Boolean 
-				{
-					var rx:RegExp = new RegExp('^(GIR ?0AA|[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9ABEHMNPRV-Y])?)|[0-9][A-HJKPS-UW]) ?[0-9][ABD-HJLNP-UW-Z]{2})$', 'i');
-					return rx.test(value);
-				}
-
 				public function creditcard(value:String):Boolean
 				{
 					return trim(value).replace(/\D+/g, '').length == 16;
@@ -212,8 +212,22 @@ package core.data.validation {
 				public function date(value:String):Boolean
 				{
 					return new Date(Date.parse(value)).toString() !== 'Invalid Date';
-				}				
+				}
+				
 		
+			// local
+		
+				public function	phone(value:*):Boolean
+				{
+					return /^(?:(?:\(?(?:0(?:0|11)\)?[\s-]?\(?|\+)44\)?[\s-]?(?:\(?0\)?[\s-]?)?)|(?:\(?0))(?:(?:\d{5}\)?[\s-]?\d{4,5})|(?:\d{4}\)?[\s-]?(?:\d{5}|\d{3}[\s-]?\d{3}))|(?:\d{3}\)?[\s-]?\d{3}[\s-]?\d{3,4})|(?:\d{2}\)?[\s-]?\d{4}[\s-]?\d{4}))(?:[\s-]?(?:x|ext\.?|\#)\d{3,4})?$/.test(value);
+				}
+		
+				public function postcode(value:String):Boolean 
+				{
+					var rx:RegExp = new RegExp('^(GIR ?0AA|[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9ABEHMNPRV-Y])?)|[0-9][A-HJKPS-UW]) ?[0-9][ABD-HJLNP-UW-Z]{2})$', 'i');
+					return rx.test(value);
+				}
+
 	
 			// types
 		
@@ -253,6 +267,11 @@ package core.data.validation {
 	
 			// string lengths
 		
+				public function length(value:String, length:int):Boolean 
+				{
+					return trim(value).length == length;
+				}
+				
 				public function minlength(value:String, length:int):Boolean 
 				{
 					return trim(value).length >= length;
@@ -271,6 +290,11 @@ package core.data.validation {
 	
 			// numeric values
 		
+				public function value(value:int, length:int):Boolean 
+				{
+					return value == length;
+				}
+				
 				public function min(value:int, length:int):Boolean 
 				{
 					return value >= length;
@@ -289,18 +313,27 @@ package core.data.validation {
 	
 			// option selects
 		
+				public function select(value:String, length:int):Boolean 
+				{
+					throw new IllegalOperationError('This method has not yet been implemented');
+					return true;
+				}			
+		
 				public function minselect(value:String, length:int):Boolean 
 				{
+					throw new IllegalOperationError('This method has not yet been implemented');
 					return true;
 				}			
 		
 				public function maxselect(value:String, length:int):Boolean 
 				{
+					throw new IllegalOperationError('This method has not yet been implemented');
 					return true;
 				}			
 		
 				public function rangeselect(value:String, min:int, max:int):Boolean 
 				{
+					throw new IllegalOperationError('This method has not yet been implemented');
 					return true;
 				}		
 		
@@ -360,8 +393,9 @@ package core.data.validation {
 			
 			protected function getMessage(name:String, args:Array):String 
 			{
-				var index:int = 0;
-				return messages[name].replace(/{\w+}/, function(match:String, ...rest):String { return args[index++];  } );
+				var index	:int		= 0;
+				var message	:String		= messages[name].replace(/{\w+}/, function(match:String, ...rest):String { return args[index++];  } );
+				return message;
 			}
 		
 			protected function trim(value:*):String

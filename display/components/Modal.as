@@ -112,10 +112,7 @@ package core.display.components
 			public function update(element:DisplayObject):void 
 			{
 				// remove any existing element
-					if (this.element)
-					{
-						container.removeChild(this.element);
-					}
+					clear();
 				
 				// add the new element
 					this.element = container.addChild(element);
@@ -139,7 +136,7 @@ package core.display.components
 			public function hide():void 
 			{
 				TweenLite.to(container, 0.4, { autoAlpha:0, scaleX:scaleFactor, scaleY:scaleFactor, ease:Cubic.easeOut } );
-				TweenLite.to(this, 0.3, {  delay:0.2, autoAlpha:0, ease:Cubic.easeIn } );
+				TweenLite.to(this, 0.3, {  delay:0.2, autoAlpha:0, ease:Cubic.easeIn, onComplete:clear } );
 			}
 			
 			public function cancel():void
@@ -181,7 +178,14 @@ package core.display.components
 				}
 			}
 			
-			
+			protected function clear():void 
+			{
+				if (this.element)
+				{
+					container.removeChild(this.element);
+				}
+				element = null;
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
