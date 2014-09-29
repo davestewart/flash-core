@@ -35,7 +35,7 @@ package core.display.components
 				
 			// behaviour
 				protected var backgroundAlpha			:Number		= 0.4;
-				protected var outScale					:Number		= 0.95;
+				protected var scaleFactor				:Number		= 0.95;
 				
 			// variables
 				static public const WIDTH				:int		= 1200;
@@ -128,7 +128,7 @@ package core.display.components
 			public function show():void 
 			{
 				// properties
-					container.scaleX = container.scaleY = outScale;
+					container.scaleX = container.scaleY = scaleFactor;
 					container.alpha = 0;
 					
 				// animate
@@ -138,7 +138,7 @@ package core.display.components
 			
 			public function hide():void 
 			{
-				TweenLite.to(container, 0.4, { autoAlpha:0, scaleX:outScale, scaleY:outScale, ease:Cubic.easeOut } );
+				TweenLite.to(container, 0.4, { autoAlpha:0, scaleX:scaleFactor, scaleY:scaleFactor, ease:Cubic.easeOut } );
 				TweenLite.to(this, 0.3, {  delay:0.2, autoAlpha:0, ease:Cubic.easeIn } );
 			}
 			
