@@ -14,6 +14,8 @@ package core.display.forms {
 		
 		function get error():String
 		function set error(value:String):void
+		
+		function clear():void
 	}
 	
 }
