@@ -5,6 +5,7 @@ package core.media.video
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
+	import flash.geom.Rectangle;
 	import flash.media.Video;
 	import flash.net.NetConnection;
 	import flash.net.NetStream;
@@ -100,10 +101,15 @@ package core.media.video
 					video.smoothing	= true
 					container.addChild(video);
 					
+					if (height > 360)
+						container.scrollRect = new Rectangle(0, 0, width, 360);
+					
+					/*
 					var vidMask:Square = new Square(640, 360);
 					addChild(vidMask);
 					container.mask = vidMask;
-			
+					*/
+					
 				// update
 					draw();
 			}
