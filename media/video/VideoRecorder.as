@@ -200,6 +200,8 @@ package core.media.video
 						
 					// size
 						
+						// Detect aspect ratio supported by webcam
+						/*
 						camera.setMode(4000, 2250, 25);
 				
 						var camWidth:Number = camera.width;
@@ -214,8 +216,11 @@ package core.media.video
 							camera.setMode(1280, 720, 25);
 						else
 							camera.setMode(640, 480, 25);
-							
-						if (camWidth < videoWidth)
+						*/
+						
+						// forcing the camera to 4:3 fixes green stripe issue
+						camera.setMode(640, 480, 25);
+						if (camera.width < videoWidth)
 						{
 							camera.setMode(videoWidth, videoHeight, fps);
 							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
@@ -234,8 +239,8 @@ package core.media.video
 						_fps			= camera.fps;
 						
 					// debug
-						trace('props:', videoWidth, videoHeight, bandwidth, quality, fps, keyframeInterval);
-						trace('rate:', rate);
+						//trace('props:', videoWidth, videoHeight, bandwidth, quality, fps, keyframeInterval);
+						//trace('rate:', rate);
 						
 					// event
 						dispatchEvent(new CameraEvent(CameraEvent.SIZE_CHANGE));
