@@ -143,7 +143,7 @@ package core.media.video
 			protected function testCamera():void
 			{
 				// debug
-					trace('testing for camera...')
+					trace('testing for camera...');
 				
 				// callbacks
 					function onCameraActivity(event:ActivityEvent):void 
@@ -158,7 +158,7 @@ package core.media.video
 					{
 						trace('mouse moved, checking for camera activation');
 						stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-						setTimeout(onActivationCheckTimeout, 500);
+						setTimeout(onActivationCheckTimeout, 1000);
 					}
 					
 					function onActivationCheckTimeout():void
@@ -166,7 +166,7 @@ package core.media.video
 						if ( ! _available )
 						{
 							trace('could not activate camera!');
-							//dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
+							dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
 						}
 					}
 					
@@ -180,6 +180,7 @@ package core.media.video
 					camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
 							
 				// set up mousemove handler to detect when the dialog has been dismissed
+					var moves:int = 0;
 					if (stage)
 					{
 						stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);

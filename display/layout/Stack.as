@@ -73,7 +73,7 @@ package core.display.layout
 				// if first element, set the stack index
 					if (elements.length == 1)
 					{
-						element = child;
+						//element = child;
 						_showElement(child, true);
 					}
 					
