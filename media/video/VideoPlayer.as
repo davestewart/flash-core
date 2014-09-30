@@ -1,6 +1,7 @@
 package core.media.video 
 {
 	import core.display.shapes.Square;
+	import core.events.MediaEvent;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
@@ -134,10 +135,11 @@ package core.media.video
 				// callback
 					function onLoad(event:NetStatusEvent):void 
 					{
-						if (event.info.code == 'NetStream.Play.Reset')
+						if (event.info.code == 'NetStream.Play.Start')
 						{
 							_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
 							pause();
+							dispatchEvent(new MediaEvent(MediaEvent.LOADED));
 						}
 					}
 					
@@ -341,7 +343,7 @@ package core.media.video
 					dispatchEvent(event);
 					
 				// debug
-					//trace('>' + event.info.code);
+					trace('>' + event.info.code);
 					
 				// status
 					_status = event.info.description;
@@ -390,7 +392,7 @@ package core.media.video
 				}
 				data.code = 'NetStream.Play.MetaData';
 				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, data));
-			}						
+			}
 			
 			
 		
