@@ -1,10 +1,14 @@
 package core.media.video 
 {
+	import app.controllers.App;
 	import core.display.shapes.Square;
 	import core.events.MediaEvent;
+	import flash.display.Shape;
 	import flash.display.Sprite;
+	import flash.display.StageDisplayState;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
+	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.media.Video;
 	import flash.net.NetConnection;
@@ -269,10 +273,7 @@ package core.media.video
 				_connection = connection;
 			}
 		
-			public function get stream():NetStream 
-			{
-				return _stream;
-			}
+			public function get stream():NetStream { return _stream; }
 			
 			public function get streamName():String { return _streamName; }
 			
@@ -280,6 +281,12 @@ package core.media.video
 			public function set bufferTime(value:Number):void 
 			{
 				_bufferTime = value;
+			}
+			
+			public function get repeat():Boolean { return _repeat; }
+			public function set repeat(value:Boolean):void 
+			{
+				_repeat = value;
 			}
 			
 			public function get duration():int{ return _duration; }
@@ -292,10 +299,26 @@ package core.media.video
 			
 			public function get paused():Boolean { return _paused; }
 			
-			public function get repeat():Boolean { return _repeat; }
-			public function set repeat(value:Boolean):void 
+			public function get fullscreen():Boolean { return stage ? stage.displayState == StageDisplayState.FULL_SCREEN : false; }
+			public function set fullscreen(state:Boolean):void 
 			{
-				_repeat = value;
+				if (state)
+				{
+					// currently, this isn't working
+					var coords:Point	= localToGlobal(new Point(x, y));
+					var rect:Shape		= new Square(width, height);
+					rect.x				= coords.x;
+					rect.y				= coords.y;
+					
+					trace(coords);
+					App.instance.document.addChild(rect);
+					stage.fullScreenSourceRect	= new Rectangle(coords.x, coords.y, width, height); 
+					//stage.displayState			= StageDisplayState.FULL_SCREEN;
+				}
+				else
+				{
+					stage.displayState			= StageDisplayState.NORMAL;
+				}
 			}
 			
 			
@@ -399,6 +422,7 @@ package core.media.video
 				data.code = 'NetStream.Play.MetaData';
 				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, data));
 			}
+			
 			
 			
 		

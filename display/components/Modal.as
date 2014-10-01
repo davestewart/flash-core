@@ -1,5 +1,6 @@
 package core.display.components 
 {
+	import app.display.popups.StatusPopup;
 	import com.greensock.easing.Cubic;
 	import com.greensock.plugins.AutoAlphaPlugin;
 	import com.greensock.plugins.TweenPlugin;
@@ -32,10 +33,10 @@ package core.display.components
 				protected var container					:Sprite;
 				protected var element					:DisplayObject;
 				
-				
 			// behaviour
 				protected var backgroundAlpha			:Number		= 0.4;
 				protected var scaleFactor				:Number		= 0.95;
+				protected var cancelable				:Boolean;
 				
 			// variables
 				static public const WIDTH				:int		= 1200;
@@ -61,9 +62,9 @@ package core.display.components
 					return instance;
 			}
 			
-			static public function show(element:DisplayObject):void 
+			static public function show(element:DisplayObject, cancelable:Boolean = true):void 
 			{
-				instance.update(element);
+				instance.update(element, cancelable);
 			}
 			
 			static public function hide():void 
@@ -109,7 +110,7 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function update(element:DisplayObject):void 
+			public function update(element:DisplayObject, cancelable:Boolean):void 
 			{
 				// remove any existing element
 					clear();
@@ -118,6 +119,7 @@ package core.display.components
 					this.element = container.addChild(element);
 				
 				// update
+					this.cancelable = cancelable;
 					draw();
 					show();
 			}
@@ -197,7 +199,10 @@ package core.display.components
 			
 			protected function onBackgroundMouseDown(event:MouseEvent):void 
 			{
-				cancel();
+				if (cancelable)
+				{
+					cancel();
+				}
 			}
 			
 		// ---------------------------------------------------------------------------------------------------------------------
