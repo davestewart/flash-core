@@ -21,7 +21,7 @@ package core.display.elements
 				
 			
 			// variables
-				
+				private var invalidationDelay:int = 0;
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -77,9 +77,8 @@ package core.display.elements
 			{
 				for each(var element:DisplayObject in elements)
 				{
-					super.addChild(element);
+					addChild(element);
 				}
-				invalidate();
 				return this;
 			}
 			
@@ -100,8 +99,9 @@ package core.display.elements
 				draw();
 			}
 			
-			public function invalidate(event:Event = null):void 
+			public function invalidate():void 
 			{
+				invalidationDelay = 1;
 				addEventListener(Event.ENTER_FRAME, onInvalidate, false, 0, true);
 			}
 			
@@ -125,7 +125,14 @@ package core.display.elements
 		
 			protected function onInvalidate(event:Event):void 
 			{
-				removeEventListener(Event.ENTER_FRAME, onInvalidate);
+				if (invalidationDelay == 0)
+				{
+					removeEventListener(Event.ENTER_FRAME, onInvalidate);
+				}
+				else
+				{
+					invalidationDelay--;
+				}
 				draw();
 			}
 			
