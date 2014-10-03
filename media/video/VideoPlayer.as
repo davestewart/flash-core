@@ -305,6 +305,7 @@ package core.media.video
 				if (state)
 				{
 					// currently, this isn't working
+					/*
 					var coords:Point	= localToGlobal(new Point(x, y));
 					var rect:Shape		= new Square(width, height);
 					rect.x				= coords.x;
@@ -314,6 +315,7 @@ package core.media.video
 					App.instance.document.addChild(rect);
 					stage.fullScreenSourceRect	= new Rectangle(coords.x, coords.y, width, height); 
 					//stage.displayState			= StageDisplayState.FULL_SCREEN;
+					*/
 				}
 				else
 				{
