@@ -1,6 +1,7 @@
-package core.utils 
+package core.external 
 {
 	import flash.external.ExternalInterface;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart

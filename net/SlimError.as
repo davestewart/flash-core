@@ -66,8 +66,11 @@ package core.net {
 					}
 					
 				// now get the stack
-					matches = error.match(/<div>#(.+)/g);
-					data.stack = matches.join('\n').replace('</pre></body></html>', '');
+					matches		= error.match(/<div>#(.+)/g);
+					data.stack	= '\n' + matches
+									.join('\n')
+									.replace(/<div>/g, '\t')
+									.replace('</pre></body></html>', '');
 					
 				// return
 					return data;
@@ -85,16 +88,22 @@ package core.net {
 		
 			override public function toString():String 
 			{
-				var str:String = '';
-				str	+= '\n--------------------------------------------------------------------------------------------';
-				str	+= '\n Slim Framework Error';
-				str	+= '\n--------------------------------------------------------------------------------------------';
-				for (var name:String in this)
-				{
-					str += '\n' + name + '	: ' + this[name];
-				}
-				str	+= '\n--------------------------------------------------------------------------------------------';
-				return str;
+				// variables
+					var names	:Array = [ 'type', 'code', 'message', 'file', 'line', 'stack' ];
+					var str		:String = '';
+					
+				// output
+					str	+= '\n--------------------------------------------------------------------------------------------';
+					str	+= '\n Slim Framework Error';
+					str	+= '\n--------------------------------------------------------------------------------------------';
+					for each(var name:String in names)
+					{
+						str += '\n' + name + '	 : ' + this[name];
+					}
+					str	+= '\n--------------------------------------------------------------------------------------------';
+					
+				// return
+					return str;
 			}
 	}
 
