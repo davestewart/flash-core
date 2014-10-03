@@ -2,6 +2,7 @@ package core.managers
 {
 	import app.controllers.AppController;
 	import core.data.variables.FlashVars;
+	import core.data.variables.Location;
 	import core.events.ActionEvent;
 	import core.events.TaskEvent;
 	import core.managers.AssetManager;
@@ -11,6 +12,7 @@ package core.managers
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.StatusEvent;
+	import flash.external.ExternalInterface;
 	
 	/**
 	 * ...
@@ -30,11 +32,15 @@ package core.managers
 				protected var loader			:AssetManager;
 				
 			// environment
-				protected var _env					:String;
+				protected var _env				:String;
 				public function get env():String { return _env; }
 
+			// hostname
+				protected var _hostname			:String;
+				public function get hostname():String { return _hostname; }
+				
 			// data
-				protected var _flashvars			:FlashVars;
+				protected var _flashvars		:FlashVars;
 				public function get flashvars():FlashVars { return _flashvars; }
 				
 				
@@ -44,15 +50,21 @@ package core.managers
 		
 			public function BootManager(root:DisplayObjectContainer = null, environment:String = '') 
 			{
+				// environment name
+					_env		= environment;
+						
+				// hostname
+					_hostname	= Location.host(null);
+						
 				// flashvars
 					if (root)
 					{
 						_flashvars = new FlashVars(root);
+						_env = flashvars.env 
+									|| flashvars.environment 
+									|| environment;
 					}
 				
-				// set base environment from flashvars
-					_env = flashvars.env || flashvars.environment || environment;
-						
 				// task queue
 					queue = TaskQueue.create()
 						.when(TaskEvent.COMPLETE, onComplete)

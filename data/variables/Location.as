@@ -1,5 +1,6 @@
 package core.data.variables 
 {
+	import core.external.Console;
 	import flash.external.ExternalInterface;
 
 	/**
@@ -64,7 +65,7 @@ package core.data.variables
 							var params	:Object		= {};
 							for each (var pair:String in arr)
 							{
-								var values:Array = pair.split(':');
+								var values:Array = pair.split('=');
 								if (values.length == 2)
 								{
 									params[values[0]] = values[1];
@@ -139,26 +140,7 @@ package core.data.variables
 				return defaultValue;
 			}
 			
-			
-			
-			/**
-			 * Log data to the Firebug console
-			 * @param	data
-			 * @param	label
-			 */
-			public static function log(data:*, label:String = 'Flash log output'):void 
-			{
-				try
-				{
-					ExternalInterface.call('console.log', label, data);
-				}
-				catch (error:Error)
-				{
 					
-				}
-				trace(label + ': ' + data);
-			}
-		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: Public methods
 		
@@ -182,18 +164,8 @@ package core.data.variables
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: Utilities
 		
-			protected static function external(object:String, ...rest):void 
-			{
-				try
-				{
-					//ExternalInterface.call.apply(this, object, rest);
-				}
-				catch (error:Error)
-				{
-					
-				}
-			}
 
+		
 	}
 
 }
