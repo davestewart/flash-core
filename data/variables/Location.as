@@ -1,171 +1,125 @@
 package core.data.variables 
 {
-	import core.external.Console;
 	import flash.external.ExternalInterface;
-
+	import flash.net.URLVariables;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
 	public class Location
 	{
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: Variables
 		
-			// stage instances
-				
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: variables
+		
+			// statics
+				static public var instance:Location = new Location();
 			
 			// properties
+				protected var _data				:Object;
 				
-			
 			// variables
 				
+			
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: instantiation
+		
+			public function Location() 
+			{
+				_data = { };
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: Instatiation
+		// { region: public methods
 		
-			/**
-			 * Get a single URL search param if live - if not return a default value
-			 * @param	name
-			 * @param	defaultValue
-			 * @return
-			 */
-			public static function param(name:String, defaultValue:String = ''):String 
-			{
-				// grab params
-					var params	:Object		= params();
-					
-				// get actual value
-					if (params[name])
-					{
-						return params[name];
-					}
-				
-				// default
-					return defaultValue;
-			}
 			
-			/**
-			 * Get the URL search params if live - if not return an empty object
-			 * @return
-			 */
-			public static function params():Object 
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: accessors
+		
+			public function get href():String { return get('href'); }
+
+			public function get protocol():String { return get('protocol'); }
+
+			public function get username():String { return get('username'); }
+
+			public function get password():String { return get('password'); }
+
+			public function get host():String { return get('host'); }
+
+			public function get hostname():String { return get('hostname'); }
+
+			public function get port():String { return get('port'); }
+
+			public function get pathname():String { return get('pathname'); }
+
+			public function get search():String { return get('search'); }
+
+			public function get params():URLVariables { return get('params'); }
+
+			public function get hash():String { return get('hash'); }
+
+			public function get origin():String { return get('origin'); }
+			
+			public function get available():Boolean { return ExternalInterface.available; }
+			
+					
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: protected methods
+		
+			protected function get(name:String):*
 			{
-				// try
-					try
-					{
-						// debug
-							trace('Getting external parameters...')
+				if (ExternalInterface.available)
+				{
+					// always re-get the page hash
+						if (name === 'hash')
+						{
+							return ExternalInterface.call('eval', 'window.location.hash').replace('#', '');
+						}
 						
-						// get external params
-							var str		:String		= ExternalInterface.call('eval', 'window.location.search').replace('?', '');
-							
-						// parse
-							var arr		:Array		= str.split('&');
-							var params	:Object		= {};
-							for each (var pair:String in arr)
+					// otherwise, if a value has already been cached, return it
+						else if (name in _data)
+						{
+							return _data[name];
+						}
+						
+					// finally, if a value is being requested for the first time, grab it and process it if needs be
+						else
+						{
+							_data[name] = ExternalInterface.call('eval', 'window.location.' + name);
+							switch(name)
 							{
-								var values:Array = pair.split('=');
-								if (values.length == 2)
-								{
-									params[values[0]] = values[1];
-								}
+								case 'protocol':
+									_data[name] = _data[name].replace(':', '');
+									break;
+								
+								case 'search':
+									_data[name] = _data[name].replace('?', '');
+									break;
+								
+								case 'params':
+									_data[name] = new URLVariables((get('search').match(/\w+=[^&]+/g) || []).join('&')); // filter key=value pairs so URLVariables doesn't error if mal-formed
+									break;
 							}
-							
-						// return
-							return params;
-					}
-					catch (error:Error)
-					{
-						trace('Could not get external parameters!')
-					}
-				
-				// return
-					return {};
+						}
+				}
+				return _data[name];
 			}
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: handlers
+		
 			
-			/**
-			 * Get the URL host if live - if not return a default value
-			 * @param	defaultValue
-			 * @return
-			 */
-			public static function host(defaultValue:String = ''):String
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: utilities
+		
+			public function toString():String
 			{
-				try
-				{
-					return ExternalInterface.call('eval', 'window.location.host');
-				}
-				catch (error:Error)
-				{
-					
-				}
-				return defaultValue;
+				return '[object Location href="' +href+ '"]';
 			}
-			
-			/**
-			 * Get the URL hash if live - if not return a default value
-			 * @param	defaultValue
-			 * @return
-			 */
-			public static function hash(defaultValue:String = ''):String
-			{
-				try
-				{
-					return ExternalInterface.call('eval', 'window.location.hash').replace('#', '');
-				}
-				catch (error:Error)
-				{
-					
-				}
-				return defaultValue;
-			}
-			
-			/**
-			 * Get the URL root if live - if not return a default value
-			 * @param	defaultValue
-			 * @return
-			 */
-			public static function root(defaultValue:String = ''):String
-			{
-				try
-				{
-					var protocol	:String		= ExternalInterface.call('eval', 'window.location.protocol');
-					var host		:String		= ExternalInterface.call('eval', 'window.location.host');
-					return protocol + '//' + host + '/';
-				}
-				catch (error:Error)
-				{
-					
-				}
-				return defaultValue;
-			}
-			
-					
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: Public methods
-		
-			
-
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: Accessors
-
-			
-
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: Handlers
-		
-			
-
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: Protected methods
-		
-			
-
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: Utilities
-		
-
-		
 	}
 
 }

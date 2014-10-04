@@ -6,7 +6,7 @@ package core.data.variables
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public dynamic class FlashVars 
+	dynamic public class FlashVars 
 	{
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
@@ -26,10 +26,9 @@ package core.data.variables
 		
 			public function get(name:String, defaultValue:* = null):*
 			{
-				var value:* = this[name];
-				if (value != undefined)
+				if (name in this)
 				{
-					trace('FlashVars: "' + name + '": ' + value);
+					trace('FlashVars: "' + name + '": ' + this[name]);
 					return value;
 				}
 				else
@@ -55,14 +54,9 @@ package core.data.variables
 					}
 					
 				// print
-					if (total)
-					{
-						trace('\nFlashVars: ' + total + ' values:\n' + str);
-					}
-					else
-					{
-						trace('FlashVars: no values');
-					}
+					total
+						? trace('\nFlashVars: ' + total + ' values:\n' + str)
+						: trace('FlashVars: no values');
 			}
 			
 	}
