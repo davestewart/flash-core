@@ -88,9 +88,16 @@ package core.data.variables
 					// finally, if a value is being requested for the first time, grab it and process it if needs be
 						else
 						{
-							_data[name] = ExternalInterface.call('eval', 'window.location.' + name);
+							_data[name] = ExternalInterface.call('eval', 'window.location.' + name) || '';
 							switch(name)
 							{
+								case 'origin':
+									if (_data[name] == '')
+									{
+										_data[name] = protocol + ':' + hostname + port;
+									}
+									break;
+								
 								case 'protocol':
 									_data[name] = _data[name].replace(':', '');
 									break;
@@ -100,7 +107,7 @@ package core.data.variables
 									break;
 								
 								case 'params':
-									_data[name] = new URLVariables((get('search').match(/\w+=[^&]+/g) || []).join('&')); // filter key=value pairs so URLVariables doesn't error if mal-formed
+									_data[name] = new URLVariables((search.match(/\w+=[^&]+/g) || []).join('&')); // filter key=value pairs so URLVariables doesn't error if mal-formed
 									break;
 							}
 						}
