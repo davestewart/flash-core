@@ -1,69 +1,42 @@
-package core.managers 
+package core.managers.boot 
 {
-	import app.controllers.AppController;
 	import core.data.variables.FlashVars;
-	import core.data.variables.Location;
-	import core.events.ActionEvent;
 	import core.events.TaskEvent;
-	import core.managers.AssetManager;
 	import core.managers.TaskQueue;
 	import flash.display.DisplayObjectContainer;
-	import flash.events.ErrorEvent;
-	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.StatusEvent;
-	import flash.external.ExternalInterface;
 	
 	/**
-	 * ...
+	 * Base Bootstrap provides a single place to queue, load and handle essential 
+	 * bootstrap tasks. By default it does the following basic tasks only:
+	 * 
+	 *  - parsing flashvars
+	 *  - adding tasks
+	 *  - complete, progress, error and cancel events
+	 * 
 	 * @author Dave Stewart
 	 */
-	public class BootManager extends EventDispatcher
+	public class BaseBootstrap extends EventDispatcher
 	{
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
-			// properties
-				protected var queue				:TaskQueue;
-				
-			// loading
-				protected var loader			:AssetManager;
-				
-			// environment
-				protected var _env				:String;
-				public function get env():String { return _env; }
-
-			// hostname
-				protected var _hostname			:String;
-				public function get hostname():String { return _hostname; }
-				
-			// data
-				protected var _flashvars		:FlashVars;
-				public function get flashvars():FlashVars { return _flashvars; }
-				
-				
+			// elements
+				protected var queue					:TaskQueue;
+					
+			// flashvars	
+				protected var _flashvars			:FlashVars;
+				public function get flashvars()		:FlashVars { return _flashvars; }
+					
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function BootManager(root:DisplayObjectContainer = null, environment:String = '') 
+			public function BaseBootstrap(root:DisplayObjectContainer)
 			{
-				// environment name
-					_env		= environment;
-						
-				// hostname
-					_hostname	= Location.host(null);
-						
-				// flashvars
-					if (root)
-					{
-						_flashvars = new FlashVars(root);
-						_env = flashvars.env 
-									|| flashvars.environment 
-									|| environment;
-					}
+				// properties
+					_flashvars		= new FlashVars(root);
 				
 				// task queue
 					queue = TaskQueue.create()
@@ -77,7 +50,7 @@ package core.managers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function add(task:Function):BootManager
+			public function add(task:Function):BaseBootstrap
 			{
 				queue.then(task);
 				return this;
@@ -97,22 +70,16 @@ package core.managers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-		
+			/**
+			 * Moves the queue on to the next task
+			 * @param	...rest		
+			 */
 			protected function next(...rest):void 
 			{
 				queue.next();
 			}
-			
-			protected function reset():void 
-			{
-				if (loader)
-				{
-					loader.queue.dispose();
-				}
-				loader = new AssetManager();
-			}
-			
 		
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		

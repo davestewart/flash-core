@@ -1,6 +1,7 @@
 package core.net 
 {
 	import flash.net.URLVariables;
+	
 	/**
 	 * @name		PHPVariables
 	 * @desc		Send complex datatypes (arrays, objects) to a PHP script, as serialized name/value pairs

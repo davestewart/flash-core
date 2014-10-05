@@ -1,7 +1,5 @@
 package core.net.rest 
 {
-	import core.net.PHPVariables;
-	import core.utils.Base64;
 	import flash.display.Loader;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -11,6 +9,8 @@ package core.net.rest
 	import flash.net.URLRequestHeader;
 	import flash.net.URLVariables;
 	
+	import core.net.PHPVariables;
+	import core.data.encoders.Base64;
 	/**
 	 * ...
 	 * @author Dave Stewart

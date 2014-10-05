@@ -6,25 +6,36 @@ package core.data.models
 	 * 
 	 * Allows you to use custom CSS-style queries on the loaded nodes:
 	 * 
-	 *    node          - retrieve nodes matching the node name, i.e <foo />
-	 *    #id           - retrieve nodes matching the "id" attribute, i.e <node id="foo"/>
-	 *    ~name         - retrieve nodes matching the "name" attribute, i.e <node name="foo" />
-	 *    .class        - retrieve nodes matching the "class" attribute, i.e <node class="foo" />
-	 *    @attrname     - retrieve nodes that have the named attribute, i.e <node someattribute="any value"/>
+	 *    node          - retrieve nodes matching the node name
+	 * 						i.e <foo />
+	 *    #id           - retrieve nodes matching the "id" attribute
+	 * 						i.e <node id="foo"/>
+	 *    ~name         - retrieve nodes matching a preset attribute (defaults to "name", change by setting the class' .cust property)
+	 * 						i.e <node name="foo" />
+	 *    .class        - retrieve nodes matching the "class" attribute
+	 * 						i.e <node class="foo" />
+	 *    @attrname     - retrieve nodes that have the named attribute
+	 * 						i.e <node someattribute="any value"/>
 	 * 
 	 *  You can also use traditional attribute selectors
 	 * 
-	 *    [name=foo]    - retrieve nodes matching an attribute value, i.e <node name="foo"/>
-	 *    [name!=foo]   - retrieve nodes not matching an attribute value, i.e <node name="bar"/>
-	 *    [name^=foo]   - retrieve nodes matching an attribute that starts with a value, i.e <node name="foosball"/>
-	 *    [name$=foo]   - retrieve nodes matching an attribute that ends with a value, i.e <node name="snaffoo"/>
-	 *    [name*=foo]   - retrieve nodes matching an attribute that contains a value, i.e <node name="i like food"/>
-	 *    [name~=foo]   - retrieve nodes matching an attribute that contains a value within a space separated list, i.e <node name="bar foo baz"/>
+	 *    [name=foo]    - retrieve nodes matching an attribute value
+	 * 						i.e <node name="foo"/>
+	 *    [name!=foo]   - retrieve nodes not matching an attribute value
+	 * 						i.e <node name="bar"/>
+	 *    [name^=foo]   - retrieve nodes matching an attribute that starts with a value
+	 * 						i.e <node name="football"/>
+	 *    [name$=foo]   - retrieve nodes matching an attribute that ends with a value
+	 * 						i.e <node name="snaffoo"/>
+	 *    [name*=foo]   - retrieve nodes matching an attribute that contains a value 
+	 * 						i.e <node name="i like food"/>
+	 *    [name~=foo]   - retrieve nodes matching an attribute that contains a value within a space separated list
+	 * 						i.e <node name="bar foo baz"/>
 	 * 
 	 * Selectors can also be chained:
 	 *
-	 *    authors ~shakespear
-	 *    books authors [name=shakespear]
+	 *    authors ~shakespeare
+	 *    books authors [name=shakespeare]
 	 * 
 	 * @author Dave Stewart
 	 */
@@ -39,7 +50,7 @@ package core.data.models
 				public var debug			:Boolean;
 				
 			// other properties
-				public var itemProp			:String		= 'item';
+				public var cust				:String		= 'name';
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
@@ -194,7 +205,7 @@ package core.data.models
 								// item="value"
 									else if(attr == '~')
 									{
-										return node..*.(attribute(itemProp) == value);
+										return node..*.(attribute(cust) == value);
 									}
 									
 								// class contains value

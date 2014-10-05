@@ -1,4 +1,4 @@
-package core.utils.display {
+package core.utils.tools {
 	import core.utils.display.LayoutUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;

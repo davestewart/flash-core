@@ -1,4 +1,4 @@
-package core.utils {
+package core.utils.tools {
 	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
 	/**

@@ -1,4 +1,4 @@
-package core.utils {
+package core.data.encoders {
 
 	import flash.utils.ByteArray;
 	

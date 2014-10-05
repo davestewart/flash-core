@@ -10,7 +10,7 @@ package core.external
 	{
 		public static var enabled:int = -1;
 		
-		public static function log(value:*):void 
+		public static function log(...values):void 
 		{
 			if (ExternalInterface.available)
 			{
@@ -20,7 +20,7 @@ package core.external
 				}
 				if (enabled > 0)
 				{
-					ExternalInterface.call('console.log', value);
+					ExternalInterface.call('console.log', values);
 				}
 			}
 		}

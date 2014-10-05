@@ -28,26 +28,29 @@ package core.managers
 				clear();
 			}
 			
-			public static function create():TaskQueue 
-			{
-				return new TaskQueue();
-			}
-			
-			public static function build(tasks:Array, onComplete:Function, onError:Function = null):TaskQueue
+			public static function create(tasks:Array = null, onComplete:Function = null, onError:Function = null):TaskQueue
 			{
 				// set up queue
-					var queue:TaskQueue = create().when(TaskEvent.COMPLETE, onComplete);
+					var queue:TaskQueue = new TaskQueue();
+					
+				// add tasks
+					if (tasks)
+					{
+						for each(var task:Function in tasks)
+						{
+							queue.add(task);
+						}
+					}
 					
 				// add optional handlers
+					if (onComplete is Function)
+					{
+						queue.when(TaskEvent.COMPLETE, onComplete);
+					}
+					
 					if (onError is Function)
 					{
 						queue.when(TaskEvent.ERROR, onError);
-					}
-					
-				// add tasks
-					for each(var task:Function in tasks)
-					{
-						queue.add(task);
 					}
 					
 				// return

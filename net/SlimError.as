@@ -1,12 +1,12 @@
 package core.net {
-	import core.data.models.AbstractModel;
+	import core.data.models.ObjectModel;
 	
 	/**
 	 * Class to parse Slim Framework error output and provide meaningful info 
 	 * 
 	 * @author Dave Stewart
 	 */
-	public class SlimError extends AbstractModel
+	public class SlimError extends ObjectModel
 	{
 		
 		

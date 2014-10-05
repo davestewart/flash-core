@@ -3,7 +3,7 @@ package core.data.models {
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class AbstractModel 
+	public class ObjectModel 
 	{
 		
 		
@@ -23,7 +23,7 @@ package core.data.models {
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function AbstractModel(data:* = null) 
+			public function ObjectModel(data:* = null) 
 			{
 				if (data)
 				{
@@ -44,7 +44,7 @@ package core.data.models {
 			 * 			users = new Vector.<UserModel>();
 			 * 			for each(var user in data)
 			 * 			{
-			 * 				users.push(UserModel(user);
+			 * 				users.push(UserModel(user));
 			 * 			}
 			 * 		}
 			 * 

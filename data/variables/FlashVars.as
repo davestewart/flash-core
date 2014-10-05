@@ -29,7 +29,7 @@ package core.data.variables
 				if (name in this)
 				{
 					trace('FlashVars: "' + name + '": ' + this[name]);
-					return value;
+					return this[name];
 				}
 				else
 				{

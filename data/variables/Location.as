@@ -29,6 +29,7 @@ package core.data.variables
 			public function Location() 
 			{
 				_data = { };
+				_data.params = new URLVariables();
 			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------

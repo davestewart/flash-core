@@ -1,5 +1,4 @@
-﻿package core.media.images
-{
+﻿package core.data.encoders {
 	import flash.display.BitmapData;
 	import flash.utils.ByteArray;
 	

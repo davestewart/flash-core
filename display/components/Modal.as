@@ -1,12 +1,9 @@
 package core.display.components 
 {
-	import app.display.popups.StatusPopup;
 	import com.greensock.easing.Cubic;
 	import com.greensock.plugins.AutoAlphaPlugin;
 	import com.greensock.plugins.TweenPlugin;
 	import com.greensock.TweenLite;
-	import core.display.elements.Element;
-	import core.utils.display.DisplayUtils;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
