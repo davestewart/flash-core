@@ -3,10 +3,11 @@ package core.managers.boot
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	import flash.external.ExternalInterface;
+	import flash.net.URLLoader;
+	import flash.net.URLRequest;
 	import flash.utils.setTimeout;
 	
 	import core.data.variables.Location;
-	import core.managers.AssetManager;
 	import core.managers.boot.CoreBootstrap;
 	
 	/**
@@ -26,9 +27,6 @@ package core.managers.boot
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
-			// elements
-				protected var loader				:AssetManager;
-		
 			// environment
 				protected var _env					:String;
 				public function get env()			:String { return _env; }
@@ -37,10 +35,8 @@ package core.managers.boot
 				protected var _location				:Location;
 				public function get location()		:Location { return _location; }
 					
-			// config path	
-				protected var _configPath			:String;
-				
 			// config	
+				protected var _configPath			:String;
 				protected var _config				:XML;
 				public function get config()		:XML { return _config; }
 					
@@ -61,9 +57,9 @@ package core.managers.boot
 				// properties
 					_location		= new Location();
 				
-				// parameters
-					_env			= location.params.env || flashvars.env || env;
-					_configPath		= location.params.config || flashvars.config || config;
+				// parameters. flashvars (as they're more secure than the URL) take precidence, then search params, then passed-in params
+					_env			= flashvars.env || location.params.env || env;
+					_configPath		= flashvars.config || location.params.config || config;
 					
 				// add default tasks
 					queue
@@ -81,22 +77,14 @@ package core.managers.boot
 					log('Loading config...');
 					
 				// load
-					reset();
-					loader.addXML(_configPath, 'config');
-					loader.addEventListener(Event.COMPLETE, onLoadConfig);
-					loader.load();
+					var loader:URLLoader = new URLLoader(new URLRequest(_configPath));
+					loader.addEventListener(Event.COMPLETE, onLoadConfig, false, 0, true);
 			}
 		
 			protected function onLoadConfig(event:Event):void 
 			{
-				// remove listener
-					loader.removeEventListener(Event.COMPLETE, onLoadConfig);
-					
-				// data
-					_config = loader.getXML('config');
-					
-				// next
-					next();
+				_config = new XML(event.target.data);
+				next();
 			}
 		
 			
@@ -168,15 +156,6 @@ package core.managers.boot
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			protected function reset():void 
-			{
-				if (loader)
-				{
-					loader.queue.dispose();
-				}
-				loader = new AssetManager();
-			}
-			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
