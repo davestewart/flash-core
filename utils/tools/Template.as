@@ -1,5 +1,6 @@
-package core.utils.tools {
-	import core.utils.display.LayoutUtils;
+package core.utils.tools 
+{
+	import core.utils.tools.Layout;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.text.TextField;
@@ -35,7 +36,7 @@ package core.utils.tools {
 				protected var rules			:Object;
 
 			// variables
-				protected var layout		:LayoutUtils;
+				protected var layout		:Layout;
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
@@ -121,7 +122,7 @@ package core.utils.tools {
 					placeholder = getPlaceholder(placeholder);
 					
 				// align
-					LayoutUtils.grab(placeholder, element).align();
+					Layout.grab(placeholder, element).align();
 						
 				// apply any layout rules
 					processRules(placeholder, element, classes);

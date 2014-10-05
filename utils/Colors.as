@@ -1,6 +1,6 @@
 ﻿package core.utils
 {
-	public class ColorUtils
+	public class Colors
 	{
 		
 		public static function RGBToHex(r:uint, g:uint, b:uint):uint

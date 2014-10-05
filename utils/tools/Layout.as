@@ -1,12 +1,14 @@
-package core.utils.display {
+package core.utils.tools 
+{
 	import flash.display.DisplayObject;
 	import flash.display.Stage;
 	import flash.geom.Rectangle;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class LayoutUtils 
+	public class Layout 
 	{
 		
 		
@@ -33,7 +35,7 @@ package core.utils.display {
 			 * @param	element			The element being aligned
 			 * @param	useBounds		An optional Boolean to use the placeholder's bounds, defaults to true
 			 */
-			public function LayoutUtils(placeholder:DisplayObject, element:DisplayObject, useBounds:Boolean = true):void 
+			public function Layout(placeholder:DisplayObject, element:DisplayObject, useBounds:Boolean = true):void 
 			{
 				setElement(element);
 				setPlaceholder(placeholder, useBounds);
@@ -45,9 +47,9 @@ package core.utils.display {
 			 * @param	element			The element being aligned
 			 * @param	useBounds		An optional Boolean to use the placeholder's bounds, defaults to true
 			 */
-			public static function grab(placeholder:DisplayObject, element:DisplayObject, useBounds:Boolean = true):LayoutUtils 
+			public static function grab(placeholder:DisplayObject, element:DisplayObject, useBounds:Boolean = true):Layout 
 			{
-				return new LayoutUtils(placeholder, element, useBounds);
+				return new Layout(placeholder, element, useBounds);
 			}
 			
 			/**
@@ -56,9 +58,9 @@ package core.utils.display {
 			 * @param	element			The element being aligned
 			 * @param	useBounds		An optional Boolean to use the placeholder's bounds, defaults to true
 			 */
-			public static function replace(placeholder:DisplayObject, element:DisplayObject, useBounds:Boolean = true):LayoutUtils 
+			public static function replace(placeholder:DisplayObject, element:DisplayObject, useBounds:Boolean = true):Layout 
 			{
-				var utils:LayoutUtils = new LayoutUtils(placeholder, element, useBounds);
+				var utils:Layout = new Layout(placeholder, element, useBounds);
 				if (placeholder.parent)
 				{
 					placeholder.parent.addChildAt(element, placeholder.parent.getChildIndex(placeholder));
@@ -73,7 +75,7 @@ package core.utils.display {
 			 * @param	useBounds		An optional Boolean to use the placeholder's bounds, defaults to true
 			 * @return
 			 */
-			public function setPlaceholder(placeholder:DisplayObject, useBounds:Boolean = true):LayoutUtils
+			public function setPlaceholder(placeholder:DisplayObject, useBounds:Boolean = true):Layout
 			{
 				this.placeholder = placeholder;
 				bounds = placeholder is Stage
@@ -89,7 +91,7 @@ package core.utils.display {
 			 * @param	element			The element being aligned
 			 * @return
 			 */
-			public function setElement(element:DisplayObject):LayoutUtils
+			public function setElement(element:DisplayObject):Layout
 			{
 				this.element = element;
 				return this;
@@ -99,7 +101,7 @@ package core.utils.display {
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function align(type:String = 'top left', offset:Number = 0):LayoutUtils
+			public function align(type:String = 'top left', offset:Number = 0):Layout
 			{
 				switch(type)
 				{
@@ -154,7 +156,7 @@ package core.utils.display {
 				return this;
 			}
 			
-			public function match(type:String = 'size'):LayoutUtils
+			public function match(type:String = 'size'):Layout
 			{
 				switch(type)
 				{

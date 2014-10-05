@@ -4,7 +4,7 @@ package core.utils
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class XMLUtils 
+	public class Nodes 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------

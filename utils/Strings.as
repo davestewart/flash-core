@@ -7,7 +7,7 @@ package core.utils
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class StringUtils 
+	public class Strings 
 	{
 		
 		static public function populate(input:String, ...params):String 

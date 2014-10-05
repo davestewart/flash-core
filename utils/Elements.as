@@ -1,5 +1,5 @@
-﻿package core.utils.display {
-	import core.utils.ObjectUtils;
+﻿package core.utils {
+	import core.utils.Objects;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
@@ -22,7 +22,7 @@
 		
 		public static function replace(target:*, properties:String, Def:Class, ...params):*
 		{
-			return match(ObjectUtils.create(Def, params), target, properties);
+			return match(Objects.create(Def, params), target, properties);
 		}
 
 		public static function match(source:*, target:DisplayObject, properties:*):* 

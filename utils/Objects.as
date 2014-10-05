@@ -1,5 +1,7 @@
 package core.utils
 {
+	import flash.utils.describeType;
+	import flash.utils.getQualifiedClassName;
 	
 	/**
 	 * ...
@@ -8,7 +10,7 @@ package core.utils
 	
 	import flash.utils.describeType;
  
-	public class ObjectUtils
+	public class Objects
 	{
 		
 		static public function create(Def:Class, ...params):*
@@ -93,9 +95,89 @@ package core.utils
 				
 			// return
 				return '[' + className + ' ' + pairs.join(' ') + ']';
-		}			
-
+		}
 		
+		static public function toObject(source:*, deep:Boolean = false):Object 
+		{
+			// variables
+				var qname	:String		= getQualifiedClassName(source);
+				var props	:Object		= types[qname] || getProps(source);
+				
+			// values
+				var data	:Object		= { };
+				var value	:*;
+				
+			// loop
+				for(var prop:String in props)
+				{
+					value = data[prop] = source[prop];
+					if (value is Array)
+					{
+						
+					}
+					else
+					{
+						
+					}
+					
+					data[prop] = value;
+				}
+				
+			// return
+				return data;
+		}
+	
+		
+		static public function getProps(source:*):Object 
+		{
+			// description
+				var desc:XML = describeType(source);
+				
+			// debug
+				trace(desc.toXMLString());
+				
+			// get base object if defintion
+				if (desc.@base == 'Class')
+				{
+					desc = desc.factory[0];
+				}
+				
+			// collect properties
+				var props:Object = {};
+				for each(var node:XML in desc.*)
+				{
+					var name:String = node.name();
+					if (name == 'variable' || (name == 'accessor' && /read/.test(node.@access)))
+					{
+						props[node.@name] = String(node.@type);
+					}
+				}
+				
+			// return
+				return props;
+		}
+
+	
 	}
 	
 }
+
+var types:Object = { };
+
+
+var klass:XML = <type name="DescribeTypeTest.as$0::Test" base="Class" isDynamic="true" isFinal="true" isStatic="true">
+  <factory type="DescribeTypeTest.as$0::Test">
+    <variable name="publicVar" type="String" />
+    <accessor name="getter" access="readonly" type="String" declaredBy="DescribeTypeTest.as$0::Test" />
+    <accessor name="setterVar" access="writeonly" type="String" declaredBy="DescribeTypeTest.as$0::Test" />
+    <accessor name="getterSetterVar" access="readwrite" type="String" declaredBy="DescribeTypeTest.as$0::Test" />
+	</factory>
+</type>
+
+
+var instance:XML = <type name="DescribeTypeTest.as$0::Test" base="Object" isDynamic="false" isFinal="false" isStatic="false">
+  <variable name="publicVar" type="String" />
+  <accessor name="getterSetterVar" access="readwrite" type="String" declaredBy="DescribeTypeTest.as$0::Test" />
+  <accessor name="getter" access="readonly" type="String" declaredBy="DescribeTypeTest.as$0::Test" />
+  <accessor name="setterVar" access="writeonly" type="String" declaredBy="DescribeTypeTest.as$0::Test" />
+</type>

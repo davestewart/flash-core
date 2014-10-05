@@ -1,4 +1,4 @@
-package core.utils.display {
+package core.utils {
 	import flash.geom.Rectangle;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
@@ -6,7 +6,7 @@ package core.utils.display {
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class TextUtils 
+	public class Text 
 	{
 		
 		/**

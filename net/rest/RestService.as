@@ -1,6 +1,6 @@
 package core.net.rest
 {
-	import core.utils.StringUtils;
+	import core.utils.Strings;
 	import flash.events.EventDispatcher;
 	import core.net.rest.RestClient;
 	
@@ -99,7 +99,7 @@ package core.net.rest
 			
 			protected function getPath(path:String, ...params):String 
 			{
-				return StringUtils.populate(path, params);
+				return Strings.populate(path, params);
 			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
