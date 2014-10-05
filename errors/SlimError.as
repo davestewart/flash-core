@@ -1,4 +1,5 @@
-package core.net {
+package core.errors 
+{
 	import core.data.models.ObjectModel;
 	
 	/**

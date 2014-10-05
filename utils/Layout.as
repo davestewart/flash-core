@@ -1,4 +1,4 @@
-package core.utils.tools 
+package core.utils 
 {
 	import flash.display.DisplayObject;
 	import flash.display.Stage;

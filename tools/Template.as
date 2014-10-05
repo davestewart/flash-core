@@ -1,6 +1,6 @@
-package core.utils.tools 
+package core.tools 
 {
-	import core.utils.tools.Layout;
+	import core.utils.Layout;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.text.TextField;

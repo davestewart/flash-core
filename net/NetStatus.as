@@ -1,6 +1,6 @@
-package core.constants {
+package core.net {
 	
-	import core.constants.NetStatus;
+	import core.net.NetStatus;
 	
 	/**
 	 * ...

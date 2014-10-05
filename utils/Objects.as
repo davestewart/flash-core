@@ -1,5 +1,6 @@
 package core.utils
 {
+	import core.events.ValueEvent;
 	import flash.utils.describeType;
 	import flash.utils.getQualifiedClassName;
 	
@@ -55,7 +56,7 @@ package core.utils
 			var tabs:String = "";
 			for (var i:int = 0; i < level; i++)
 			{
-				tabs += "\t"
+				tabs += "    "
 			};
 			
 			for (var prop:String in obj)
@@ -97,7 +98,13 @@ package core.utils
 				return '[' + className + ' ' + pairs.join(' ') + ']';
 		}
 		
-		static public function toObject(source:*, deep:Boolean = false):Object 
+		/**
+		 * Converts a class instance (whose properties can't be iterated over) into an Object
+		 * @param	source		Any instance
+		 * @param	deep		Currently not implemented properly
+		 * @return
+		 */
+		static public function convert(source:*, deep:Boolean = false):Object 
 		{
 			// variables
 				var qname	:String		= getQualifiedClassName(source);
@@ -111,16 +118,18 @@ package core.utils
 				for(var prop:String in props)
 				{
 					value = data[prop] = source[prop];
-					if (value is Array)
-					{
-						
-					}
-					else
-					{
-						
-					}
 					
-					data[prop] = value;
+					if (typeof value == 'object' && deep)
+					{
+						if (value is Array)
+						{
+							
+						}
+						else
+						{
+							data[prop] = convert(value, true);
+						}
+					}
 				}
 				
 			// return

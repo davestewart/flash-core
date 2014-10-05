@@ -6,16 +6,16 @@ package core.data.models
 	 * 
 	 * Allows you to use custom CSS-style queries on the loaded nodes:
 	 * 
-	 *    node          - retrieve nodes matching the node name
+	 *    foo          - retrieve nodes matching the node name
 	 * 						i.e <foo />
-	 *    #id           - retrieve nodes matching the "id" attribute
+	 *    #foo         - retrieve nodes matching the "id" attribute
 	 * 						i.e <node id="foo"/>
-	 *    ~name         - retrieve nodes matching a preset attribute (defaults to "name", change by setting the class' .cust property)
+	 *    ~foo         - retrieve nodes matching a preset attribute (defaults to "name", change by setting the class' .cust property)
 	 * 						i.e <node name="foo" />
-	 *    .class        - retrieve nodes matching the "class" attribute
+	 *    .foo         - retrieve nodes matching the "class" attribute
 	 * 						i.e <node class="foo" />
-	 *    @attrname     - retrieve nodes that have the named attribute
-	 * 						i.e <node someattribute="any value"/>
+	 *    @foo         - retrieve nodes that have the named attribute
+	 * 						i.e <node foo="any value"/>
 	 * 
 	 *  You can also use traditional attribute selectors
 	 * 
@@ -255,7 +255,7 @@ package core.data.models
 										break;
 										
 										case '~=':
-											node..*.(String(attribute(attr)).split(' ').indexOf(value) != -1);
+											return node..*.(String(attribute(attr)).split(' ').indexOf(value) != -1);
 										break;
 									}		
 							}

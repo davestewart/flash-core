@@ -6,7 +6,7 @@ package core.managers
 	import flash.events.NetStatusEvent;
 	import flash.net.*;
 	
-	import core.constants.NetStatus;
+	import core.net.NetStatus;
 	import core.data.settings.ServerSettings;
 	
 	/**
