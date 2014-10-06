@@ -2,7 +2,7 @@ package core.managers.boot
 {
 	import core.data.variables.FlashVars;
 	import core.events.TaskEvent;
-	import core.managers.TaskQueue;
+	import core.managers.tasks.TaskQueue;
 	import flash.display.DisplayObjectContainer;
 	import flash.events.EventDispatcher;
 	
@@ -50,15 +50,20 @@ package core.managers.boot
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function add(task:Function):BaseBootstrap
+			public function add(task:Function, name:String = null):BaseBootstrap
 			{
-				queue.then(task);
+				queue.add(task, name);
 				return this;
 			}
 			
 			public function start():void 
 			{
 				queue.start();
+			}
+			
+			public function run(tasks:*):void 
+			{
+				queue.run(tasks);
 			}
 			
 			public function cancel():void 

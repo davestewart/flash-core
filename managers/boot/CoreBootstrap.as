@@ -2,6 +2,7 @@ package core.managers.boot
 {
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
+	import flash.events.IOErrorEvent;
 	import flash.external.ExternalInterface;
 	import flash.net.URLLoader;
 	import flash.net.URLRequest;
@@ -63,8 +64,8 @@ package core.managers.boot
 					
 				// add default tasks
 					queue
-						.then(loadConfig)
-						.then(setupEnvironment);
+						.add(loadConfig, 'config')
+						.add(setupEnvironment, 'environment');
 			}
 		
 
@@ -76,15 +77,23 @@ package core.managers.boot
 				// debug
 					log('Loading config...');
 					
+				// callback
+					function onLoad(event:Event):void 
+					{
+						_config = new XML(event.target.data);
+						next();
+					}
+					
+					function onError(event:IOErrorEvent):void 
+					{
+						log('The config file at "' +_configPath+ '" could not be loaded');
+						cancel();
+					}
+					
 				// load
 					var loader:URLLoader = new URLLoader(new URLRequest(_configPath));
-					loader.addEventListener(Event.COMPLETE, onLoadConfig, false, 0, true);
-			}
-		
-			protected function onLoadConfig(event:Event):void 
-			{
-				_config = new XML(event.target.data);
-				next();
+					loader.addEventListener(Event.COMPLETE, onLoad, false, 0, true);
+					loader.addEventListener(IOErrorEvent.IO_ERROR, onError, false, 0, true);
 			}
 		
 			
