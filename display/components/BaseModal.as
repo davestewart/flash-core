@@ -10,81 +10,64 @@ package core.display.components
 	import flash.events.Event;
 	import flash.events.MouseEvent;
 	import flash.filters.DropShadowFilter;
+	import flash.geom.Rectangle;
 	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class Modal extends Sprite 
+	public class BaseModal extends Sprite 
 	{
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
-			// constants
-				public static var instance				:Modal;
-			
 			// properties
-				protected var background				:Sprite;
-				protected var container					:Sprite;
-				protected var element					:DisplayObject;
+				protected var background			:Sprite;
+				protected var container				:Sprite;
+				protected var element				:DisplayObject;
 				
 			// behaviour
-				protected var backgroundAlpha			:Number		= 0.4;
-				protected var scaleFactor				:Number		= 0.95;
-				protected var cancelable				:Boolean;
+				protected var backgroundAlpha		:Number;
+				protected var cancelable			:Boolean;
 				
 			// variables
-				static public const WIDTH				:int		= 1200;
-				static public const HEIGHT				:int		= 760;
+				public var minHeight				:int;
+				public var maxHeight				:int;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: static
 		
-			static public function create(parent:DisplayObjectContainer):Modal 
-			{
-				// activate plugin
-					TweenPlugin.activate([AutoAlphaPlugin]);
-					
-				// throw error if a modal instance has already been created
-					if (instance)
-					{
-						throw new Error('A global Modal has already been created via Modal.create()');
-					}
-					
-				// create and return
-					instance = new Modal(parent);
-					return instance;
-			}
-			
-			static public function show(element:DisplayObject, cancelable:Boolean = true):void 
-			{
-				instance.update(element, cancelable);
-			}
-			
-			static public function hide():void 
-			{
-				instance.hide();
-			}
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Modal(parent:DisplayObjectContainer)
+			public function BaseModal(parent:DisplayObjectContainer, maxHeight:int = Number.MAX_VALUE, minHeight:int = 0)
 			{
-				parent.addChild(this);
-				build();
+				// parameters
+					this.maxHeight	= maxHeight;
+					this.minHeight	= 300;
+					
+				// properties
+					backgroundAlpha	= 0.4
+				
+				// add child
+					parent.addChild(this);
+					initialize();
+					build();
+					hide(true);
+			}
+			
+			protected function initialize():void 
+			{
+				
 			}
 			
 			protected function build():void 
 			{
-				// vsiibility
-					alpha		= 0;
-					visible		= false;
-					
 				// build bg
 					background = new Sprite();
 					background.graphics.beginFill(0x000000, backgroundAlpha);
@@ -100,42 +83,34 @@ package core.display.components
 				// listeners
 					background.addEventListener(MouseEvent.MOUSE_DOWN, onBackgroundMouseDown);
 					stage.addEventListener(Event.RESIZE, onResize);
-				
 			}
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function update(element:DisplayObject, cancelable:Boolean):void 
+			public function update(element:DisplayObject, cancelable:Boolean = true):void 
 			{
-				// remove any existing element
+				// replace existing element
 					clear();
+					this.element	= container.addChild(element);
 				
-				// add the new element
-					this.element = container.addChild(element);
+				// update properties
+					this.cancelable	= cancelable;
 				
 				// update
-					this.cancelable = cancelable;
 					draw();
 					show();
 			}
 			
-			public function show():void 
+			public function show(immediate:Boolean = false):void 
 			{
-				// properties
-					container.scaleX = container.scaleY = scaleFactor;
-					container.alpha = 0;
-					
-				// animate
-					TweenLite.to(this, 0.3, { autoAlpha:1, ease:Cubic.easeOut } );
-					TweenLite.to(container, 0.4, { delay:0.2, autoAlpha:1, scaleX:1, scaleY:1, ease:Cubic.easeOut } );
+				visible = true;
 			}
 			
-			public function hide():void 
+			public function hide(immediate:Boolean = false):void 
 			{
-				TweenLite.to(container, 0.4, { autoAlpha:0, scaleX:scaleFactor, scaleY:scaleFactor, ease:Cubic.easeOut } );
-				TweenLite.to(this, 0.3, {  delay:0.2, autoAlpha:0, ease:Cubic.easeIn, onComplete:clear } );
+				visible = false;
 			}
 			
 			public function cancel():void
@@ -143,6 +118,7 @@ package core.display.components
 				hide();
 				dispatchEvent(new Event(Event.CANCEL));
 			}
+			
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -162,7 +138,7 @@ package core.display.components
 						background.height	= stage.stageHeight;
 						
 					// update content
-						var height:Number	= Math.min(HEIGHT, stage.stageHeight);
+						var height:Number	= Math.min(maxHeight, stage.stageHeight);
 						
 					// centralize container
 						container.x			= background.width / 2;
@@ -173,7 +149,7 @@ package core.display.components
 						element.y			= - element.height / 2;
 						
 					// document hack
-						x = -parent.x;
+						x					= -parent.x;
 				}
 			}
 			
