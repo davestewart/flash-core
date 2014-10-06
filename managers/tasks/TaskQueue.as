@@ -1,5 +1,4 @@
-package core.managers 
-{
+package core.managers.tasks {
 	import flash.events.EventDispatcher;
 	import core.events.TaskEvent;
 	
@@ -14,7 +13,8 @@ package core.managers
 		// { region: variables
 			
 			// properties
-				protected var _tasks				:Vector.<Function>;
+				protected var _tasks				:Vector.<Task>;
+				protected var _runningTasks			:Vector.<Task>;
 				
 			// variables
 				protected var _index				:int;
@@ -63,9 +63,9 @@ package core.managers
 		
 			// add or remove tasks
 			
-				public function add(task:Function):TaskQueue 
+				public function add(task:Function, name:String = null):TaskQueue 
 				{
-					_tasks.push(task);
+					_tasks.push(new Task(task, name || 'task' + _tasks.length));
 					return this;
 				}
 				
@@ -80,19 +80,55 @@ package core.managers
 				
 				public function remove(task:*):void 
 				{
-					var index:int = task is Function
-						? _tasks.indexOf(task)
-						: task is int
-							? task
-							: _tasks.length - 1;
-							
-					_tasks.splice(index, 1);
+					// variables
+						var index	:int;
+						var i		:int;
+						
+					// find index
+						if (task is int)
+						{
+							index = task;
+						}
+						else if (task is Task)
+						{
+							index = _tasks.indexOf(task);
+						}
+						else if (task is Function)
+						{
+							for (i = 0; i < _tasks.length; i++) 
+							{
+								if (_tasks[i].func == task)
+								{
+									index = i;
+									break;
+								}
+							}
+						}
+						else if (task is String)
+						{
+							for (i = 0; i < _tasks.length; i++) 
+							{
+								if (_tasks[i].name == task)
+								{
+									index = i;
+									break;
+								}
+							}
+						}
+						else
+						{
+							index = _tasks.length - 1;
+						}
+						
+					// remove
+						_tasks.splice(index, 1);
 				}
 				
 				public function clear():TaskQueue 
 				{
-					_index	= -1;
-					_tasks	= new Vector.<Function>;
+					_index			= -1;
+					_tasks			= new Vector.<Task>;
+					_runningTasks	= new Vector.<Task>;
 					return this;
 				}
 				
@@ -104,10 +140,46 @@ package core.managers
 				 */
 				public function start():TaskQueue 
 				{
-					dispatchEvent(new TaskEvent(TaskEvent.START));
-					dispatchEvent(new TaskEvent(TaskEvent.PROGRESS, 0));
-					next();
+					_runningTasks = _tasks;
+					_run();
 					return this;
+				}
+				
+				/**
+				 * Run a subset of named tasls
+				 * @param	tasks
+				 * @return
+				 */
+				public function run(tasks:* = null):TaskQueue 
+				{
+					// collate names
+						var names:Array;
+						if (tasks is String)
+						{
+							names = tasks.match(/\w+/g);
+						}
+						else if (tasks is Array)
+						{
+							names = tasks;
+						}
+						else
+						{
+							throw new Error('TaskQueue:run() expexts an Array or String of task names');
+						}
+						
+					// collate tasks
+						_runningTasks = new Vector.<Task>;
+						for (var i:int = 0; i < _tasks.length; i++) 
+						{
+							if (names.indexOf(_tasks[i].name) > -1)
+							{
+								_runningTasks.push(_tasks[i]);
+							}
+						}
+					
+					// run
+						_run();
+						return this;
 				}
 				
 				/**
@@ -117,7 +189,7 @@ package core.managers
 				 */
 				public function next(...rest):TaskQueue
 				{
-					onNext();
+					doNext();
 					return this;
 				}
 				
@@ -128,7 +200,8 @@ package core.managers
 				 */
 				public function error(...rest):TaskQueue
 				{
-					onNext(true);
+					dispatchEvent(new TaskEvent(TaskEvent.ERROR, error));
+					doNext();
 					return this;
 				}
 				
@@ -155,9 +228,9 @@ package core.managers
 				
 			// event handlers
 			
-				public function then(task:Function, skip:Boolean = false):TaskQueue
+				public function then(task:Function, name:String = null):TaskQueue
 				{
-					return skip ? this : add(task);
+					return add(task, name);
 				}
 			
 				public function when(event:String, handler:Function):TaskQueue 
@@ -182,24 +255,30 @@ package core.managers
 		
 			public function get progress():Number
 			{
-				return index / length;
+				return index / _runningTasks.length;
 			}
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected function onNext(error:Boolean = false):void 
+			protected function _run():void 
 			{
-				if (_index < _tasks.length - 1)
-				{
-					if (error)
-					{
-						dispatchEvent(new TaskEvent(TaskEvent.ERROR, error));
-					}
-					_tasks[++_index]();
+				// variables
+					_index = 0;
 					
-					// this appears to be buggy - check index update - are they 1 less than they should be?
-					//dispatchEvent(new TaskEvent(TaskEvent.PROGRESS, progress));
+				// events
+					dispatchEvent(new TaskEvent(TaskEvent.START));
+					dispatchEvent(new TaskEvent(TaskEvent.PROGRESS, 0));
+					
+				// start
+					doNext();
+			}
+		
+			protected function doNext():void 
+			{
+				if (hasNext())
+				{
+					_runningTasks[_index++].exec();
 				}
 				else
 				{
@@ -207,6 +286,11 @@ package core.managers
 				}
 			}
 		
+			public function hasNext():Boolean
+			{
+				return _index < _runningTasks.length;
+			}
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
