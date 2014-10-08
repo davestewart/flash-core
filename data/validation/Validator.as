@@ -209,7 +209,7 @@ package core.data.validation
 		
 				public function email(value:String):Boolean
 				{
-					return /^[a-z0-9._%+-]+@[a-z0-9.-]+(\.[a-z]{2,})(\.[a-z]{2,})?$/i.test(value);
+					return /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z]{2,})(\.[a-z]{2,})?$/i.test(value);
 				}
 		
 				public function username(value:String):Boolean 
