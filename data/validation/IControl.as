@@ -1,4 +1,4 @@
-package core.display.forms {
+package core.data.validation {
 	
 	/**
 	 * ...
@@ -6,6 +6,9 @@ package core.display.forms {
 	 */
 	public interface IControl 
 	{
+		function get name():String;
+		function set name(value:String):void;
+		
 		function get value():*
 		function set value(value:*):void
 

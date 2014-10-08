@@ -1,5 +1,6 @@
 package core.display.elements 
 {
+	import app.display.panels.FormPanel;
 	import flash.display.BlendMode;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
@@ -38,6 +39,11 @@ package core.display.elements
 				build();
 			}
 		
+			static public function create(parent:DisplayObjectContainer):Element 
+			{
+				return new Element(parent);
+			}
+			
 			protected function initialize():void 
 			{
 				

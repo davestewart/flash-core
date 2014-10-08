@@ -16,7 +16,7 @@ package core.data.validation
 				public var messages:Object = 
 				{
 					// generic
-						'required'				:'Required',
+						'required'				:'This field is required',
 						'invalid'				:'The input appears to be invalid',
 						
 					// patterns
@@ -36,6 +36,7 @@ package core.data.validation
 						'alphanumeric'			:'Must be letters and numbers',
 						'digits'				:'Must be digits',
 						'numeric'				:'Must be a number',
+						'resrict'				:'Must be {arg1} only',
 						
 					// string values
 						'match'					:'Must be "{arg1}"',
@@ -43,9 +44,9 @@ package core.data.validation
 						
 					// string lengths
 						'length'				:'Must be {arg1} character(s)',
-						'minlength'				:'Must be a minimum length of {arg1}',
-						'maxlength'				:'Must be a maximum length of {arg1}',
-						'rangelength'			:'Must be a length between {arg1} and {arg2}',
+						'minlength'				:'Must be at least {arg1} characters',
+						'maxlength'				:'Must be at most {arg1} characters',
+						'rangelength'			:'Must be between {arg1} and {arg2} characters',
 						
 					// numeric values
 						'value'					:'Must be {arg1}',
@@ -56,11 +57,11 @@ package core.data.validation
 					// option selects
 						'select'				:'Select {arg1} option(s)',
 						'minselect'				:'Select at least {arg1} option(s)',
-						'maxselect'				:'Select no more than {arg1} option(s)',
+						'maxselect'				:'Select at most {arg1} option(s)',
 						'rangeselect'			:'Select between {arg1} and {arg2} options',
 						
 					// constraints
-						'equalto'				:'Must be the same as "{arg1}"',
+						'equalto'				:'Must match {arg1}',
 						
 					// custom
 						'question'				:'Must answer the question',
@@ -128,21 +129,33 @@ package core.data.validation
 					return state;
 			}
 			
-			public function validateOne(value:*, rule:String):Array
+			public function validateOne(value:*, rule:String, forceRequired:Boolean = false):Array
 			{
+				// if force, ensure "required" is set first
+					if (forceRequired && ! /\brequired\b/.test(rule))
+					{
+						rule = 'required ' + rule;
+					}
+				
+				// validate if empty and not required
+					if (isEmpty(value) && /\brequired\b/.test(rule) == false ) 
+					{
+						return [];
+					}
+					
 				// variables
-					var tests		:Array		= parseRule(rule);
-					var errors		:Array		= [];
+					var parameters	:Vector.<Parameter>	= parseRule(rule);
+					var errors		:Array				= [];
 					var method		:String;
 					var args		:Array;
 					var state		:Boolean;
 					
-				// validate rule (comprising one or more tests)
-					for (var i:int = 0; i < tests.length; i++) 
+				// otherwise, validate rule (comprising one or more tests)
+					for each(var parameter:Parameter in parameters)
 					{
 						// variables
-							method		= tests[i][0];
-							args		= [value].concat(tests[i].slice(1));
+							method		= parameter.name;
+							args		= [value].concat(parameter.args);
 							
 						// validate current test
 							if (this[method] is Function)
@@ -150,7 +163,7 @@ package core.data.validation
 								state = (this[method] as Function).apply(this, args)
 								if ( ! state )
 								{
-									errors.push(getMessage(method, args.slice(1)));
+									errors.push(getMessage(method, parameter.args));
 								}
 							}
 							else
@@ -161,6 +174,16 @@ package core.data.validation
 					
 				// return
 					return errors;
+			}
+			
+			public function getErrorText():String
+			{
+				var arr:Array = [];
+				for (var name:String in errors)
+				{
+					arr.push(name + ': ' + errors[name].join('. ') + '.');
+				}
+				return arr.join('\n');
 			}
 			
 		
@@ -186,7 +209,7 @@ package core.data.validation
 		
 				public function email(value:String):Boolean
 				{
-					return /^[^@]+@[^@]{2,}\.[^@]{2,}$/.test(value);
+					return /^[a-z0-9._%+-]+@[a-z0-9.-]+(\.[a-z]{2,})(\.[a-z]{2,})?$/i.test(value);
 				}
 		
 				public function username(value:String):Boolean 
@@ -206,7 +229,7 @@ package core.data.validation
 		
 				public function creditcard(value:String):Boolean
 				{
-					return trim(value).replace(/\D+/g, '').length == 16;
+					return /^\d{4} ?\d{4} ?\d{4} ?\d{4}$/.test(value);
 				}
 		
 				public function date(value:String):Boolean
@@ -224,8 +247,7 @@ package core.data.validation
 		
 				public function postcode(value:String):Boolean 
 				{
-					var rx:RegExp = new RegExp('^(GIR ?0AA|[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9ABEHMNPRV-Y])?)|[0-9][A-HJKPS-UW]) ?[0-9][ABD-HJLNP-UW-Z]{2})$', 'i');
-					return rx.test(value);
+					return /^(GIR ?0AA|[A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]([0-9ABEHMNPRV-Y])?)|[0-9][A-HJKPS-UW]) ?[0-9][ABD-HJLNP-UW-Z]{2})$/i.test(value);
 				}
 
 	
@@ -233,17 +255,17 @@ package core.data.validation
 		
 				public function alpha(value:String):Boolean 
 				{
-					return true;
+					return /^[a-z]+$/i.test(trim(value));
 				}				
 		
 				public function alphanumeric(value:String):Boolean 
 				{
-					return true;
+					return /^[a-z\d]+$/i.test(trim(value));
 				}		
 		
 				public function digits(value:String):Boolean 
 				{
-					return true;
+					return /^\d+$/.test(trim(value));
 				}			
 		
 				public function numeric(value:*):Boolean
@@ -251,17 +273,23 @@ package core.data.validation
 					return /^(\d+|\d+\.\d+)$/.test(trim(value));
 				}
 		
+				public function restrict(value:*, values:String):Boolean
+				{
+					var rx:RegExp = new RegExp('^[' + values + ']+$', 'i');
+					return rx.test(trim(value));
+				}
+		
 	
 			// string values
 		
-				public function match(value:String, arg:int):Boolean 
+				public function match(value:String, arg:String):Boolean 
 				{
-					return true;
+					return value == arg;
 				}				
 		
-				public function contain(value:String, arg:int):Boolean 
+				public function contain(value:String, arg:String):Boolean 
 				{
-					return true;
+					return value.indexOf(arg) > -1;
 				}			
 		
 	
@@ -361,6 +389,27 @@ package core.data.validation
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
+			protected function parseRule(rule:String):Vector.<Parameter> 
+			{
+				// variables
+					var parameters	:Vector.<Parameter>	= new Vector.<Parameter>;
+					var tests		:Array				= trim(rule).split(/\s+/g);
+					
+				// create
+					for (var i:int = 0; i < tests.length; i++) 
+					{
+						parameters.push(new Parameter(tests[i]));
+					}
+					
+				// return
+					return parameters;
+			}
+			
+			protected function getMessage(name:String, args:Array):String 
+			{
+				var index:int = 0;
+				return messages[name].replace(/{\w+}/, function(match:String, ...rest):String { return args[index++];  } );
+			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -371,31 +420,13 @@ package core.data.validation
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			public function getErrorText():String
+			protected function isEmpty(value:*):Boolean
 			{
-				var arr:Array = [];
-				for (var name:String in errors)
-				{
-					arr.push(name + ': ' + errors[name].join('. ') + '.');
-				}
-				return arr.join('\n');
-			}
-		
-			protected function parseRule(rule:String):Array 
-			{
-				var tests:Array = trim(rule).split(/\s+/g);
-				for (var i:int = 0; i < tests.length; i++) 
-				{
-					tests[i] = tests[i].split(/\W/g);
-				}
-				return tests;
-			}
-			
-			protected function getMessage(name:String, args:Array):String 
-			{
-				var index	:int		= 0;
-				var message	:String		= messages[name].replace(/{\w+}/, function(match:String, ...rest):String { return args[index++];  } );
-				return message;
+				return value is String
+					? value == ''
+					: value is Array
+						? value.length == 0
+						: value == null;
 			}
 		
 			protected function trim(value:*):String
@@ -407,3 +438,16 @@ package core.data.validation
 
 }
 
+class Parameter
+{
+	public var name		:String;
+	public var args		:Array;
+	
+	public function Parameter(rule:String)
+	{
+		var parts:Array	= rule.split(/[,:]/g);
+		name			= parts.shift();
+		args			= parts;
+	}
+	
+}

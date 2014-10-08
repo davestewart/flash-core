@@ -69,16 +69,22 @@
 									trg.parent.addChild(src);
 									break;	
 									
-							// index
 								case 'index':
 									(src.parent || trg.parent).addChildAt(src, trg.parent.getChildIndex(trg));
 									break;	
 									
-							// hide
 								case 'hide':
 									trg.visible		= false;
 									break;	
 									
+								case 'remove':
+									trg.parent.removeChild(trg);
+									break;	
+									
+								case 'replace':
+									 match(src, trg, 'parent index remove');
+									 break;
+									 
 							// position
 								case 'pos':
 								case 'position':
