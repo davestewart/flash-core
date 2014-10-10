@@ -1,22 +1,15 @@
 package core.media.video 
 {
-	import app.controllers.App;
-	import core.display.shapes.Square;
-	import core.events.MediaEvent;
-	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
-	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.media.Video;
 	import flash.net.NetConnection;
 	import flash.net.NetStream;
-	import flash.text.TextField;
-	import flash.text.TextFieldAutoSize;
-	import flash.text.TextFormat;
-	import flash.text.TextFormatAlign;
+	
+	import core.events.MediaEvent;
 	
 	/**
 	 * Instantiates a basic NetStreamVideo, then manages playback

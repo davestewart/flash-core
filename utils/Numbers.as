@@ -52,7 +52,8 @@ package core.utils
 				b = b % 360;
 				var v:Number = Math.abs(a - b);
 				return Math.min(360 - v, v);
-			}		
+			}
+			
 			
 	}
 

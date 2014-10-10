@@ -2,12 +2,12 @@ package core.media.audio
 {
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
-	import flash.events.IEventDispatcher;
 	import flash.events.TimerEvent;
 	import flash.media.Sound;
 	import flash.media.SoundChannel;
 	import flash.net.URLRequest;
 	import flash.utils.Timer;
+	
 	import core.events.MediaEvent;
 	
 	/**
@@ -23,8 +23,8 @@ package core.media.audio
 		
 			// constants
 				public static const LOADING		:String	= 'AudioPlayer.LOADING';
-				public static const LOADED		:String	= 'AudioPlayer.LOADED';
 				public static const BUFFERING	:String	= 'AudioPlayer.BUFFERING';
+				public static const LOADED		:String	= 'AudioPlayer.LOADED';
 				public static const PLAYING		:String	= 'AudioPlayer.PLAYING';
 				public static const PAUSED		:String	= 'AudioPlayer.PAUSED';
 				public static const STOPPED		:String	= 'AudioPlayer.STOPPED';				
@@ -95,7 +95,6 @@ package core.media.audio
 					
 				// play the sound and add events
 					channel		= sound.play(_position || seconds * 1000);
-					channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 					channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 					timer.start();
 			}

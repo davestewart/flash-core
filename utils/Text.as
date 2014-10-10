@@ -42,6 +42,65 @@ package core.utils {
 			// return the textformat for us on other textfields
 				return fmt;
 		}
+		
+		/**
+		 * Creates single-line text field with stylesheet
+		 * @param	html
+		 * @return
+		 */
+		public static function createTextField(html:String = null):TextField
+		{
+			// textfield instance
+				var tf:TextField		= new TextField();
+				
+			// properties
+				//tf.autoSize				= TextFieldAutoSize.LEFT;
+				//tf.embedFonts				= true;
+				
+			// global settings
+				initTextField(tf);
+				
+			// upgrade styles
+				tf.htmlText			= '<p>' + html + '<p>';
+				if (html != null)
+				{
+					
+				}
+				
+			// return
+				return tf;
+		}
+		
+		/**
+		 * Create a multiline text field
+		 * @param	width
+		 * @param	height
+		 * @param	html
+		 * @return
+		 */
+		public static function createTextBox(width:int, height:int, html:String = null):TextField
+		{
+			// textfield instance
+				var tf:TextField		= new TextField();
+				
+			// properties
+				tf.width				= width;
+				tf.height				= height;
+				tf.multiline			= true;
+				tf.wordWrap				= true;
+				
+			// global settings
+				initializeText(tf);
+				
+			// upgrade styles
+				if (html != null)
+				{
+					tf.htmlText			= Styles.upgrade(html);
+				}
+				
+			// return
+				return tf;
+		}
 
 		/**
 		 * Fixes textfields that have the last line clipped
@@ -63,6 +122,17 @@ package core.utils {
 				fmt.leading = 2;
 				target.setTextFormat(fmt);
 		}
+
+		public static function setSelectionColor(tf:TextField, styleName:String = ':selected'):void
+		{
+			var style:Object = tf.styleSheet.getStyle(':selected');
+			if (style)
+			{
+				var rgb:Object = Styles.cssToRgb(style.backgroundColor);
+				tf.transform.colorTransform = new ColorTransform(1, 1, 1, 1, rgb.r, rgb.g, rgb.b);
+			}
+		}
+		
 
 			
 	}
