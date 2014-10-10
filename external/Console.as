@@ -1,4 +1,4 @@
-package core.external 
+﻿package core.external 
 {
 	import flash.external.ExternalInterface;
 	
@@ -20,7 +20,7 @@ package core.external
 				}
 				if (enabled > 0)
 				{
-					ExternalInterface.call('console.log', values);
+					ExternalInterface.call('console.log', values.join(', '));
 				}
 			}
 		}
