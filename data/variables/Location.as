@@ -111,8 +111,9 @@ package core.data.variables
 									
 									case 'params':
 										var matches	:Array	= search.match(/\w+=[^&]+/g); // filter key=value pairs so URLVariables doesn't error if mal-formed
-										var vars	:String	= (matches || []).join('&')
-										_data[name]			= new URLVariables(vars); 
+										_data[name]			= matches.length 
+																? new URLVariables(matches.join('&')) 
+																: new URLVariables(); 
 										break;
 								}
 								
