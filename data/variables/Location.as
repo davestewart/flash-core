@@ -29,7 +29,6 @@ package core.data.variables
 			public function Location() 
 			{
 				_data = { };
-				_data.params = new URLVariables();
 			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -74,7 +73,7 @@ package core.data.variables
 			{
 				if (ExternalInterface.available)
 				{
-					// always re-get the page hash
+					// always re-get the page hash, as it could change
 						if (name === 'hash')
 						{
 							return ExternalInterface.call('eval', 'window.location.hash').replace('#', '');
@@ -89,31 +88,42 @@ package core.data.variables
 					// finally, if a value is being requested for the first time, grab it and process it if needs be
 						else
 						{
-							_data[name] = ExternalInterface.call('eval', 'window.location.' + name) || '';
-							switch(name)
-							{
-								case 'origin':
-									if (_data[name] == '')
-									{
-										_data[name] = protocol + ':' + hostname + port;
-									}
-									break;
+							// set the data
+								_data[name] = ExternalInterface.call('eval', 'window.location.' + name) || '';
 								
-								case 'protocol':
-									_data[name] = _data[name].replace(':', '');
-									break;
+							// massage / parse certain properties
+								switch(name)
+								{
+									case 'origin': // not supported by IE8
+										if (_data[name] == '')
+										{
+											_data[name] = protocol + ':' + hostname + port;
+										}
+										break;
+									
+									case 'protocol':
+										_data[name] = _data[name].replace(':', '');
+										break;
+									
+									case 'search':
+										_data[name] = _data[name].replace('?', '');
+										break;
+									
+									case 'params':
+										var matches	:Array	= search.match(/\w+=[^&]+/g); // filter key=value pairs so URLVariables doesn't error if mal-formed
+										var vars	:String	= (matches || []).join('&')
+										_data[name]			= new URLVariables(vars); 
+										break;
+								}
 								
-								case 'search':
-									_data[name] = _data[name].replace('?', '');
-									break;
-								
-								case 'params':
-									_data[name] = new URLVariables((search.match(/\w+=[^&]+/g) || []).join('&')); // filter key=value pairs so URLVariables doesn't error if mal-formed
-									break;
-							}
+							// return
+								return _data[name];
 						}
 				}
-				return _data[name];
+				else
+				{
+					return name === 'params' ? new URLVariables() : '';
+				}
 			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
