@@ -1,4 +1,4 @@
-package core.external 
+﻿package core.external 
 {
 	import flash.external.ExternalInterface;
 	
