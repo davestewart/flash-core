@@ -115,12 +115,12 @@ package core.managers.boot
 					if (location.host)
 					{
 						log('running in the browser...')
-						
+
 						env = location.params.env || flashvars.env;
-						log('env is ' + env)
+						log('env (flashvars or params) is ' + env)
 						if (env)
 						{
-							log('choosing ' +env+ 'environment...')
+							log('choosing ' +env+ ' environment...')
 							settings = environments.environment.(attribute('name') == env)[0];
 						}
 						else
