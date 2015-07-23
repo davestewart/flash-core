@@ -164,7 +164,7 @@ package core.managers.tasks {
 						}
 						else
 						{
-							throw new Error('TaskQueue:run() expexts an Array or String of task names');
+							throw new Error('TaskQueue:run() expects an Array or String of task names');
 						}
 						
 					// collate tasks
