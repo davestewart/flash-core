@@ -1,4 +1,4 @@
-package utils 
+package core.display.components 
 {
 	import flash.display.Stage;
 	import flash.events.MouseEvent;
@@ -64,7 +64,7 @@ package utils
 					Draggable.elements[element] = new DraggedElement(element, Math.abs(time), children, mouseMoveHandler, mouseUpHandler);
 
 				// set up the mouse listener
-					element.addEventListener(MouseEvent.MOUSE_DOWN, Draggable.mouseDownHandler, false, 0, true);
+					element.addEventListener(MouseEvent.MOUSE_DOWN, Draggable.onMouseDown, false, 0, true);
 					
 				// return the object for chaining
 					return Draggable;
@@ -78,7 +78,7 @@ package utils
 			{
 				if (element)
 				{
-					element.removeEventListener(MouseEvent.MOUSE_DOWN, Draggable.mouseDownHandler, false);
+					element.removeEventListener(MouseEvent.MOUSE_DOWN, Draggable.onMouseDown, false);
 				}
 				return Draggable;
 			}
@@ -125,7 +125,7 @@ package utils
 			 * Mouse down handler for the dragged object
 			 * @param	event
 			 */
-			public static function mouseDownHandler(event:MouseEvent):void 
+			public static function onMouseDown(event:MouseEvent):void 
 			{
 				var allowDrag = true;
 				if (Draggable._useModifierKeys && ! (event.ctrlKey || event.shiftKey))
@@ -149,8 +149,8 @@ package utils
 						}
 						
 					// initialize the drag
-						element.element.stage.addEventListener(MouseEvent.MOUSE_MOVE, Draggable.mouseMoveHandler, false, 0, true);
-						element.element.stage.addEventListener(MouseEvent.MOUSE_UP, Draggable.mouseUpHandler, false, 0, true);
+						element.element.stage.addEventListener(MouseEvent.MOUSE_MOVE, Draggable.onMouseMove, false, 0, true);
+						element.element.stage.addEventListener(MouseEvent.MOUSE_UP, Draggable.onMouseUp, false, 0, true);
 /*
 				*/
 				}
@@ -160,7 +160,7 @@ package utils
 			 * Mouse move handler for the dragged object
 			 * @param	event
 			 */
-			public static function mouseMoveHandler(event:MouseEvent):void 
+			public static function onMouseMove(event:MouseEvent):void 
 			{
 				element.element.x = event.stageX - Draggable.clickPoint.x
 				element.element.y = event.stageY - Draggable.clickPoint.y;
@@ -174,11 +174,11 @@ package utils
 			 * Mouse up handler for the dragged object
 			 * @param	event
 			 */
-			public static function mouseUpHandler(event:MouseEvent):void 
+			public static function onMouseUp(event:MouseEvent):void 
 			{
 				// remove any event listeners
-					element.element.stage.removeEventListener(MouseEvent.MOUSE_MOVE, Draggable.mouseMoveHandler, false);
-					element.element.stage.removeEventListener(MouseEvent.MOUSE_UP, Draggable.mouseUpHandler, false);
+					element.element.stage.removeEventListener(MouseEvent.MOUSE_MOVE, Draggable.onMouseMove, false);
+					element.element.stage.removeEventListener(MouseEvent.MOUSE_UP, Draggable.onMouseUp, false);
 					
 				// check if the object had been flagged for reversion
 					if (element.active)
