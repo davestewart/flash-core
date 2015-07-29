@@ -22,18 +22,25 @@ package core.display.elements
 				
 			
 			// variables
-				private var invalidationDelay:int = 0;
+				private var numRedraws		:int;
+				private var totalRedraws	:int;
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Element(parent:DisplayObjectContainer = null) 
+			/**
+			 * 
+			 * @param	parent		An optional parent to attach to
+			 * @param	redraws		An optional number of redraws when invalidated. defaults to 1, but can be set higher (for example for flash components)
+			 */
+			public function Element(parent:DisplayObjectContainer = null, redraws:int = 1) 
 			{
 				if (parent)
 				{
 					parent.addChild(this);
 				}
+				totalRedraws = redraws;
 				blendMode = BlendMode.LAYER;
 				initialize();
 				build();
@@ -107,7 +114,7 @@ package core.display.elements
 			
 			public function invalidate():void 
 			{
-				invalidationDelay = 1;
+				numRedraws = 0;
 				addEventListener(Event.ENTER_FRAME, onInvalidate, false, 0, true);
 			}
 			
@@ -131,13 +138,9 @@ package core.display.elements
 		
 			protected function onInvalidate(event:Event):void 
 			{
-				if (invalidationDelay == 0)
+				if (++numRedraws == totalRedraws)
 				{
 					removeEventListener(Event.ENTER_FRAME, onInvalidate);
-				}
-				else
-				{
-					invalidationDelay--;
 				}
 				draw();
 			}
