@@ -67,7 +67,7 @@ package core.display.components
 			{
 				if (placeholder.parent)
 				{
-					// add to stage if a placeholder is supplied
+					// add to stage, just above the placeholder
 					var index:int = placeholder.parent.getChildIndex(placeholder);
 					placeholder.parent.addChildAt(this, index + 1);
 					
@@ -153,6 +153,8 @@ package core.display.components
 					super.width = value;
 					invalidate();
 				}
+				
+				public function get length():int { return content.numChildren }
 				
 			// behaviour
 			
