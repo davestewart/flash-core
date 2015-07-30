@@ -13,7 +13,9 @@ package core.display.components
 	/**
 	 * Slider Class
 	 * 
-	 * Wraps multiple slide items and allows them to be slid left and right
+	 * Basic (no UI) implementation of a carousel or slider class
+	 * 
+	 * Wraps multiple DisplayObject items and allows them to be slid left and right
 	 * 
 	 * @author Dave Stewart
 	 */
@@ -35,6 +37,7 @@ package core.display.components
 				
 			// variables
 				protected var _index			:Number;
+				protected var _lastIndex		:Number;
 				protected var _duration			:Number;
 				
 			
@@ -56,14 +59,49 @@ package core.display.components
 			{
 				content			= new Sprite();
 				content.name	= '_content';
-				addChild(content);
+				super.addChild(content);
 			}
 		
 			
 		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: overridden public methods
+
+			override public function addChild(child:DisplayObject):DisplayObject 
+			{
+				// set width if not already set
+				if (isNaN(_width))
+				{
+					_width = child.width;
+				}
+				
+				// add child
+				content.addChild(child);
+				invalidate();
+				return child;
+			}
+			
+			override public function removeChild(child:DisplayObject):DisplayObject 
+			{
+				var child:DisplayObject = content.removeChild(child);
+				if (index > content.numChildren - 1)
+				{
+					index = content.numChildren - 1;
+					navigate(index, true);
+				}
+				invalidate();
+				return child;
+			}
+			
+			override public function removeChildAt(index:int):DisplayObject 
+			{
+				return removeChild(content.getChildAt(index));
+			}
+			
+			
+		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
-		
-			public function setPlaceholder(placeholder:DisplayObject, replace:Boolean = false):void
+
+			public function setPosition(placeholder:DisplayObject, replace:Boolean = false, useMask:Boolean = false):void
 			{
 				if (placeholder.parent)
 				{
@@ -71,18 +109,29 @@ package core.display.components
 					var index:int = placeholder.parent.getChildIndex(placeholder);
 					placeholder.parent.addChildAt(this, index + 1);
 					
-					// align child
+					// align to placeholder
 					x	= placeholder.x;
 					y	= placeholder.y;
 					
-					// set width
+					// set width parameter, so slides know where to position themselves
 					_width	= placeholder.width;
 					
-					// remove
-					if (replace)
+					// set the placeholder as a mask
+					if (useMask)
+					{
+						super.addChild(placeholder);
+						placeholder.x = 0;
+						placeholder.y = 0;
+						content.mask = placeholder;
+					}
+					
+					// or optionally remove the placeholder alltogether
+					else if (replace)
 					{
 						placeholder.parent.removeChild(placeholder);
 					}
+					
+
 				}
 			}
 		
@@ -107,24 +156,25 @@ package core.display.components
 				if (index >= 0 && index < content.numChildren)
 				{
 					// set index
-						_index = index;
+						_lastIndex	= _index;
+						_index		= index;
 						
 					// variables
-						var w	:Number	= _width + (_gutter * 2);
-						var x	:Number	= - index * w;
+						var w		:Number	= _width + (_gutter * 2);
+						var x		:Number	= - index * w;
 						
 					// dispatch change
-						onTransitionStart();
+						onAnimateStart();
 						
 					// update contents
 						if (immediate)
 						{
 							content.x = x;
-							onTransitionComplete();
+							onAnimateComplete();
 						}
 						else
 						{
-							transition(x);
+							animate(x);
 						}
 				}
 			}
@@ -138,6 +188,22 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
+			// content
+			
+				public function get currentItem():DisplayObject 
+				{
+					return content.numChildren > 0 
+						? content.getChildAt(index) 
+						: null;
+				}
+			
+				public function get lastItem():DisplayObject 
+				{
+					return content.numChildren > 0 
+						? content.getChildAt(lastIndex) 
+						: null;
+				}
+			
 			// layout
 			
 				override public function get width():Number { return _width; }
@@ -145,25 +211,6 @@ package core.display.components
 				{
 					_width = value;
 					invalidate();
-				}
-				
-				public function get contentWidth():Number { return super.width; }
-				public function set contentWidth(value:Number):void 
-				{
-					super.width = value;
-					invalidate();
-				}
-				
-				public function get length():int { return content.numChildren }
-				
-			// behaviour
-			
-				public function get currentItem():DisplayObject { return content.numChildren > 0 ? content.getChildAt(index) : null; }
-			
-				public function get index():Number { return _index; }
-				public function set index(value:Number):void 
-				{
-					navigate(value, true);
 				}
 				
 				public function get gutter():Number { return _gutter; }
@@ -179,13 +226,26 @@ package core.display.components
 					_duration = value;
 				}
 			
+			// properties
+			
+				public function get index():Number { return _index; }
+				public function set index(value:Number):void 
+				{
+					navigate(value, true);
+				}
+				
+				public function get length():int { return content.numChildren }
+				
+				public function get lastIndex():int { return _lastIndex }
+			
+
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected function transition(x:Number):void 
+			protected function animate(x:Number):void 
 			{
-				TweenLite.to(content, _duration, { x:x, onComplete:onTransitionComplete } );
+				TweenLite.to(content, _duration, { x:x, onComplete:onAnimateComplete } );
 			}
 	
 			override protected function draw():void 
@@ -215,12 +275,12 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onTransitionStart():void 
+			protected function onAnimateStart():void 
 			{
 				dispatchEvent(new Event(Event.CHANGE));
 			}
 		
-			protected function onTransitionComplete():void 
+			protected function onAnimateComplete():void 
 			{
 				dispatchEvent(new Event(Event.COMPLETE));
 			}
@@ -229,37 +289,6 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			public function addItem(child:DisplayObject):DisplayObject 
-			{
-				// set width if not already set
-				if (isNaN(_width))
-				{
-					_width = child.width;
-				}
-				
-				// add child
-				content.addChild(child);
-				invalidate();
-				return child;
-			}
-			
-			public function removeItem(child:DisplayObject):DisplayObject 
-			{
-				var child:DisplayObject = content.removeChild(child);
-				if (index > content.numChildren - 1)
-				{
-					index = content.numChildren - 1;
-					navigate(index, true);
-				}
-				invalidate();
-				return child;
-			}
-			
-			public function removeItemAt(index:int):DisplayObject 
-			{
-				return removeItem(content.getChildAt(index));
-			}
-			
 			
 	}
 

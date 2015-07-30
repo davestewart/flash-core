@@ -288,6 +288,28 @@
 			return elements.reverse().join('.');
 		}
 		
+		static public function getByPath(source:DisplayObjectContainer, path:String):DisplayObject 
+		{
+			// variables
+			var target	:DisplayObject		= source;
+			var names	:Array				= path.split('/');
+			var name	:String;
+			
+			// get target
+			while (names.length) 
+			{
+				name	= names.shift();
+				target	= (target as DisplayObjectContainer).getChildByName(name);
+				if ( ! target )
+				{
+					throw new Error('Failed to find element "' +name+ '" in element "' + getPath(target)) + '"';
+				}
+			}
+			
+			// return
+			return target;		
+		}
+		
 		static public function getBytes(src:DisplayObject, alpha:Boolean = false, color:int = 0x000000):BitmapData 
 		{
 			// variables

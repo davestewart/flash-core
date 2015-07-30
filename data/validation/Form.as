@@ -45,7 +45,7 @@ package core.data.validation
 					errors				= { };
 					
 				// initialize
-					initialize();
+					//initialize(); // refactor
 			}
 			
 			protected function initialize():void 
