@@ -4,6 +4,7 @@ package core.display.components
 	import com.greensock.plugins.TweenPlugin;
 	import com.greensock.TweenLite;
 	import core.display.elements.Element;
+	import core.utils.Elements;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
@@ -29,16 +30,16 @@ package core.display.components
 				
 			
 			// elements
-				protected var content			:Sprite;
+			protected var content			:Sprite;
 				
 			// layout
-				protected var _width			:Number			= NaN;
-				protected var _gutter			:Number;
+			protected var _width			:Number			= NaN;
+			protected var _gutter			:Number;
 				
 			// variables
-				protected var _index			:Number;
-				protected var _lastIndex		:Number;
-				protected var _duration			:Number;
+			protected var _index			:Number;
+			protected var _lastIndex		:Number;
+			protected var _duration			:Number;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -101,7 +102,7 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 
-			public function setPosition(placeholder:DisplayObject, replace:Boolean = false, useMask:Boolean = false):void
+			public function matchPlaceholder(placeholder:DisplayObject, replace:Boolean = false, useMask:Boolean = false):void
 			{
 				if (placeholder.parent)
 				{
@@ -156,26 +157,26 @@ package core.display.components
 				if (index >= 0 && index < content.numChildren)
 				{
 					// set index
-						_lastIndex	= _index;
-						_index		= index;
-						
+					_lastIndex	= _index;
+					_index		= index;
+					
 					// variables
-						var w		:Number	= _width + (_gutter * 2);
-						var x		:Number	= - index * w;
-						
+					var w		:Number	= _width + (_gutter * 2);
+					var x		:Number	= - index * w;
+					
 					// dispatch change
-						onAnimateStart();
-						
+					onAnimateStart();
+					
 					// update contents
-						if (immediate)
-						{
-							content.x = x;
-							onAnimateComplete();
-						}
-						else
-						{
-							animate(x);
-						}
+					if (immediate)
+					{
+						content.x = x;
+						onAnimateComplete();
+					}
+					else
+					{
+						animate(x);
+					}
 				}
 			}
 			
@@ -251,24 +252,24 @@ package core.display.components
 			override protected function draw():void 
 			{
 				// variables
-					var child	:DisplayObject;
-					var offset	:Number;
-				
+				var child	:DisplayObject;
+				var offset	:Number;
+			
 				// update child objects
-					for (var i:int = 0; i < content.numChildren; i++) 
-					{
-						// position child
-							child		= content.getChildAt(i);
-							child.x		= (_width + _gutter * 2) * i;
-							
-						// offset (center) according to its width
-							offset		= (_width - child.width) / 2
-							child.x		+= offset;
-					}
-					
+				for (var i:int = 0; i < content.numChildren; i++) 
+				{
+					// position child
+						child		= content.getChildAt(i);
+						child.x		= (_width + _gutter * 2) * i;
+						
+					// offset (center) according to its width
+						offset		= (_width - child.width) / 2
+						child.x		+= offset;
+				}
+				
 				// update overall offset
-					var w	:Number	= _width + (_gutter * 2);
-					content.x = - index * w;
+				var w	:Number	= _width + (_gutter * 2);
+				content.x = - index * w;
 			}
 			
 			
