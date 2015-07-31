@@ -176,9 +176,12 @@ package core.media.video
 			
 			public function replay():void
 			{
-				_active	= true;
-				_paused	= false;
-				_stream.seek(0);
+				if (_stream)
+				{
+					_active	= true;
+					_paused	= false;
+					_stream.seek(0);
+				}
 			}
 
 			public function pause():void
@@ -212,6 +215,17 @@ package core.media.video
 				}
 				//close();
 			}
+			
+			public function rewind():void
+			{
+				if (_stream)
+				{
+					_active	= false;
+					_paused	= true;
+					_stream.pause();
+					_stream.seek(0);
+				}
+			}
 		
 			public function clear():void 
 			{
@@ -234,6 +248,7 @@ package core.media.video
 					_streamName		= null;
 				}
 			}
+			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
