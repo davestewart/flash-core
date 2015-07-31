@@ -10,6 +10,18 @@ package core.utils
 	public class Strings 
 	{
 		
+		/**
+		 * Populates a tamplate string with supplied variables
+		 * 
+		 * The input string should contain variable placeholders of the format {foo} or :foo
+		 * The parameters can be passed as a single Object or Array, or a list of arguments
+		 * 
+		 * Passing an Object will replace parameters by name, passing an Array or list of arguments will replace by index
+		 * 
+		 * @param	input		The template string to populate
+		 * @param	...params	Either a single Object or Array, or a list of function arguments
+		 * @return
+		 */
 		static public function populate(input:String, ...params):String 
 		{
 			// variables

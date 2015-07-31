@@ -1,4 +1,5 @@
 ﻿package core.utils {
+	import core.display.utils.Identifier;
 	import core.utils.Objects;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;
@@ -139,51 +140,9 @@
 		 * @param	color
 		 * @param	alpha
 		 */
-		public static function identify(element:DisplayObjectContainer, color:int = 0xFF0000, alpha:Number = 0.1, lineThickness:Number = 0.1):void
+		public static function identify(element:DisplayObject, color:int = 0xFF0000, alpha:Number = 0.1, outside:Boolean = false):Identifier
 		{
-			// remove prior rect  object
-				var rect:Sprite = element.getChildByName('__rect') as Sprite;
-				if (rect)
-				{
-					element.removeChild(rect);
-				}
-				
-			// new bounds
-				var bounds:Rectangle		= element.getBounds(element);
-					
-			// create rect	
-				rect						= new Sprite();
-				rect.name					= '__rect';
-				rect.mouseEnabled			= false;
-				
-				rect.graphics.lineStyle(lineThickness, color);
-				rect.graphics.beginFill(color, alpha);
-				rect.graphics.drawRect(bounds.x - 1, bounds.y - 1, bounds.width + 2, bounds.height + 2);
-				
-			// add rect
-				element.alpha				= 1;
-				element.visible				= true;
-				element.addChild(rect);
-				
-			// add textfield
-				var tf:TextField			= new TextField();
-				tf.textColor				= color;
-				tf.autoSize					= 'left';
-				tf.defaultTextFormat		= new TextFormat('_sans', 10, 0xFFFFFF);
-				tf.backgroundColor			= color;
-				tf.background				= true;
-				tf.text						= ' ' + element.name + ' ' + String(element) + ' ';
-				rect.addChild(tf);
-				
-			// make parents visible
-				/*
-				while (element.parent)
-				{
-					element.parent.visible	= true;
-					element.parent.alpha	= 1;
-					element					= element.parent;
-				}
-				*/
+			return new Identifier(element, color, alpha, outside);
 		}
 		
 		/**
@@ -288,6 +247,22 @@
 			return elements.reverse().join('.');
 		}
 		
+		/**
+		 * Gets the string path to an item from the root
+		 * @param	element
+		 * @return
+		 */
+		public static function getHierarchy(element:DisplayObject):String
+		{
+			var elements	:Array	= [element + ' : ' + element.name];
+			while (element.parent)
+			{
+				element = element.parent;
+				elements.push(element + ' : ' + element.name);
+			}
+			return '\n > ' + elements.reverse().join('\n > ');
+		}
+		
 		static public function getByPath(source:DisplayObjectContainer, path:String):DisplayObject 
 		{
 			// variables
@@ -340,3 +315,4 @@
 	}
 
 }
+
