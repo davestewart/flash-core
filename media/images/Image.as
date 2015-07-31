@@ -1,4 +1,4 @@
-package core.display.images {
+package core.media.images {
 	import com.greensock.layout.AutoFitArea;
 	import com.greensock.layout.ScaleMode;
 	import core.display.elements.Element;
@@ -43,10 +43,10 @@ package core.display.images {
 		
 			/**
 			 * 
-			 * @param	src
-			 * @param	parent
-			 * @param	mode
-			 * @param	crop
+			 * @param	src			The URL src of the image
+			 * @param	parent		An optional parent to attach the image to as soon as it is loaded
+			 * @param	mode		An optional fitting mode for the image. Defaults to none (no fit) but can be Image.FIT or Image.COVER
+			 * @param	crop		An optional cropping flag for the image
 			 */
 			public function Image(src:*, parent:DisplayObjectContainer = null, mode:String = '', crop:Boolean = true)
 			{
