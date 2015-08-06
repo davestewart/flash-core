@@ -73,7 +73,7 @@ package core.display.layout
 				// if first element, set the stack index
 					if (elements.length == 1)
 					{
-						//element = child;
+						element = child; // this was commented out - not sure why. without it, a new showElement() will not remove the first-added element
 						_showElement(child, true);
 					}
 					

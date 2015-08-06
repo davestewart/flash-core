@@ -1,5 +1,8 @@
 package core.media.video 
 {
+	import core.data.settings.VideoSettings;
+	import core.errors.ImplementationError;
+	import core.media.camera.Webcam;
 	import flash.events.ActivityEvent;
 	import flash.events.ErrorEvent;
 	import flash.events.Event;
@@ -32,8 +35,9 @@ package core.media.video
 		// { region: variables
 		
 			// properties
-				protected var camera					:Camera;
-				//protected var microphone				:Microphone;
+				protected var _webcam					:Webcam;
+				protected var _camera					:Camera;
+				protected var _settings					:VideoSettings;
 				
 			// camera variables
 				protected var _quality					:int;
@@ -46,10 +50,6 @@ package core.media.video
 				protected var _bandwidth				:int;
 				protected var _keyframeInterval			:int;
 				
-			// setup flags
-				protected var _setup					:Boolean;
-				protected var _ready					:Boolean;
-				protected var _available				:Boolean;
 				
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
@@ -88,109 +88,13 @@ package core.media.video
 			public function setup():void 
 			{
 				video.clear();
-				setupCamera();
+				if ( ! webcam )
+				{
+					_webcam = new Webcam(video);
+					webcam.addEventListener(CameraEvent.SIZE_CHANGE, onCameraSizeChange);
+				}
 			}
 			
-			protected function setupCamera():void
-			{	
-				// don't set up twice!
-					if (_setup) return;
-					
-				// debug
-					trace('setup camera...');
-				
-				// get the default Flash camera and microphone
-					camera = Camera.getCamera();
-					
-				// here are all the quality and performance settings
-					if(camera != null)
-					{
-						// attach video
-							video.attachCamera(camera);
-
-						// test to see if camera can be activated
-							setTimeout(testCamera, 500);
-							
-						// update camera
-							updateCamera();
-					}
-					else
-					{
-						dispatchEvent(new CameraEvent(CameraEvent.NO_CAMERA));
-						trace('No Camera Found');
-					}
-					
-				// set up the mic
-				/*
-					microphone = Microphone.getMicrophone();
-					if( microphone != null)
-					{
-						microphone.rate = 11;
-						microphone.setSilenceLevel(0, -1); 
-					}
-					else
-					{
-						log('No Microphone Found', 'error');
-						dispatchEvent(new CameraEvent(CameraEvent.NO_MICROPHONE));
-					}
-				*/
-					
-				// flag as already set up
-					_ready = true;
-					_setup = true;
-			}
-			
-			protected function testCamera():void
-			{
-				// debug
-					trace('testing for camera...');
-				
-				// callbacks
-					function onCameraActivity(event:ActivityEvent):void 
-					{
-						_available = true;
-						trace('camera activated successfully!');
-						camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
-						dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
-					}
-				
-					function onMouseMove(event:MouseEvent):void 
-					{
-						trace('mouse moved, checking for camera activation');
-						stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-						setTimeout(onActivationCheckTimeout, 1000);
-					}
-					
-					function onActivationCheckTimeout():void
-					{
-						if ( ! _available )
-						{
-							trace('could not activate camera!');
-							dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
-						}
-					}
-					
-					function onAddedToStage(event:Event):void 
-					{
-						trace('camera added to stage');
-						stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-					}
-				
-				// detect inactivity if another application is using the camera
-					camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
-							
-				// set up mousemove handler to detect when the dialog has been dismissed
-					var moves:int = 0;
-					if (stage)
-					{
-						stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-					}
-					else
-					{
-						addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
-					}
-			}
-		
 			protected function updateCamera():void
 			{
 				if (camera)
@@ -234,9 +138,6 @@ package core.media.video
 						camera.setQuality(bandwidth, quality);
 						
 					// update values
-						_videoWidth		= camera.width;
-						_videoHeight	= camera.height;
-						_fps			= camera.fps;
 						
 					// debug
 						//trace('props:', videoWidth, videoHeight, bandwidth, quality, fps, keyframeInterval);
@@ -250,14 +151,13 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			// Start recording video to the server
-			public function record(streamName:String = null, append:Boolean = false):Boolean
+			public function record(append:Boolean = false):Boolean
 			{
 				// debug
 					log('Recording...');
 					
 				// exit early if camera is not available
-					if ( ! _available )
+					if ( ! webcam.available )
 					{
 						dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
 						return false;
@@ -267,41 +167,9 @@ package core.media.video
 					_active = true;
 					_paused = false;
 					
-				// append
-					if (append )
-					{
-						stream.publish(format + ':' + streamName, 'append');
-					}
-					else
-					{
-						// setup stream
-							setupStream();
-							
-						// add h264 settings
-							if (format == 'mp4')
-							{
-								var h264Settings:H264VideoStreamSettings = new H264VideoStreamSettings();
-								h264Settings.setProfileLevel(H264Profile.BASELINE, H264Level.LEVEL_3_1);
-								stream.videoStreamSettings = h264Settings;
-							}
-
-						// publish the stream by name
-							stream.publish(format + ':' + streamName, append ? 'append' : 'record'); // can also have "live" and "default", but "record" has NetStream events we can bind to
-							
-						// add custom metadata to the header of the .flv file
-							var metaData:Object	= 
-							{
-								description : 'Recorded using WebcamRecording example.'
-							};
-							stream.send('@setDataFrame', 'onMetaData', metaData);
-						
-						// TODO implement proper handlers for permissions: http://help.adobe.com/en_US/as3/dev/WSfffb011ac560372f3fa68e8912e3ab6b8cb-8000.html#WS5b3ccc516d4fbf351e63e3d118a9b90204-7d37
-						
-						// attach the camera and microphone to the server
-							stream.attachCamera(camera);
-							//stream.attachAudio(microphone);
-					}
-					
+				// defer to subclass
+					_record(append);
+				
 				// return
 					return true;
 			}
@@ -309,7 +177,8 @@ package core.media.video
 			override public function pause():void 
 			{
 				super.pause();
-				stream.publish('null');
+				_pause();
+				
 			}
 
 			override public function stop():void
@@ -317,39 +186,17 @@ package core.media.video
 				// debug
 					//trace('stopping recording...')
 				
+				// super
+					super.stop();
+					
 				// set active
 					_active = false;
 					_paused = false;
 
-				// variables
-					var intervalId:Number;
-				
-				// this function gets called every 250 ms to monitor the progress of flushing the video buffer.
-				// Once the video buffer is empty we close publishing stream
-					function onBufferFlush():void
-					{
-						log('Waiting for buffer to empty...');
-						if (stream.bufferLength == 0)
-						{
-							log('Buffer emptied!');
-							clearInterval(intervalId);
-							onRecordComplete();
-						}
-					}
-
-				// stop streaming video and audio to the publishing NetStream object
-					stream.attachCamera(null);
-					
-				// disabled audio so that mp4 will record
-					stream.attachAudio(null); 
-
-				// After stopping the publishing we need to check if there is video content in the NetStream buffer. 
-				// If there is data we are going to monitor the video upload progress by calling flushVideoBuffer every 250ms.
-					stream.bufferLength > 0
-						? intervalId = setInterval(onBufferFlush, 250)
-						: onRecordComplete();		
+				// defer to subclass
+					_stop();
 			}
-			
+
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
@@ -415,30 +262,57 @@ package core.media.video
 				updateCamera();
 			}
 			
-			public function get available():Boolean { return _available; }
+			public function get ready():Boolean { return webcam.ready; }
 			
-			public function get ready():Boolean { return _ready; }
+			public function get webcam():Webcam { return _webcam; }
+			
+			public function get camera():Camera { return _camera; }
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-
+			protected function _record(append:Boolean = false):void
+			{
+				throw new ImplementationError('set up the recoding process');
+			}
+			
+			protected function _pause():void 
+			{
+				throw new ImplementationError('pause the recording');
+			}
+		
+			protected function _resume():void 
+			{
+				throw new ImplementationError('resume the recording');
+			}
+		
+			protected function _stop():void 
+			{
+				throw new ImplementationError('finalize (such as flushing or encoding) the recording');
+			}
+		
+			protected function _onRecordComplete():void 
+			{
+				throw new ImplementationError('clean up after recording');
+			}
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
-		
+					
+			protected function onCameraSizeChange(event:CameraEvent):void 
+			{
+				_videoWidth		= webcam.camera.width;
+				_videoHeight	= webcam.camera.height;
+				_fps			= webcam.camera.fps;
+			}
+			
 			protected function onRecordComplete():void
 			{
-				// debug
-					log('Finished recording!')
-					
-				// after we have hit "Stop" recording, and after the buffered video data has been
-				// sent to the Wowza Media Server, close the publishing stream
-					stream.publish('null');
-					stream.close();
+				_onRecordComplete();
 			}
-		
+
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities

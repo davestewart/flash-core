@@ -18,7 +18,7 @@ package core.data.settings {
 		
 			public function ServerSettings(server:String = '', username:String = '', password:String = '') 
 			{
-				super();
+				super('ServerSettings', true);
 				_data.server			= server;
 				_data.username			= username;
 				_data.password			= password;
@@ -27,7 +27,6 @@ package core.data.settings {
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
-		
 		
 			public function get server():String { return _data.server; }
 			public function set server(value:String):void 
@@ -47,14 +46,6 @@ package core.data.settings {
 				set('password', value);
 			}
 
-
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: accessors
-		
-			override public function toString():String 
-			{
-				return super.toString().replace('Settings', 'ServerSettings');
-			}
 		
 	}
 

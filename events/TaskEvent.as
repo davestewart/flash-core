@@ -24,7 +24,7 @@ package core.events {
 				public var data						:*;
 			
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: variables
+		// { region: methods
 		
 			public function TaskEvent(type:String, data:* = null, bubbles:Boolean = false, cancelable:Boolean = false)
 			{ 

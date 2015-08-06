@@ -1,6 +1,7 @@
 package core.managers.boot 
 {
 	import flash.display.DisplayObjectContainer;
+	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.IOErrorEvent;
 	import flash.external.ExternalInterface;
@@ -50,7 +51,7 @@ package core.managers.boot
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function CoreBootstrap(root:DisplayObjectContainer, env:String = '', config:String = 'config/config.xml') 
+			public function CoreBootstrap(root:Sprite, env:String = '', config:String = 'config/config.xml') 
 			{
 				// super
 					super(root);

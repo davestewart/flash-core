@@ -85,8 +85,6 @@ package core.media.video
 		
 			protected function build(width:Number, height:Number):void 
 			{
-				trace("VideoPlayer.build");
-				
 				// container
 					container		= new Sprite();
 					container.name	= 'container';
@@ -121,10 +119,11 @@ package core.media.video
 		// { region: public methods
 		
 			/**
-			 * Play the stream, but pause it immediately upon loading
+			 * Load the steam and pause it immediately upon loading
+			 * 
 			 * @param	streamName
 			 */
-			public function load(streamName:String):void 
+			public function load(streamName:String, autoplay:Boolean = false):void 
 			{
 				// set name
 					_streamName = streamName;
@@ -141,8 +140,10 @@ package core.media.video
 						if (event.info.code == 'NetStream.Play.Start')
 						{
 							_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
-							pause();
 							dispatchEvent(new MediaEvent(MediaEvent.LOADED));
+							autoplay 
+								? replay()
+								: pause();
 						}
 					}
 					
@@ -153,8 +154,15 @@ package core.media.video
 					_stream.play(streamName);
 			}
 		
-			public function play(streamName:String = null):void
+			/**
+			 * Load and play the stream immediately
+			 * 
+			 * @param	streamName
+			 */
+			public function play():void
 			{
+				// TODO set this up so that play only plays / resumes an existing stream (ALWAYS use load to load a stream)
+				
 				// setup
 					if (streamName && streamName !== this.streamName)
 					{
@@ -313,6 +321,7 @@ package core.media.video
 				if (state)
 				{
 					// currently, this isn't working
+					// @see http://help.adobe.com/en_US/as3/dev/WS44B1892B-1668-4a80-8431-6BA0F1947766.html
 					/*
 					var coords:Point	= localToGlobal(new Point(x, y));
 					var rect:Shape		= new Square(width, height);

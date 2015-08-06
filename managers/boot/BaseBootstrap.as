@@ -4,6 +4,7 @@ package core.managers.boot
 	import core.events.TaskEvent;
 	import core.managers.tasks.TaskQueue;
 	import flash.display.DisplayObjectContainer;
+	import flash.display.Sprite;
 	import flash.events.EventDispatcher;
 	
 	/**
@@ -23,6 +24,7 @@ package core.managers.boot
 		// { region: variables
 		
 			// elements
+				protected var root					:Sprite;
 				protected var queue					:TaskQueue;
 					
 			// flashvars	
@@ -33,9 +35,10 @@ package core.managers.boot
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function BaseBootstrap(root:DisplayObjectContainer)
+			public function BaseBootstrap(root:Sprite)
 			{
 				// properties
+					this.root		= root;
 					_flashvars		= new FlashVars(root);
 				
 				// task queue

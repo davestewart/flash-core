@@ -1,6 +1,8 @@
 package core.data.settings 
 {
 	import core.events.ValueEvent;
+	import core.utils.Objects;
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 
@@ -19,8 +21,10 @@ package core.data.settings
 				
 			
 			// properties
-				protected var _handlers		:Array;
+				protected var _name			:String;
 				protected var _data			:Object;
+				protected var _sealed		:Boolean;
+				protected var _handlers		:Array;
 				
 			// variables
 				
@@ -28,20 +32,90 @@ package core.data.settings
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Settings() 
+			/**
+			 * 
+			 * @param	name		
+			 * @param	sealed	
+			 * @param	props		
+			 * @param	copy		
+			 */
+			public function Settings(name:String = 'Settings', sealed:Boolean = false, props:* = null, copy:Boolean = false) 
 			{
-				_handlers	= [];
+				// properties
+				_name		= name;
+				_sealed		= sealed;
 				_data		= {};
+				_handlers	= [];
+				
+				// initialize
+				if (props)
+				{
+					// String
+					if (props is String)
+					{
+						props = (props as String).match(/\w+/g);
+					}
+					
+					// Array
+					if (props is Array)
+					{
+						for (var i:int = 0; i < props.length; i++) 
+						{
+							_data[props[i]] = null;
+						}
+					}
+					
+					// any iterable object
+					else
+					{
+						for (var name:String in props)
+						{
+							_data[name] = copy ? props[name] : null;
+						}
+					}
+				}
+			}
+			
+			public static function create(props:*, copy:Boolean = false, sealed:Boolean = false):Settings
+			{
+				return new Settings('Settings', sealed, props, copy);
 			}
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function set(name:String, value:*, slilent:Boolean = false):Settings 
+			public function set(prop:*, value:* = null, silent:Boolean = false):Settings 
 			{
-				_data[name] = value;
-				trigger(name, value);
+				// if a single object is passed, copy its properties
+				if (arguments.length === 1)
+				{
+					for (var name:String in prop)
+					{
+						if (name in _data)
+						{						
+							set(name, prop[name], true);
+						}
+					}
+					return this;
+				}
+
+				// otherwise, set a single property value
+				else
+				{
+					if ( ! _sealed || prop in _data)
+					{
+						_data[prop] = value;
+						if ( ! silent )
+						{
+							trigger(prop);
+						}
+					}
+					else
+					{
+						throw new ReferenceError('Invalid access to property ' +prop+ ' on settings object ' +_name);
+					}
+				}
 				return this;
 			}
 			
@@ -69,8 +143,9 @@ package core.data.settings
 				return this;
 			}
 			
-			public function trigger(name:String = null, value:* = null):void 
+			public function trigger(name:String = null):void 
 			{
+				var value:* = _data[name];
 				for (var i:int = 0; i < _handlers.length; i++) 
 				{
 					_handlers[i](new ValueEvent(name, value));
@@ -86,6 +161,7 @@ package core.data.settings
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
@@ -107,10 +183,9 @@ package core.data.settings
 				{
 					arr.push(name + '="' +_data[name]+ '"');
 				}
-				return '[object Settings ' +arr.join(' ')+ ']';
+				return '[object ' +_name+ ' ' +arr.join(' ')+ ']';
 			}
-			
-			
+						
 	}
 
 }
