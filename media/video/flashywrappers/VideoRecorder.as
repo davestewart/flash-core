@@ -65,17 +65,17 @@ package core.media.video.flashywrappers
 				}
 			}
 		
-			public function getBytes():ByteArray
-			{
-				return encoder.bytes;
-			}
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
 			public function get encoder():VideoEncoder { return _encoder; }
 			
+			public function get bytes():ByteArray
+			{
+				return encoder.bytes;
+			}
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
