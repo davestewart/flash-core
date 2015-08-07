@@ -8,6 +8,7 @@ package core.net.rest
 	import flash.net.URLRequest;
 	import flash.net.URLRequestHeader;
 	import flash.net.URLVariables;
+	import flash.utils.ByteArray;
 	
 	import core.net.PHPVariables;
 	import core.data.encoders.Base64;
@@ -30,6 +31,7 @@ package core.net.rest
 				
 			// types constants @see http://en.wikipedia.org/wiki/Internet_media_type
 				public static const TYPE_TEXT			:String	= 'text/plain';
+				public static const TYPE_BINARY			:String	= 'application/octet-stream';
 				public static const TYPE_FORM			:String = 'application/x-www-form-urlencoded';
 				public static const TYPE_JSON			:String = 'application/json';
 				public static const TYPE_XML			:String = 'application/xml';
@@ -140,20 +142,28 @@ package core.net.rest
 				// if a URLRequest (i.e. a pre-built multipart-form request) is passed in, use it
 					if (values is URLRequest)
 					{
-						request			= values;
-						request.url		= url;
+						request					= values;
+						request.url				= url;
+					}
+					
+				// if a ByteArray (such as a video) build a binary request
+					else if (values is ByteArray)
+					{
+						request					= new URLRequest(url);
+						request.contentType		= TYPE_BINARY;
+						request.data			= values;
 					}
 					
 				// otherwise, build a new request
 					else
 					{
 						// data
-							data					= getVariables(values);
-								
+						data					= getVariables(values);
+							
 						// request
-							request					= new URLRequest(url);
-							request.contentType		= contentType;
-							request.data			= data.toString() == '' ? ' ' : data; // prevents server 404-ing if no data
+						request					= new URLRequest(url);
+						request.contentType		= contentType;
+						request.data			= data.toString() == '' ? ' ' : data; // prevents server 404-ing if no data
 					}
 					
 				// add method override headers for PUT and DELETE
