@@ -1,5 +1,6 @@
 package core.media.video.flashywrappers 
 {
+	import core.events.MediaEvent;
 	import core.media.video.VideoRecorder;
 	import flash.events.NetStatusEvent;
 	import flash.net.NetConnection;
@@ -29,45 +30,52 @@ package core.media.video.flashywrappers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoRecorder(width:int=320, height:int=180, setup:Boolean=true, connection:NetConnection=null) 
+			public function VideoRecorder(width:int=320, height:int=180) 
 			{
-				super(width, height, setup, connection);
+				super(width, height);
 			}
 			
 			override protected function initialize():void 
 			{
 				// super
 				super.initialize();
-				
-				// encoder
-				_encoder = new VideoEncoder(this, 12.5, 'mp4');
-				encoder.addEventListener(VideoEncoderEvent.LOADING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.LOADED, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.INITIALIZING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.READY, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.CAPTURED, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.ENCODING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.FINISHED, onEncoderEvent);
-				
 			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
+			override public function setup():void 
+			{
+				// camera etc
+				super.setup();
+				
+				// encoder
+				if (VideoEncoder.instance)
+				{
+					_encoder = VideoEncoder.instance;
+					encoder.addEventListener(VideoEncoderEvent.READY, onEncoderEvent);
+					encoder.addEventListener(VideoEncoderEvent.CAPTURED, onEncoderEvent);
+					encoder.addEventListener(VideoEncoderEvent.ENCODING, onEncoderEvent);
+					encoder.addEventListener(VideoEncoderEvent.FINISHED, onEncoderEvent);
+					encoder.initialize(this)
+				}
+				else
+				{
+					throw new Error('Initialize the VideoEncoder class via VideoEncoder.load() before using this component!');
+				}
+			}
+		
 			public function getBytes():ByteArray
 			{
-				return encoder.getVideo();
+				return encoder.bytes;
 			}
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			public function get encoder():VideoEncoder 
-			{
-				return _encoder;
-			}
-		
+			public function get encoder():VideoEncoder { return _encoder; }
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
@@ -79,7 +87,12 @@ package core.media.video.flashywrappers
 			
 			override protected function _pause():void
 			{
-				encoder.pause(); 
+				
+			}
+
+			override protected function _resume():void 
+			{
+				
 			}
 			
 			override protected function _stop():void
@@ -89,7 +102,9 @@ package core.media.video.flashywrappers
 			
 			override protected function _onRecordComplete():void
 			{
-				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code:'NetStream.Unpublish.Success' } ));
+				dispatchEvent(new MediaEvent(MediaEvent.PROCESSED));
+				dispatchEvent(new MediaEvent(MediaEvent.FINISHED));
+				//dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code:'NetStream.Unpublish.Success' } ));
 			}
 		
 
@@ -99,23 +114,24 @@ package core.media.video.flashywrappers
 			protected function onEncoderEvent(event:VideoEncoderEvent):void 
 			{
 				// debug
-				trace('event:', event.type);
+				var type:String = event.type.replace('VideoEncoderEvent.', '').toLowerCase();
+				
+				// debug
+				//trace('VideoRecorder: encoder event: ' + type);
 				
 				// special cases
 				switch (event.type) 
 				{
 					case VideoEncoderEvent.READY:
-						// ready - this should be set up when the app loads
-						break;
-						
-					case VideoEncoderEvent.ENCODING:
-						trace('encoding!');
-						// encoder.getEncodingProgress();
+						trace('Video encoder is ready');
 						break;
 						
 					case VideoEncoderEvent.CAPTURED:
-						trace('capturing!');
-						//encoder.getCaptureProgress();
+						onCapture();
+						break;
+						
+					case VideoEncoderEvent.ENCODING:
+						onEncode();
 						break;
 						
 					case VideoEncoderEvent.FINISHED:
@@ -126,8 +142,19 @@ package core.media.video.flashywrappers
 				}
 				
 			}
-		
-		
+			
+			protected function onCapture():void 
+			{
+				dispatchEvent(new MediaEvent(MediaEvent.CAPTURED));
+			}
+			
+			protected function onEncode():void 
+			{
+				dispatchEvent(new MediaEvent(MediaEvent.PROCESSING));
+			}
+			
+
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		

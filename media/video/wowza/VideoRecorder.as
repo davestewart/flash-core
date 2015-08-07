@@ -1,5 +1,6 @@
 package core.media.video.wowza 
 {
+	import core.events.MediaEvent;
 	import core.media.video.VideoRecorder;
 	import core.utils.Strings;
 	import flash.media.H264Level;
@@ -32,9 +33,9 @@ package core.media.video.wowza
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoRecorder(width:int=320, height:int=180, setup:Boolean=true, connection:NetConnection=null) 
+			public function VideoRecorder(width:int=320, height:int=180, connection:NetConnection=null) 
 			{
-				super(width, height, setup, connection);
+				super(width, height, connection);
 			}
 			
 		
@@ -100,6 +101,8 @@ package core.media.video.wowza
 					function onBufferFlush():void
 					{
 						log('Waiting for buffer to empty...');
+						dispatchEvent(new MediaEvent(MediaEvent.PROCESSING));
+
 						if (stream.bufferLength == 0)
 						{
 							log('Buffer emptied!');
@@ -140,6 +143,11 @@ package core.media.video.wowza
 				// sent to the Wowza Media Server, close the publishing stream
 					stream.publish('null');
 					stream.close();
+					
+				// event
+					dispatchEvent(new MediaEvent(MediaEvent.PROCESSED));
+					dispatchEvent(new MediaEvent(MediaEvent.FINISHED));
+
 			}
 
 			

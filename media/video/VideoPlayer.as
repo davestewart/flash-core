@@ -170,6 +170,7 @@ package core.media.video
 						setupStream();
 						video.attachNetStream(_stream);
 						_stream.play(streamName);
+						dispatchEvent(new MediaEvent(MediaEvent.STARTED)); // PLAYING will also fire, but driven by the NetStream
 					}
 				
 					else
@@ -198,6 +199,7 @@ package core.media.video
 				{
 					_paused	= true;
 					_stream.pause();
+					dispatchEvent(new MediaEvent(MediaEvent.PAUSED));
 				}
 			}
 			
@@ -208,6 +210,7 @@ package core.media.video
 					trace('VideoPlayer: resuming...')
 					_paused	= false;
 					_stream.resume();
+					dispatchEvent(new MediaEvent(MediaEvent.RESUMED));
 				}
 			}
 		
@@ -220,6 +223,7 @@ package core.media.video
 					_paused	= false;
 					_stream.pause();
 					dispatchEvent(new Event(Event.COMPLETE));
+					dispatchEvent(new MediaEvent(MediaEvent.STOPPED));
 				}
 				//close();
 			}
@@ -232,6 +236,7 @@ package core.media.video
 					_paused	= true;
 					_stream.pause();
 					_stream.seek(0);
+					dispatchEvent(new MediaEvent(MediaEvent.REWIND));
 				}
 			}
 		
@@ -254,6 +259,7 @@ package core.media.video
 					}
 					_stream			= null;
 					_streamName		= null;
+					dispatchEvent(new MediaEvent(MediaEvent.CLOSED));
 				}
 			}
 			
@@ -391,23 +397,93 @@ package core.media.video
 					dispatchEvent(event);
 					
 				// debug
-					trace('>' + event.info.code);
+					trace('>>> ' + event.info.code);
 					
 				// status
 					_status = event.info.description;
 					
 				// action
+					// @see http://help.adobe.com/en_US/as3/dev/WS901d38e593cd1bac-3d11a09612fffaf8447-8000.html
 					switch(event.info.code)
 					{
 						// error events
 							case 'NetStream.Play.StreamNotFound':
 							case 'NetStream.Play.Failed':
+								dispatchEvent(new MediaEvent(MediaEvent.ERROR));
 								break;
 							
 						// play events
+							case 'NetStream.Play.Start':
+								dispatchEvent(new MediaEvent(MediaEvent.PLAYING));
+								break;
+							
+							case 'NetStream.Play.Stop':
+								// this gets called when the 
+								break;
+							
+							// this gets called when the stream has completed playing
 							case 'NetStream.Play.Complete':
 								stop();
 								break;
+								
+							case 'NetStream.Play.MetaData':
+								dispatchEvent(new MediaEvent(MediaEvent.METADATA, event.info));
+								break;
+								
+							
+						// seek events
+							case 'NetStream.SeekStart.Notify':
+								
+								break;
+							
+							case 'NetStream.Seek.Notify':
+								
+								break;
+							
+							case 'NetStream.Unpause.Notify':
+								
+								break;
+							
+							case 'NetStream.Unpause.Notify':
+								
+								break;
+							
+						// publish events
+							case 'NetStream.Publish.Start':
+								
+								break;
+							
+							case 'NetStream.Unpublish.Success':
+								if ( ! paused )
+								{
+									dispatchEvent(new MediaEvent(MediaEvent.PROCESSED));
+								}
+								break;
+							
+						// record events
+							case 'NetStream.Record.Start':
+								
+								break;
+							
+							case 'NetStream.Record.Stop':
+								// called just before 'NetStream.Unpublish.Success':
+								break;
+							
+						// buffer events
+							case 'NetStream.Buffer.Full':
+								
+								break;
+							
+							case 'NetStream.Buffer.Flush':
+								
+								break;
+							
+							case 'NetStream.Buffer.Empty':
+								dispatchEvent(new MediaEvent(MediaEvent.STOPPED)); // temp
+								break;
+							
+							default:
+							
 					}
 			}
 			
@@ -417,7 +493,7 @@ package core.media.video
 			 */
 			public function onPlayStatus(event:Object) :void
 			{
-				trace(event.code);
+				trace('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' + event.code);
 				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, event));
 				if (event.code == 'NetStream.Play.Complete')
 				{
@@ -440,6 +516,8 @@ package core.media.video
 				}
 				data.code = 'NetStream.Play.MetaData';
 				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, data));
+				dispatchEvent(new MediaEvent(MediaEvent.METADATA, data));
+				
 			}
 			
 			

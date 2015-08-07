@@ -2,6 +2,7 @@ package core.media.video.flashywrappers
 {
 	import cc.minos.codec.flv.*;
 	import cc.minos.codec.mov.*;
+	import core.events.MediaEvent;
 	import core.media.video.VideoPlayer;
 	import flash.display.DisplayObjectContainer;
 	import flash.net.NetStream;
@@ -23,7 +24,7 @@ package core.media.video.flashywrappers
 			
 			// properties
 				protected var bytes				:ByteArray;
-				protected var keyframes			:Vector.<Frame>;
+				protected var frames			:Vector.<Frame>;
 				
 			// variables
 				
@@ -44,46 +45,54 @@ package core.media.video.flashywrappers
 			public function loadBytes(bytes:ByteArray):void 
 			{
 				// variables
-				var mp4:Mp4Codec	= new Mp4Codec();;
-				var flv:FlvCodec	= new FlvCodec();
+				var mp4:Mp4Codec	= new Mp4Codec();
+				var flv:FlvCodec	= new FlvCodec
 				
 				// convert mp4 bytes to flv
 				mp4.decode(bytes);
 				this.bytes			= flv.encode(mp4);
 				
-				// grab keyframes for later
-				var keys:Array		= flv.getKeyframes();
-				keyframes			= new Vector.<Frame>;
-				keyframes.push(new Frame(keys[0]));
-				keyframes.push(new Frame(keys[1]));
+				// grab flv keyframes for later
+				var keyframes:Array	= flv.getKeyframes();
+				frames				= new Vector.<Frame>;
+				frames.push(new Frame(keyframes[0]));
+				frames.push(new Frame(keyframes[1]));
 			}
 			
 			override public function play():void 
 			{
+				// error if not bytes have been loaded
+				if (bytes == null)
+				{
+					throw new Error('Cannot create / play stream as no bytes have been loaded');
+				}
+				
 				// set up the stream
-				_stream			= new NetStream(connection);
-				_stream.client	= {};
-				_stream.play(null);
+				setupStream();
+				stream.play(null);
 				
 				// attach stream to video
 				video.attachNetStream(stream);
+				
+				// event
+				dispatchEvent(new MediaEvent(MediaEvent.STARTED));
 
 				// variables
 				var buffer:ByteArray;
 				
 				// create a buffer and write keyframe 1 to it
 				buffer = new ByteArray();
-				buffer.writeBytes(bytes, 0, keyframes[1].pos + 10240);
+				buffer.writeBytes(bytes, 0, frames[1].pos + 10240);
 				
 				// append buffer to stream
 				stream.appendBytes(buffer);
 
 				// seek just before first keyframe
-				stream.seek(keyframes[0].time - 0.01);
+				stream.seek(frames[0].time - 0.01);
 
 				// create a new buffer and write the entire video
 				buffer = new ByteArray();
-				buffer.writeBytes(bytes, keyframes[0].pos);
+				buffer.writeBytes(bytes, frames[0].pos);
 				
 				// append this new buffer to the stream
 				stream.appendBytesAction(NetStreamAppendBytesAction.RESET_SEEK);

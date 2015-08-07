@@ -15,10 +15,7 @@ package core.media.video.flashywrappers
 		/// The encoder has loaded
 		public static const LOADED				:String		= 'VideoEncoderEvent.LOADED';
 		
-		/// The encoder is initializing
-		public static const INITIALIZING		:String		= 'VideoEncoderEvent.INITIALIZING';
-		
-		/// The encoder has allocated its RAM and is ready to capture frames
+		/// The encoder is ready
 		public static const READY				:String		= 'VideoEncoderEvent.READY';
 		
 		/// The encoder has captured a frame

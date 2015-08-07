@@ -2,6 +2,7 @@ package core.media.video
 {
 	import core.data.settings.VideoSettings;
 	import core.errors.ImplementationError;
+	import core.events.MediaEvent;
 	import core.media.camera.Webcam;
 	import flash.events.ActivityEvent;
 	import flash.events.ErrorEvent;
@@ -54,7 +55,7 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoRecorder(width:int = 320, height:int = 180, setup:Boolean = true, connection:NetConnection = null)
+			public function VideoRecorder(width:int = 320, height:int = 180, connection:NetConnection = null)
 			{
 				// super
 					super(width, height, connection);
@@ -62,12 +63,6 @@ package core.media.video
 				// set video dimensions to the same as the video
 					_videoWidth		= this.width
 					_videoHeight	= this.height;
-					
-				// setup camera
-					if (setup)
-					{
-						this.setup();
-					}
 			}
 		
 			override protected function initialize():void 
@@ -168,6 +163,7 @@ package core.media.video
 					_paused = false;
 					
 				// defer to subclass
+					dispatchEvent(new MediaEvent(MediaEvent.STARTED));
 					_record(append);
 				
 				// return
@@ -194,6 +190,7 @@ package core.media.video
 					_paused = false;
 
 				// defer to subclass
+					dispatchEvent(new MediaEvent(MediaEvent.STOPPED));
 					_stop();
 			}
 
