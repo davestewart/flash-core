@@ -25,6 +25,7 @@ package core.net.rest
 				protected var _responseType	:String;
 				protected var _method		:String;
 				protected var _loader		:URLLoader;
+				protected var _event		:Event;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -75,6 +76,8 @@ package core.net.rest
 			
 			public function get responseType():String { return _responseType; }
 			
+			public function get event():Event { return _event; }
+			
 			public function get format():String
 			{
 				switch(_responseType)
@@ -92,6 +95,9 @@ package core.net.rest
 		
 			protected function onSuccess(event:Event):void
 			{
+				// add response
+					_event = event;
+				
 				// convert response
 					if (_responseType !== RestClient.TYPE_TEXT)
 					{
@@ -125,7 +131,7 @@ package core.net.rest
 					}
 					
 				// dispatch
-					dispatchEvent(new RestEvent(RestEvent.SUCCESS, _data, event));
+					dispatchEvent(new RestEvent(RestEvent.SUCCESS, _data, this));
 					
 				// cleanup
 					cleanup();
@@ -133,7 +139,7 @@ package core.net.rest
 			
 			protected function onError(event:IOErrorEvent):void
 			{
-				dispatchEvent(new RestEvent(RestEvent.ERROR, event.target.data, event));
+				dispatchEvent(new RestEvent(RestEvent.ERROR, event.target.data, this));
 				cleanup();
 			}
 			
