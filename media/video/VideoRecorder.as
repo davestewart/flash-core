@@ -210,13 +210,6 @@ package core.media.video
 					throw new Error('Invalid video format "' +value+ '"');
 				}
 			}
-		
-			public function get quality():int { return _quality; }
-			public function set quality(value:int):void 
-			{
-				_quality = value;
-				updateCamera();
-			}
 			
 			public function get size():Array { return [videoWidth, videoHeight]; }
 			public function set size(value:Array):void 
@@ -235,6 +228,15 @@ package core.media.video
 			public function set videoHeight(value:int):void 
 			{
 				_videoHeight = value;
+				updateCamera();
+			}
+			
+			// TODO replace ALL these with a single VideoSettings object that can be passed around
+		
+			public function get quality():int { return _quality; }
+			public function set quality(value:int):void 
+			{
+				_quality = value;
 				updateCamera();
 			}
 			
@@ -314,11 +316,6 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			protected function log(message:String, status:String = 'status'):void
-			{
-				dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, message, status));
-			}
-			
 			override public function toString():String 
 			{
 				return '[object VideoRecorder videoWidth="' +videoWidth + '" videoHeight="' +videoHeight + '" fps="' +fps + '" quality="' +quality + '" bandwidth="' +bandwidth + '"]';

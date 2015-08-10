@@ -10,7 +10,8 @@ package core.media.video.flashywrappers
 	import flash.utils.ByteArray;
 	
 	/**
-	 * ...
+	 * This player is currently too unreliable to be used :(
+	 * 
 	 * @author Dave Stewart
 	 */
 	public class VideoPlayer extends core.media.video.VideoPlayer 
@@ -57,6 +58,9 @@ package core.media.video.flashywrappers
 				frames				= new Vector.<Frame>;
 				frames.push(new Frame(keyframes[0]));
 				frames.push(new Frame(keyframes[1]));
+				
+				// event
+				dispatchEvent(new MediaEvent(MediaEvent.LOADED));
 			}
 			
 			override public function play():void 

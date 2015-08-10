@@ -3,6 +3,7 @@ package core.media.video.wowza
 	import core.events.MediaEvent;
 	import core.media.video.VideoRecorder;
 	import core.utils.Strings;
+	import flash.events.NetStatusEvent;
 	import flash.media.H264Level;
 	import flash.media.H264Profile;
 	import flash.media.H264VideoStreamSettings;
@@ -154,8 +155,8 @@ package core.media.video.wowza
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-		
-		
+
+					
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		

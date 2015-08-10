@@ -4,6 +4,7 @@ package core.media.video
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
+	import flash.events.StatusEvent;
 	import flash.geom.Rectangle;
 	import flash.media.Video;
 	import flash.net.NetConnection;
@@ -40,7 +41,8 @@ package core.media.video
 				protected var _repeat					:Boolean;
 				
 			// stream variables
-				protected var _streamName				:String;
+			// TODO move all this rubbish to a stream-manager class
+				protected var _streamName				:String; // url
 				protected var _videoWidth				:int;
 				protected var _videoHeight				:int;
 				protected var _duration					:int;
@@ -294,6 +296,8 @@ package core.media.video
 			{
 				_connection = connection;
 			}
+			
+			// TODO move all netstream-related rubbish into the stream class, or a settings class
 		
 			public function get stream():NetStream { return _stream; }
 			
@@ -424,6 +428,7 @@ package core.media.video
 							// this gets called when the stream has completed playing
 							case 'NetStream.Play.Complete':
 								stop();
+								dispatchEvent(new MediaEvent(MediaEvent.COMPLETE));
 								break;
 								
 							case 'NetStream.Play.MetaData':
@@ -526,6 +531,10 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
+			protected function log(message:String, status:String = 'status'):void
+			{
+				dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, message, status));
+			}
 			
 	}
 
