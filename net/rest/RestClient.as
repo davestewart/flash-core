@@ -116,10 +116,34 @@ package core.net.rest
 			/**
 			 * 
 			 * @param	url
-			 * @param	data
+			 * @param	values				
 			 * @param	method
 			 * @param	onLoadComplete
 			 * @param	onLoadError
+			 * 
+			 * @usage	Values
+			 * 
+			 * 			Posts values as a standard hash
+			 * 
+			 * 			post(path, {a:100, b:'hello world', c:true);
+			 * 
+			 * 
+			 * @usage	Binary
+			 * 
+			 * 			Posts binary data as the post body
+			 * 
+			 * 			post(path, new Bitmap(bitmapData));
+			 * 
+			 * 
+			 * @usage	Multipart / Request
+			 * 
+			 * 			Uses the Mutipart class to add different datatypes
+			 * 
+			 *			var form:Multipart = new Multipart();
+			 *			form.addMany( {a:100, b:'hello world', c:bitmap} );
+			 * 
+			 *			post(path, form.request, onSuccess, onError);
+			 * 
 			 * @return
 			 */
 			public function send(url:String, values:* = null, method:String = METHOD_GET, onSuccess:Function = null, onError:Function = null):AsyncToken 
