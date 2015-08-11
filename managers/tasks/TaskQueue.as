@@ -226,11 +226,30 @@ package core.managers.tasks {
 					return this;
 				}
 				
-			// event handlers
+			// event handling
 			
-				public function then(task:Function, name:String = null):TaskQueue
+				/**
+				 * Calls a function immediately before a task is about to run
+				 * @param	name
+				 * @param	handler
+				 * @return
+				 */
+				public function before(name:String, handler:Function):TaskQueue 
 				{
-					return add(task, name);
+					// TODO implement before and after
+					return this;
+				}
+				
+				/**
+				 * Calls a function immediately after a task has run
+				 * @param	name
+				 * @param	handler
+				 * @return
+				 */
+				public function after(name:String, handler:Function):TaskQueue 
+				{
+					// TODO implement before and after
+					return this;
 				}
 			
 				public function when(event:String, handler:Function):TaskQueue 
@@ -243,6 +262,13 @@ package core.managers.tasks {
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
+			public function get current():Task
+			{
+				return _runningTasks.length > 0 
+					? _runningTasks[_index] 
+					: null;
+			}
+			
 			public function get index():int 
 			{
 				return _index;

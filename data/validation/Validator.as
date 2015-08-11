@@ -2,13 +2,13 @@ package core.data.validation
 {
 	
 	import flash.errors.IllegalOperationError;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
 	dynamic public class Validator
 	{
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: messages
@@ -76,9 +76,12 @@ package core.data.validation
 				
 			
 			// properties
-				public var model			:Object;
+				public var values			:Object;
 				public var errors			:Object;
 				public var state			:Boolean;
+				
+			// custom rules
+				protected var rules			:Object;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -86,7 +89,7 @@ package core.data.validation
 		
 			public function Validator(model:Object = null) 
 			{
-				this.model = model;
+				this.values = model;
 			}
 			
 			public static function factory(model:Object):Validator
@@ -98,11 +101,21 @@ package core.data.validation
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function validate(rules:Object = null, model:Object = null):Boolean
+			public function addRule(name:String, message:String, callback:Function):Validator
+			{
+				if ( ! (name in this) )
+				{
+					this.messages[name]	= message;
+					this[name]			= callback;
+				}
+				return this;
+			}
+			
+			public function validate(rules:Object = null, values:Object = null):Boolean
 			{
 				// parameters
-					model			= model || this.model;
-					rules			= rules || this.model.rules;
+					rules			= rules || this.values.rules;
+					values			= values || this.values;
 					
 				// properties
 					this.state		= true;
@@ -115,7 +128,7 @@ package core.data.validation
 					for (var name:String in rules)
 					{
 						// validate one
-							errors	= validateOne(model[name], rules[name]);
+							errors	= validateOne(values[name], rules[name]);
 							
 						// add messages to error object
 							if (errors.length > 0)
@@ -449,5 +462,37 @@ class Parameter
 		name			= parts.shift();
 		args			= parts;
 	}
+	
+}
+
+/**
+ * Not yet implemented, but intended to Objectify the adding and running of rules
+ * 
+ * Rather than doing this in the validateOne() method, each rule, and new custom rules, would become a Rule instance
+ * which would be responsible for validating its own state
+ */
+class Rule
+{
+	protected var _name			:String;
+	protected var _message		:String;
+	protected var _callback		:Function;
+	
+	public function Rule(name:String, message:String, callback:Function)
+	{
+		_name		= name;
+		_name		= message;
+		_callback	= callback;
+	}
+	
+	public function test(value:String):Boolean 
+	{
+		return callback()
+	}
+	
+	public function get name():String { return _name; }
+	
+	public function get message():String { return _message; }
+	
+	public function get callback():Function { return _callback; }
 	
 }

@@ -1,5 +1,6 @@
 package core.managers.boot 
 {
+	import core.data.models.ObjectModel;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	import flash.events.Event;
@@ -16,6 +17,7 @@ package core.managers.boot
 	 * CoreBootstrap extends BaseBootstrap to provide a more useful base configuration,
 	 * which includes:
 	 * 
+	 *  - loading and parsing dev.json from bin/../
 	 *  - loading a base config XML file (defaults to config/config.xml)
 	 *  - setting up the environment, based on the URL or other overrides
 	 * 
@@ -36,6 +38,10 @@ package core.managers.boot
 			// location
 				protected var _location				:Location;
 				public function get location()		:Location { return _location; }
+					
+			// vars
+				protected var _vars					:Object;
+				public function get vars()			:Object { return _vars; }
 					
 			// config	
 				protected var _configPath			:String;
@@ -65,6 +71,7 @@ package core.managers.boot
 					
 				// add default tasks
 					queue
+						.add(loadDevelopmentVariables, 'vars') // BUG for some reason, this intermittently blocks the loading of config - even though the 'Loading config...' trace fires. Very weird.
 						.add(loadConfig, 'config')
 						.add(setupEnvironment, 'environment');
 			}
@@ -72,6 +79,41 @@ package core.managers.boot
 
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: api
+		
+			protected function loadDevelopmentVariables():void 
+			{
+				// debug
+					log('Loading development variables...');
+					
+				// callback
+					function onLoad(event:Event):void 
+					{
+						var data:String = event.target.data;
+						_vars = JSON.parse(data);
+						log(data);
+						cleanup();
+						next();
+					}
+					
+					function onError(event:IOErrorEvent):void 
+					{
+						log('A development variables file at "' +path + '" was not found');
+						cleanup();
+						next();
+					}
+					
+					function cleanup():void
+					{
+						loader.removeEventListener(Event.COMPLETE, onLoad);
+						loader.removeEventListener(IOErrorEvent.IO_ERROR, onError);
+					}
+					
+				// load
+					var path	:String		= 'vars.json';
+					var loader	:URLLoader	= new URLLoader(new URLRequest(path));
+					loader.addEventListener(Event.COMPLETE, onLoad);
+					loader.addEventListener(IOErrorEvent.IO_ERROR, onError);
+			}
 		
 			protected function loadConfig():void 
 			{
