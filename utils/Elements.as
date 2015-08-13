@@ -8,6 +8,7 @@
 	import flash.display.Sprite;
 	import flash.display.Stage;
 	import flash.display.StageDisplayState;
+	import flash.events.Event;
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -319,15 +320,26 @@
 			return new Bitmap(getBytes(src, alpha, color));
 		}
 		
-		public static function fullscreen(element:DisplayObject):void 
+		public static function fullscreen(element:DisplayObject, onExitFullscreen:Function = null):void 
 		{
 			var stage:Stage = element.stage;
 			if (stage && stage.displayState != StageDisplayState.FULL_SCREEN)
 			{
+				// set full screen
 				// @see http://help.adobe.com/en_US/as3/dev/WS44B1892B-1668-4a80-8431-6BA0F1947766.html
 				var rect:Rectangle			= getScreenBounds(element); 
 				stage.fullScreenSourceRect	= rect; 
-				stage.displayState			= StageDisplayState.FULL_SCREEN; 
+				stage.displayState			= StageDisplayState.FULL_SCREEN;
+				
+				// add onExit functionality
+				if (onExitFullscreen)
+				{
+					stage.addEventListener(Event.FULLSCREEN, function(event:Event) 
+					{ 
+						event.currentTarget.removeEventListener(event.type, arguments.callee);
+						onExitFullscreen();
+					});
+				}
 			}
 		}
 
