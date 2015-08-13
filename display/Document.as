@@ -1,4 +1,4 @@
-package core.display.utils 
+package core.display 
 {
 	import com.demonsters.debugger.MonsterDebugger;
 	
