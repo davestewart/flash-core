@@ -6,6 +6,8 @@
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
+	import flash.display.Stage;
+	import flash.display.StageDisplayState;
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -231,6 +233,13 @@
 				return bounds;
 		}
 		
+		public static function getScreenBounds(element:DisplayObject):Rectangle
+		{
+			var p1	:Point = element.localToGlobal(new Point(0, 0));
+			var p2	:Point = element.localToGlobal(new Point(element.width, element.height));
+			return new Rectangle(p1.x, p1.y, p2.x - p1.x, p2.y - p1.y);
+		}
+
 		/**
 		 * Gets the string path to an item from the root
 		 * @param	element
@@ -310,7 +319,17 @@
 			return new Bitmap(getBytes(src, alpha, color));
 		}
 		
-
+		public static function fullscreen(element:DisplayObject):void 
+		{
+			var stage:Stage = element.stage;
+			if (stage && stage.displayState != StageDisplayState.FULL_SCREEN)
+			{
+				// @see http://help.adobe.com/en_US/as3/dev/WS44B1892B-1668-4a80-8431-6BA0F1947766.html
+				var rect:Rectangle			= getScreenBounds(element); 
+				stage.fullScreenSourceRect	= rect; 
+				stage.displayState			= StageDisplayState.FULL_SCREEN; 
+			}
+		}
 
 	}
 
