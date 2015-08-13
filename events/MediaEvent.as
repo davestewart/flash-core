@@ -17,10 +17,9 @@ package core.events
 		// --------------------------------------------------------------------------------------------------------
 		// constants
 				
-			// data
+			// loading
 				public static const OPENED					:String		= 'MediaEvent.OPENED';					// Dispatched when a URL has been called to open
 				public static const PROGRESS				:String		= 'MediaEvent.PROGRESS';				// Dispatched every .25 seconds, starting when the load() method is called and ending when all bytes are loaded or there is a network error. You can specify frequency with the progressInterval property
-
 				public static const BUFFERING				:String		= 'MediaEvent.BUFFERING';				// Dispatched when the buffering state is entered
 				public static const BUFFERED				:String		= 'MediaEvent.BUFFERED';				// Is this the same as ready?
 				public static const FIRST_FRAME_READY		:String		= 'MediaEvent.FIRSTFRAMEREADY';			// Dispatched when firstFrame is set to true, and the first frame has loaded and is displaying
@@ -53,9 +52,10 @@ package core.events
 				public static const FINISHED				:String		= 'MediaEvent.FINISHED';				// Dispatched when a stream has stopped playing or a recording has been processed
 				
 			// information
+				public static const RESET					:String		= 'MediaEvent.RESET'					// Dispatched when the stream is reset
 				public static const NETSTATUS				:String		= 'MediaEvent.NETSTATUS'				// Dispatched when the player receives a NetStatus event
-				public static const STATE_CHANGE			:String		= 'MediaEvent.STATE_CHANGE'				// Dispatched when the playback state changes
 				public static const METADATA				:String		= 'MediaEvent.METADATA';				// Dispatched on demand
+				public static const STATE_CHANGE			:String		= 'MediaEvent.STATE_CHANGE'				// Dispatched when the playback state changes
 				public static const RESIZE					:String		= 'MediaEvent.RESIZE'					// Dispatched when a video player is resized 
 				public static const ERROR					:String		= 'MediaEvent.ERROR';					// Dispatched if there is an error
 				
