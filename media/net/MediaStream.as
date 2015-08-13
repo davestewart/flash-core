@@ -1,4 +1,4 @@
-package core.media 
+package core.media.net 
 {
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;

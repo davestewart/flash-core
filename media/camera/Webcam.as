@@ -232,7 +232,7 @@ package core.media.camera
 				dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
 				
 				// HACK TO GET THE PROJECT DONE
-				camera.setMode(520, 293, 15);
+				//camera.setMode(520, 293, 15);
 			}
 		
 			protected function onMouseMove(event:MouseEvent):void 
