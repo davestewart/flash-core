@@ -31,7 +31,6 @@ package core.events
 			// playback
 				public static const PLAYING					:String		= 'MediaEvent.PLAYING';					// Dispatched when the playing state is entered
 				public static const PAUSED					:String		= 'MediaEvent.PAUSED';					// Dispatched when the pause state is entered
-				public static const RESUMED					:String		= 'MediaEvent.RESUMED';					// Dispatched when playback resumes after paused state
 				public static const STOPPED					:String		= 'MediaEvent.STOPPED';					// Dispatched when the stopped state is entered
 				public static const COMPLETE				:String		= 'MediaEvent.COMPLETE';				// Dispatched when playing completes by reaching the end of the FLV file
 				public static const REPEAT					:String		= 'MediaEvent.REPEAT';					// Dispatched when repeat is set to true and the video repeats
@@ -50,12 +49,14 @@ package core.events
 				
 			// playing or recording	
 				public static const STARTED					:String		= 'MediaEvent.STARTED';					// Dispatched when a stream has started playing or recording
+				public static const RESUMED					:String		= 'MediaEvent.RESUMED';					// Dispatched when playback resumes after paused state
 				public static const FINISHED				:String		= 'MediaEvent.FINISHED';				// Dispatched when a stream has stopped playing or a recording has been processed
 				
 			// information
 				public static const NETSTATUS				:String		= 'MediaEvent.NETSTATUS'				// Dispatched when the player receives a NetStatus event
 				public static const STATE_CHANGE			:String		= 'MediaEvent.STATE_CHANGE'				// Dispatched when the playback state changes
 				public static const METADATA				:String		= 'MediaEvent.METADATA';				// Dispatched on demand
+				public static const RESIZE					:String		= 'MediaEvent.RESIZE'					// Dispatched when a video player is resized 
 				public static const ERROR					:String		= 'MediaEvent.ERROR';					// Dispatched if there is an error
 				
 				

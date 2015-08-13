@@ -170,14 +170,15 @@ package core.media.video
 					return true;
 			}
 			
-			override public function pause():void 
+			override public function pause():Boolean 
 			{
 				super.pause();
 				_pause();
+				return true;
 				
 			}
 
-			override public function stop():void
+			override public function stop():Boolean
 			{
 				// debug
 					//trace('stopping recording...')
@@ -192,6 +193,8 @@ package core.media.video
 				// defer to subclass
 					dispatchEvent(new MediaEvent(MediaEvent.STOPPED));
 					_stop();
+					
+					return true;
 			}
 
 			

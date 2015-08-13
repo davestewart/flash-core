@@ -30,15 +30,23 @@ package core.media.video
 				protected var video						:Video;
 				protected var container					:Sprite;
 				
-			// properties
+			// objects
 				protected var _connection				:NetConnection;             
 				protected var _stream					:NetStream;
 				
-			// play properties
-				protected var _active					:Boolean;
+			// video properties
 				protected var _flipped					:Boolean;
-				protected var _paused					:Boolean;
+				protected var _autosize					:Boolean;
+				
+			// play properties
 				protected var _repeat					:Boolean;
+				protected var _autorewind				:Boolean;
+				
+			// play state
+				protected var _active					:Boolean;
+				protected var _playing					:Boolean;
+				protected var _paused					:Boolean;
+				protected var _ended					:Boolean;
 				
 			// stream variables
 			// TODO move all this rubbish to a stream-manager class
@@ -57,12 +65,8 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoPlayer(width:int = 320, height:int = 180, connection:NetConnection = null) 
+			public function VideoPlayer(width:uint = 320, height:uint = 180, connection:NetConnection = null) 
 			{
-				// parameters
-					width	= width > 0 ? width : 320;
-					height	= height > 0 ? height : 180;
-				
 				// build
 					build(width, height);
 					initialize();
@@ -98,10 +102,12 @@ package core.media.video
 					video.smoothing	= true
 					container.addChild(video);
 					
-					if (height > 360)
-						container.scrollRect = new Rectangle(0, 0, width, 360);
+				// size
+					// need to add some code in to handle resizing, masking, etc
 					
 					/*
+					if (height > 360)
+						container.scrollRect = new Rectangle(0, 0, width, 360);
 					var vidMask:Square = new Square(640, 360);
 					addChild(vidMask);
 					container.mask = vidMask;
@@ -125,8 +131,14 @@ package core.media.video
 			 * 
 			 * @param	streamName
 			 */
-			public function load(streamName:String, autoplay:Boolean = false):void 
+			public function load(streamName:String, autoplay:Boolean = false):Boolean 
 			{
+				// don't load the same stream twice
+					if (streamName === _streamName)
+					{
+						return false;
+					}
+					
 				// set name
 					_streamName = streamName;
 					
@@ -141,19 +153,28 @@ package core.media.video
 					{
 						if (event.info.code == 'NetStream.Play.Start')
 						{
+							event.stopImmediatePropagation();
 							_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
-							dispatchEvent(new MediaEvent(MediaEvent.LOADED));
-							autoplay 
-								? replay()
-								: pause();
+							dispatch(MediaEvent.LOADED)
+							if( ! autoplay )
+							{
+								_stream.pause();
+							}
+							else
+							{
+								play();
+							}
 						}
 					}
 					
 				// bind to the initial playback event
-					_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoad);
+					_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoad, false, 100);
 					
 				// play the movie you just recorded
 					_stream.play(streamName);
+					
+				// return
+					return true;
 			}
 		
 			/**
@@ -161,84 +182,91 @@ package core.media.video
 			 * 
 			 * @param	streamName
 			 */
-			public function play():void
-			{
-				// TODO set this up so that play only plays / resumes an existing stream (ALWAYS use load to load a stream)
-				
-				// setup
-					if (streamName && streamName !== this.streamName)
-					{
-						_streamName = streamName;
-						setupStream();
-						video.attachNetStream(_stream);
-						_stream.play(streamName);
-						dispatchEvent(new MediaEvent(MediaEvent.STARTED)); // PLAYING will also fire, but driven by the NetStream
-					}
-				
-					else
-					{
-						resume();
-					}
-					
-				// flag
-					_paused	= false;
-					_active	= true;
-			}
-			
-			public function replay():void
+			public function play():Boolean
 			{
 				if (_stream)
 				{
-					_active	= true;
-					_paused	= false;
-					_stream.seek(0);
+					if ( ! _playing )
+					{
+						if (_ended)
+						{
+							_rewind();
+						}
+						
+						_active		= true;
+						_playing	= true;
+						_paused		= false;
+						
+						if (_stream.time == 0 || _ended)
+						{
+							_ended = false;
+							dispatch(MediaEvent.STARTED) // PLAYING will also fire, but driven by the NetStream
+						}
+						else
+						{
+							dispatch(MediaEvent.RESUMED);
+						}
+						_stream.resume();
+						return true;
+					}
 				}
+				return false;
+			}
+			
+			public function replay():Boolean
+			{
+				if (_stream)
+				{
+					_rewind();
+					return play();
+				}
+				return false;
 			}
 
-			public function pause():void
+			public function pause():Boolean
 			{
-				if (_stream)
+				if (_stream && (! _paused) && ( ! _ended) )
 				{
-					_paused	= true;
+					_paused		= true;
+					_playing	= false;
 					_stream.pause();
-					dispatchEvent(new MediaEvent(MediaEvent.PAUSED));
+					dispatch(MediaEvent.PAUSED);
+					return true;
 				}
+				return false;
 			}
 			
-			public function resume():void 
+			public function stop():Boolean
 			{
-				if (_stream)
+				if (_stream && _active)
 				{
-					trace('VideoPlayer: resuming...')
-					_paused	= false;
-					_stream.resume();
-					dispatchEvent(new MediaEvent(MediaEvent.RESUMED));
-				}
-			}
-		
-			public function stop():void
-			{
-				if (_stream)
-				{
-					//dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, { code:'NetStream.Play.Complete' } ));
-					_active	= false;
-					_paused	= false;
+					_active		= false;
+					_paused		= false;
+					_playing	= false;
+					_rewind();
 					_stream.pause();
-					dispatchEvent(new Event(Event.COMPLETE));
-					dispatchEvent(new MediaEvent(MediaEvent.STOPPED));
+					dispatch(MediaEvent.STOPPED);
+					return true;
 				}
-				//close();
+				return false;
 			}
 			
-			public function rewind():void
+			public function rewind():Boolean
 			{
 				if (_stream)
 				{
-					_active	= false;
-					_paused	= true;
-					_stream.pause();
+					_rewind()
+					dispatch(MediaEvent.REWIND);
+					return true;
+				}
+				return false;
+			}
+			protected function _rewind():void 
+			{
+				if (_stream)
+				{
+					_ended		= false;
 					_stream.seek(0);
-					dispatchEvent(new MediaEvent(MediaEvent.REWIND));
 				}
 			}
 		
@@ -247,11 +275,19 @@ package core.media.video
 				video.clear();
 			}
 			
-			public function close():void 
+			public function close():Boolean 
 			{
-				video.attachNetStream(null);
-				video.clear();
+				// properties
+				_playing		= false;
+				_paused			= false;
+				_active			= false;
+				_ended			= false;
 				
+				// video
+				clear();
+				video.attachNetStream(null);
+				
+				// stream
 				if (_stream)
 				{
 					_stream.removeEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
@@ -261,8 +297,10 @@ package core.media.video
 					}
 					_stream			= null;
 					_streamName		= null;
-					dispatchEvent(new MediaEvent(MediaEvent.CLOSED));
+					dispatch(MediaEvent.CLOSED);
+					return true;
 				}
+				return false;
 			}
 			
 			
@@ -297,34 +335,6 @@ package core.media.video
 				_connection = connection;
 			}
 			
-			// TODO move all netstream-related rubbish into the stream class, or a settings class
-		
-			public function get stream():NetStream { return _stream; }
-			
-			public function get streamName():String { return _streamName; }
-			
-			public function get bufferTime():Number { return _bufferTime; }
-			public function set bufferTime(value:Number):void 
-			{
-				_bufferTime = value;
-			}
-			
-			public function get repeat():Boolean { return _repeat; }
-			public function set repeat(value:Boolean):void 
-			{
-				_repeat = value;
-			}
-			
-			public function get duration():int{ return _duration; }
-			
-			public function get metadata():Object { return _metaData; }
-			
-			public function get active():Boolean { return _active; }
-			
-			public function get status():String { return _status; }
-			
-			public function get paused():Boolean { return _paused; }
-			
 			public function get fullscreen():Boolean { return stage ? stage.displayState == StageDisplayState.FULL_SCREEN : false; }
 			public function set fullscreen(state:Boolean):void 
 			{
@@ -349,6 +359,52 @@ package core.media.video
 					stage.displayState			= StageDisplayState.NORMAL;
 				}
 			}
+			
+			public function get autosize():Boolean { return _autosize; }
+			public function set autosize(value:Boolean):void 
+			{
+				_autosize = value;
+			}
+			
+			
+			
+			// TODO move all netstream-related rubbish into the stream class, or a settings class
+		
+			public function get stream():NetStream { return _stream; }
+			
+			public function get streamName():String { return _streamName; }
+			
+			public function get bufferTime():Number { return _bufferTime; }
+			public function set bufferTime(value:Number):void 
+			{
+				_bufferTime = value;
+			}
+			
+			public function get repeat():Boolean { return _repeat; }
+			public function set repeat(value:Boolean):void 
+			{
+				_repeat = value;
+			}
+			
+			public function get autorewind():Boolean { return _autorewind; }
+			public function set autorewind(value:Boolean):void 
+			{
+				_autorewind = value;
+			}
+			
+			public function get duration():int{ return _duration; }
+			
+			public function get metadata():Object { return _metaData; }
+			
+			public function get active():Boolean { return _active; }
+			
+			public function get playing():Boolean { return _playing; }
+			
+			public function get paused():Boolean { return _paused; }
+			
+			public function get ended():Boolean { return _ended; }
+			
+			public function get status():String { return _status; }
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -401,7 +457,7 @@ package core.media.video
 					dispatchEvent(event);
 					
 				// debug
-					trace('>>> ' + event.info.code);
+					//trace('>   netstream : ' + event.info.code);
 					
 				// status
 					_status = event.info.description;
@@ -413,26 +469,54 @@ package core.media.video
 						// error events
 							case 'NetStream.Play.StreamNotFound':
 							case 'NetStream.Play.Failed':
-								dispatchEvent(new MediaEvent(MediaEvent.ERROR));
+								dispatch(MediaEvent.ERROR)
 								break;
 							
 						// play events
 							case 'NetStream.Play.Start':
-								dispatchEvent(new MediaEvent(MediaEvent.PLAYING));
+								dispatch(MediaEvent.PLAYING)
+								_ended = false;
 								break;
 							
 							case 'NetStream.Play.Stop':
-								// this gets called when the 
+								dispatch(MediaEvent.STOPPED)
 								break;
 							
-							// this gets called when the stream has completed playing
+							// this gets called when the stream has completed playing (the event is forwarded from the client)
 							case 'NetStream.Play.Complete':
-								stop();
-								dispatchEvent(new MediaEvent(MediaEvent.COMPLETE));
+								
+								// properties
+								_ended		= true;
+								_playing	= false;
+								
+								// events
+								dispatch(MediaEvent.COMPLETE);
+								dispatch(MediaEvent.FINISHED);
+								
+								// rewind, etc
+								if ( ! (_autorewind && _repeat) )
+								{
+									_stream.pause();
+								}
+								
+								if (_autorewind)
+								{
+									rewind();
+									if ( ! _repeat )
+									{
+										stop();
+									}
+								}
+								
+								if (_repeat)
+								{
+									replay();
+								}
+								
 								break;
 								
 							case 'NetStream.Play.MetaData':
-								dispatchEvent(new MediaEvent(MediaEvent.METADATA, event.info));
+								dispatch(MediaEvent.METADATA, event.info)
 								break;
 								
 							
@@ -446,11 +530,7 @@ package core.media.video
 								break;
 							
 							case 'NetStream.Unpause.Notify':
-								
-								break;
-							
-							case 'NetStream.Unpause.Notify':
-								
+								dispatch(MediaEvent.PLAYING)
 								break;
 							
 						// publish events
@@ -461,7 +541,7 @@ package core.media.video
 							case 'NetStream.Unpublish.Success':
 								if ( ! paused )
 								{
-									dispatchEvent(new MediaEvent(MediaEvent.PROCESSED));
+									dispatch(MediaEvent.PROCESSED)
 								}
 								break;
 							
@@ -484,7 +564,7 @@ package core.media.video
 								break;
 							
 							case 'NetStream.Buffer.Empty':
-								dispatchEvent(new MediaEvent(MediaEvent.STOPPED)); // temp
+
 								break;
 							
 							default:
@@ -494,16 +574,19 @@ package core.media.video
 			
 			/**
 			 * Called by the NetStream client, playback only
+			 * 
 			 * @param	data
 			 */
 			public function onPlayStatus(event:Object) :void
 			{
-				trace('>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>' + event.code);
-				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, event));
+				//trace('>>  client    : ' + event.code);
+				stream.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, event));
+				/**
 				if (event.code == 'NetStream.Play.Complete')
 				{
 					_repeat ? replay() : stop();
 				}
+				**/
 			}						
 			
 			/**
@@ -512,17 +595,35 @@ package core.media.video
 			 */
 			public function onMetaData(data:Object) :void
 			{
-				_metaData = data;
-				if ('frameWidth' in data)
+				if ( ! _metaData )
 				{
-					_videoWidth		= int(data.frameWidth);
-					_videoHeight	= int(data.frameHeight);
+					// assign metadata
+					_metaData = data;
+					if ('frameWidth' in data)
+					{
+						_videoWidth		= int(data.frameWidth);
+						_videoHeight	= int(data.frameHeight);
+					}
+					else
+					{
+						_videoWidth		= int(data.width);
+						_videoHeight	= int(data.height);
+					}
 					_duration		= int(data.duration);
+					
+					// dispatch metadata event
+					dispatch(MediaEvent.METADATA, data);
+					
+					// autosize
+					if (_autosize)
+					{
+						if(video.width !== _videoWidth || video.height !== _videoHeight)
+						video.width		= _videoWidth;
+						video.height	= _videoHeight;
+						draw();
+						dispatch(MediaEvent.RESIZE);
+					}
 				}
-				data.code = 'NetStream.Play.MetaData';
-				dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, data));
-				dispatchEvent(new MediaEvent(MediaEvent.METADATA, data));
-				
 			}
 			
 			
@@ -530,6 +631,12 @@ package core.media.video
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
+		
+			protected function dispatch(eventName:String, data:* = null):void 
+			{
+				trace('>>> player    : ' + eventName);
+				dispatchEvent(new MediaEvent(eventName, data));
+			}
 		
 			protected function log(message:String, status:String = 'status'):void
 			{
