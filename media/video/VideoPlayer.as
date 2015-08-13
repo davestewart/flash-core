@@ -95,13 +95,11 @@ package core.media.video
 		
 			public function load(url:String, autoplay:Boolean = false):Boolean 
 			{
-				video.attachNetStream(media.stream);
 				return media.load(url, autoplay);
 			}
 		
 			public function play():Boolean
 			{
-				video.attachNetStream(media.stream);
 				return media.play();
 			}
 			
