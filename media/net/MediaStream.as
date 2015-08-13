@@ -391,31 +391,20 @@ package core.media.net
 								dispatch(MediaEvent.COMPLETE);
 								dispatch(MediaEvent.FINISHED);
 								
-								// no rewind, etc
-								if ( ! (_autorewind && _repeat) )
+								// repeat, rewind or pause
+								if (_repeat)
+								{
+									replay();
+								}
+								else if (_autorewind)
+								{
+									rewind();
+									stop();
+								}
+								else
 								{
 									_stream.pause();
 								}
-								
-								// rewind or repeat
-								else
-								{
-									if (_autorewind)
-									{
-										rewind();
-										if ( ! _repeat )
-										{
-											stop();
-										}
-									}
-									
-									if (_repeat)
-									{
-										replay();
-									}
-								}
-								
-								
 								break;
 								
 							case 'NetStream.Play.MetaData':
@@ -527,7 +516,7 @@ package core.media.net
 		
 			protected function dispatch(eventName:String, data:* = null):void 
 			{
-				trace('>>> media     : ' + eventName);
+				//trace('>>> media     : ' + eventName);
 				_target.dispatchEvent(new MediaEvent(eventName, data, true));
 			}
 		
