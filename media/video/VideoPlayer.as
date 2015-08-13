@@ -38,6 +38,8 @@ package core.media.video
 				protected var _flipped					:Boolean;
 				protected var _autosize					:Boolean;
 				
+			// TODO move all this to a stream-manager class
+			
 			// play properties
 				protected var _repeat					:Boolean;
 				protected var _autorewind				:Boolean;
@@ -49,8 +51,7 @@ package core.media.video
 				protected var _ended					:Boolean;
 				
 			// stream variables
-			// TODO move all this rubbish to a stream-manager class
-				protected var _streamName				:String; // url
+				protected var _url						:String;
 				protected var _videoWidth				:int;
 				protected var _videoHeight				:int;
 				protected var _duration					:int;
@@ -86,7 +87,7 @@ package core.media.video
 			protected function initialize():void 
 			{
 				_duration	= -1;
-				bufferTime	= 2;
+				_bufferTime	= 2;
 			}
 		
 			protected function build(width:Number, height:Number):void 
@@ -134,13 +135,13 @@ package core.media.video
 			public function load(streamName:String, autoplay:Boolean = false):Boolean 
 			{
 				// don't load the same stream twice
-					if (streamName === _streamName)
+					if (streamName === _url)
 					{
 						return false;
 					}
 					
 				// set name
-					_streamName = streamName;
+					_url = streamName;
 					
 				// setup
 					setupStream();
@@ -296,7 +297,7 @@ package core.media.video
 						_stream.dispose();
 					}
 					_stream			= null;
-					_streamName		= null;
+					_url		= null;
 					dispatch(MediaEvent.CLOSED);
 					return true;
 				}
@@ -372,7 +373,7 @@ package core.media.video
 		
 			public function get stream():NetStream { return _stream; }
 			
-			public function get streamName():String { return _streamName; }
+			public function get url():String { return _url; }
 			
 			public function get bufferTime():Number { return _bufferTime; }
 			public function set bufferTime(value:Number):void 
@@ -635,7 +636,7 @@ package core.media.video
 			protected function dispatch(eventName:String, data:* = null):void 
 			{
 				trace('>>> player    : ' + eventName);
-				dispatchEvent(new MediaEvent(eventName, data));
+				dispatchEvent(new MediaEvent(eventName, data, true));
 			}
 		
 			protected function log(message:String, status:String = 'status'):void

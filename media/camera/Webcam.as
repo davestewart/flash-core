@@ -230,6 +230,9 @@ package core.media.camera
 				trace('camera activated successfully!');
 				camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
 				dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
+				
+				// HACK TO GET THE PROJECT DONE
+				camera.setMode(520, 293, 15);
 			}
 		
 			protected function onMouseMove(event:MouseEvent):void 

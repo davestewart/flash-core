@@ -1,6 +1,7 @@
 package core.media 
 {
 	import flash.events.EventDispatcher;
+	import flash.events.IEventDispatcher;
 	import flash.net.NetConnection;
 	import flash.net.NetStream;
 	
@@ -27,9 +28,9 @@ package core.media
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function MediaStream() 
+			public function MediaStream(target:IEventDispatcher = null) 
 			{
-				
+				super(target);
 			}
 			
 		

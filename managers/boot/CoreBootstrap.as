@@ -71,7 +71,7 @@ package core.managers.boot
 					
 				// add default tasks
 					queue
-						.add(loadDevelopmentVariables, 'vars') // BUG for some reason, this intermittently blocks the loading of config - even though the 'Loading config...' trace fires. Very weird.
+						//.add(loadDevelopmentVariables, 'vars') // BUG for some reason, this intermittently blocks the loading of config - even though the 'Loading config...' trace fires. Very weird.
 						.add(loadConfig, 'config')
 						.add(setupEnvironment, 'environment');
 			}

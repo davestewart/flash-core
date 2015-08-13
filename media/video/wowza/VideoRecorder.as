@@ -46,12 +46,12 @@ package core.media.video.wowza
 			override public function _record(append:Boolean = false):Boolean
 			{
 				// variables
-					_streamName = Strings.guid();
+					_url = Strings.guid();
 					
 				// append
 					if (append )
 					{
-						stream.publish(format + ':' + streamName, 'append');
+						stream.publish(format + ':' + url, 'append');
 					}
 					else
 					{
@@ -67,7 +67,7 @@ package core.media.video.wowza
 							}
 
 						// publish the stream by name
-							stream.publish(format + ':' + streamName, append ? 'append' : 'record'); // can also have "live" and "default", but "record" has NetStream events we can bind to
+							stream.publish(format + ':' + url, append ? 'append' : 'record'); // can also have "live" and "default", but "record" has NetStream events we can bind to
 							
 						// add custom metadata to the header of the .flv file
 							var metaData:Object	= 
