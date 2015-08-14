@@ -10,32 +10,31 @@ package core.data.settings
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class VideoSettings extends Settings 
+	public class CameraSettings extends Settings 
 	{
 					
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoSettings() 
+			public function CameraSettings() 
 			{
-				super('VideoSettings', true, 'format quality fps bandwidth keyframeInterval');
+				super('VideoSettings', true, 'width height quality fps format bandwidth keyframeInterval');
 			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			public function get format():String { return _data.format; }
-			public function set format(value:String):void 
+			public function get width():int { return _data.width; }
+			public function set width(value:int):void 
 			{
-				if (/^(flv|mp4)$/.test(value))
-				{
-					set('format', value);
-				}
-				else
-				{
-					throw new Error('Invalid video format "' +value+ '"');
-				}
+				set('width', value);
+			}
+
+			public function get height():int { return _data.height; }
+			public function set height(value:int):void 
+			{
+				set('height', value);
 			}
 
 			public function get quality():int { return _data.quality; }
@@ -48,6 +47,19 @@ package core.data.settings
 			public function set fps(value:int):void 
 			{
 				set('fps', value);
+			}
+
+			public function get format():String { return _data.format; }
+			public function set format(value:String):void 
+			{
+				if (/^(flv|mp4)$/.test(value))
+				{
+					set('format', value);
+				}
+				else
+				{
+					throw new Error('Invalid video format "' +value+ '"');
+				}
 			}
 
 			public function get bandwidth():int { return _data.bandwidth; }
