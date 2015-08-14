@@ -14,6 +14,7 @@ package core.events {
 		public static const NOT_ACTIVATED		:String	= 'CameraEvent.NOT_ACTIVATED';
 		public static const SIZE_CHANGE			:String	= 'CameraEvent.SIZE_CHANGE';
 		public static const SIZE_ERROR			:String	= 'CameraEvent.SIZE_ERROR';
+		static public const ATTACHED			:String = 'CameraEvent.ATTACHED';
 
 		public function CameraEvent(type:String, bubbles:Boolean=false, cancelable:Boolean=false) 
 		{ 

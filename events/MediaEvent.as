@@ -56,6 +56,7 @@ package core.events
 				public static const NETSTATUS				:String		= 'MediaEvent.NETSTATUS'				// Dispatched when the player receives a NetStatus event
 				public static const METADATA				:String		= 'MediaEvent.METADATA';				// Dispatched on demand
 				public static const STATE_CHANGE			:String		= 'MediaEvent.STATE_CHANGE'				// Dispatched when the playback state changes
+				public static const SIZE_CHANGE				:String		= 'MediaEvent.SIZE_CHANGE'				// Dispatched when the playback state changes
 				public static const RESIZE					:String		= 'MediaEvent.RESIZE'					// Dispatched when a video player is resized 
 				public static const ERROR					:String		= 'MediaEvent.ERROR';					// Dispatched if there is an error
 				
