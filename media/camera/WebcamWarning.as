@@ -2,25 +2,19 @@ package core.media.camera
 {
 	import assets.elements.WebcamWarningAsset;
 	import com.greensock.TweenLite;
-	import core.display.elements.Invalidatable;
-	import core.display.shapes.Square;
-	import core.media.video.VideoBase;
+	import core.events.CameraEvent;
 	import core.media.video.VideoRecorder;
-	import flash.display.Bitmap;
+	import core.tools.PixelMonitor;
 	import flash.display.BitmapData;
-	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.events.TimerEvent;
 	import flash.media.Video;
-	import flash.utils.setTimeout;
-	import flash.utils.Timer;
 	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class WebcamWarning extends Invalidatable 
+	public class WebcamWarning extends Sprite 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -28,13 +22,11 @@ package core.media.camera
 		
 			// elements
 				protected var text		:WebcamWarningAsset;
-				protected var recorder	:VideoRecorder;
 				protected var video		:Video;
-				protected var pixel		:Square;
+				protected var monitor	:PixelMonitor;
 			
 			// properties
-				protected var timer		:Timer;
-				
+				protected var _parent	:VideoRecorder;
 				
 			// variables
 				
@@ -43,57 +35,43 @@ package core.media.camera
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function WebcamWarning(parent:VideoRecorder) 
+			public function WebcamWarning(parent:VideoRecorder, px:int = 0, py:int = 0) 
 			{
 				// elements
-				recorder	= parent;
 				video		= parent.video;
+				monitor 	= new PixelMonitor(parent, px, py);
+				monitor.addEventListener(Event.CHANGE, onChange);
+				monitor.start();
 				
+				// add to parent
+				parent.addChild(this)
+
 				// build
-				initialize();
 				build();
-			}
-			
-			protected function initialize():void 
-			{
-				// add to container
-				recorder.container.addChildAt(this, 0);
-				
-				// timer
-				timer			= new Timer(1000);
-				timer.addEventListener(TimerEvent.TIMER, onTimer);
 			}
 			
 			protected function build():void 
 			{
 				// text
-				text			= new WebcamWarningAsset();
-				text.scaleX		= recorder.container.scaleX;
+				text		= new WebcamWarningAsset();
+				visible		= false;
+				alpha		= 0;
 				addChild(text);
-				
-				// hide
-				text.visible	= false;
-				text.alpha		= 0;
-				
-				// pixel
-				pixel = new Square(1, 1);
-				recorder.container.addChildAt(pixel, 0);
 				
 				// draw
 				draw();
-				
 			}
 			
 			public function show():void 
 			{
-				TweenLite.to(text, 0.5, { autoAlpha:1, delay:0.5 } );
-				timer.start();
+				TweenLite.to(this, 0.5, { autoAlpha:1, delay:0.5 } );
 			}
-		
+			
 			public function hide():void 
 			{
-				text.visible		= false;
-				text.alpha		= 0;
+				TweenLite.killTweensOf(this);
+				visible		= false;
+				alpha		= 0;
 			}
 			
 		
@@ -112,23 +90,10 @@ package core.media.camera
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected function check():void 
+			protected function draw():void 
 			{
-				var container	:Sprite		= recorder.container;
-				var bmd			:BitmapData = new BitmapData(container.width, container.height);
-				bmd.draw(container);
-				
-				var color		:Number		= bmd.getPixel(0, 0);
-				trace(color === 0x0000FF00);
-				
-			}
-		
-			override protected function draw():void 
-			{
-				// text
 				text.x		= video.width / 2;
 				text.y		= video.height / 2;
-				
 				if (text.width > video.width)
 				{
 					var scalar:Number = video.width / text.width;
@@ -141,16 +106,16 @@ package core.media.camera
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onTimer(event:Event):void 
+			protected function onChange(event:Event):void 
 			{
-				check();
+				trace('we have vide!')
+				hide();
 			}
+			
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
-		
-			
 		
 	}
 

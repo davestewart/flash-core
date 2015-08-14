@@ -1,26 +1,16 @@
 package core.media.camera 
 {
-	import core.data.settings.VideoSettings;
-	import flash.events.EventDispatcher;
 	import flash.events.ActivityEvent;
-	import flash.events.ErrorEvent;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.MouseEvent;
-	import flash.events.NetStatusEvent;
 	import flash.events.StatusEvent;
 	import flash.media.Camera;
-	import flash.media.H264Level;
-	import flash.media.H264Profile;
-	import flash.media.H264VideoStreamSettings;
 	import flash.media.Microphone;
-	import flash.media.Video;
-	import flash.media.VideoStreamSettings;
-	import flash.net.NetConnection;
-	import flash.utils.clearInterval;
-	import flash.utils.clearTimeout;
-	import flash.utils.setInterval;
 	import flash.utils.setTimeout;
-	import flash.external.ExternalInterface;
+	
+	import core.data.settings.CameraSettings;
+	
 	import core.events.CameraEvent;
 	
 	/**
@@ -39,29 +29,108 @@ package core.media.camera
 			// objects
 				protected var _camera				:Camera;
 				protected var _microphone			:Microphone;
-				protected var _video				:Video;
 													
 			// properties                       	
-				protected var _settings				:VideoSettings;
-				protected var _ready				:Boolean;
-				protected var _available			:Boolean;
-													
-			// variables                        	
-				protected var _setup				:Boolean;
+				protected var _settings				:CameraSettings;
 				
+			// flags
+				protected var _started				:Boolean;
+				protected var _available			:Boolean;
+				protected var _ready				:Boolean;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Webcam(video:Video, start:Boolean = true) 
+			public function Webcam(settings:CameraSettings) 
 			{
-				_video = video;
-				if (start)
-				{					
-					setup();
+				_settings = settings;
+				initialize();
+			}
+			
+			/**
+			 * Sets up listeners to configure the camera when the user has given permission
+			 * 
+			 * Called on class start
+			 */
+			protected function initialize ():void 
+			{
+				if ( ! _started )
+				{
+					// get camera
+					_started	= true;
+					_camera		= Camera.getCamera();
+					
+					// no camera
+					if (_camera )
+					{
+						log('available');
+						
+						// available
+						_available	= true;
+
+						// events
+						//_camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity, false, 0, true);
+						//_camera.addEventListener(Event.VIDEO_FRAME, onVideoFrame, false, 0, true);
+						
+						// this will always be muted on the first go, as the permissions dialog needs to show
+						if (_camera.muted)
+						{
+							_camera.addEventListener(StatusEvent.STATUS, onCameraStatus, false, 0, true);
+						}
+						
+						// if the user has previously given the camera permissions, I assume this runs
+						else
+						{
+							setup();
+						}
+					}
+					
+					// camera
+					else
+					{
+						log('no camera');
+						dispatchEvent(new CameraEvent(CameraEvent.NO_CAMERA));
+						return;
+					}
 				}
-				
+			}
+			
+			/**
+			 * Sets up the camera & microphone and flags complete
+			 * 
+			 * Called when the camera has been activated
+			 */
+			protected function setup():void
+			{
+				// debug
+					log('setup');
+					
+				// set up the mic (this currently does nothing
+					/*
+					// @see http://help.adobe.com/en_US/as3/dev/WS5b3ccc516d4fbf351e63e3d118a9b90204-7d1d.html
+					_microphone = Microphone.getMicrophone();
+					if( microphone != null)
+					{
+						microphone.rate = 11;
+						microphone.setSilenceLevel(0, -1);
+						//microphone.setLoopBack(true);
+					}
+					else
+					{
+						log('No Microphone Found', 'error');
+						dispatchEvent(new CameraEvent(CameraEvent.NO_MICROPHONE));
+					}
+					*/
+
+				// flag ready
+					_ready		= true;
+					
+				// dispatch a ready event
+					dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
+					
+				// update
+					update();
 			}
 			
 		
@@ -70,60 +139,59 @@ package core.media.camera
 		
 			public function update():void
 			{
-				/*
 				if (camera)
 				{
 					// keyframes
-						camera.setKeyFrameInterval(keyframeInterval);
+						camera.setKeyFrameInterval(settings.keyframeInterval);
 						
 					// size
 						
 						// Detect aspect ratio supported by webcam
-						//
-						// camera.setMode(4000, 2250, 25);
-				        // 
-						// var camWidth:Number = camera.width;
-						// var camHeight:Number = camera.height;
-						// var ratio:Number = gcd (camWidth, camHeight);
-						// var aspectRatio:String = camWidth / ratio +":" + camHeight / ratio;
-						// 
-						// trace("Camera dimensions = ", camWidth, "x", camHeight);
-						// trace("Camera aspect ratio = ", aspectRatio);
-						// 
-						// if (aspectRatio == "16:9")
-						// 	camera.setMode(1280, 720, 25);
-						// else
-						// 	camera.setMode(640, 480, 25);
-						//
+						camera.setMode(4000, 2250, 25);
+						var camWidth		:Number		= camera.width;
+						var camHeight		:Number		= camera.height;
+						var ratio			:Number		= gcd (camWidth, camHeight);
+						var aspectRatio		:String		= camWidth / ratio +":" + camHeight / ratio;
+						
+						// debug
+						log("Camera dimensions = ", camWidth, "x", camHeight);
+						log("Camera aspect ratio = ", aspectRatio);
+						
+						// set mode according to spect ratio
+						if (aspectRatio == "16:9")
+							camera.setMode(640, 360, 25);
+						else
+							camera.setMode(640, 480, 25);
 						
 						// forcing the camera to 4:3 fixes green stripe issue
-						camera.setMode(640, 480, 25);
-						if (camera.width < videoWidth)
+						// camera.setMode(640, 480, 25);
+						if (camera.width < _settings.width)
 						{
-							camera.setMode(videoWidth, videoHeight, fps);
+							camera.setMode(settings.width, settings.height, settings.fps);
 							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
-							trace('The camera could not be set to the required size!');
+							log('The camera could not be set to the required size!');
 						}
+						/*
+						*/
 						
 					// variables
 						var rate:int = camera.width * camera.height; // alternative bandwidth
 						
 					// quality
-						camera.setQuality(bandwidth, quality);
+						camera.setQuality(settings.bandwidth, settings.quality);
 						
-					// update values
-						_videoWidth		= camera.width;
-						_videoHeight	= camera.height;
-						_fps			= camera.fps;
+					// update settings with new values
+						settings.width		= camera.width;
+						settings.height		= camera.height;
+						settings.fps		= camera.fps;
 						
 					// debug
-						//trace('props:', videoWidth, videoHeight, bandwidth, quality, fps, keyframeInterval);
-						//trace('rate:', rate);
+						log('props:', settings.width, _settings.height, settings.bandwidth, settings.quality, settings.fps, settings.keyframeInterval);
+						//log('rate:', rate);
 						
 					// event
 						dispatchEvent(new CameraEvent(CameraEvent.SIZE_CHANGE));
 				}
-				*/
 			}
 			
 		
@@ -134,136 +202,78 @@ package core.media.camera
 			
 			public function get microphone():Microphone { return _microphone; }
 			
-			public function get video():Video { return _video; }
+			public function get settings():CameraSettings { return _settings; }
 			
-			/**
-			 * A camera is available
-			 */
+			/// The camera has attempted to be started (Flash only gives one go at this)
+			public function get started():Boolean { return _started; }
+
+			/// A camera is available
 			public function get available():Boolean { return _available; }
 			
-			/**
-			 * The camera is ready for use
-			 */
+			/// The camera is ready for use
 			public function get ready():Boolean { return _ready; }
 			
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected function setup():void
-			{	
-				// don't set up twice!
-					if (_setup) return;
-					
-				// debug
-					trace('setup camera...');
-				
-				// get the default Flash camera and microphone
-					_camera = Camera.getCamera();
-					
-				// here are all the quality and performance settings
-					if(camera != null)
-					{
-						// attach video
-							video.attachCamera(camera);
-
-						// test to see if camera can be activated
-							setTimeout(test, 500);
-							
-						// update camera
-							update();
-					}
-					else
-					{
-						trace('No Camera Found');
-						dispatchEvent(new CameraEvent(CameraEvent.NO_CAMERA));
-					}
-					
-				// set up the mic
-					_microphone = Microphone.getMicrophone();
-					if( microphone != null)
-					{
-						microphone.rate = 11;
-						microphone.setSilenceLevel(0, -1); 
-					}
-					else
-					{
-						trace('No Microphone Found', 'error');
-						dispatchEvent(new CameraEvent(CameraEvent.NO_MICROPHONE));
-					}
-
-				// flag as already set up
-					_available = true;
-					_ready = true;
-					_setup = true;
-			}
 			
-			protected function test():void
-			{
-				// debug
-					trace('testing for camera...');
-				
-				// detect inactivity if another application is using the camera
-					camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
-							
-				// set up mousemove handler to detect when the dialog has been dismissed
-					var moves:int = 0;
-					if (video.stage)
-					{
-						video.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-					}
-					else
-					{
-						video.addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
-					}
-			}
-		
-
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onCameraActivity(event:ActivityEvent):void 
+			protected function onCameraStatus(event:StatusEvent):void 
 			{
-				_available = true;
-				trace('camera activated successfully!');
-				camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
-				dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
-				
-				// HACK TO GET THE PROJECT DONE
-				//camera.setMode(520, 293, 15);
-			}
-		
-			protected function onMouseMove(event:MouseEvent):void 
-			{
-				trace('mouse moved, checking for camera activation');
-				video.stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
-				setTimeout(onActivationCheckTimeout, 1000);
-			}
-			
-			protected function onActivationCheckTimeout():void
-			{
-				if ( ! _available )
+				log('camera status');
+				switch (event.code)
 				{
-					trace('could not activate camera!');
-					dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
+					case 'Camera.Muted':
+					{
+						_ready = false;
+						dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
+						break;
+					}
+					case 'Camera.Unmuted':
+					{
+						setup();
+						break;
+					}
 				}
 			}
-			
-			protected function onAddedToStage(event:Event):void 
+		
+			protected function onCameraActivity(event:ActivityEvent):void 
 			{
-				trace('camera added to stage');
-				video && video.stage && video.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseMove);
+				/*
+				log('activity, '+ event);
+				_available = true;
+				log('camera activated successfully!');
+				camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
+				dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
+				*/
 			}
 				
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			
+			override public function toString():String 
+			{
+				return '[object WebCam started="' +started+ '" available="' +available+ '" ready="' +ready+ '" ]';
+			}
 		
 	}
 
 }
+
+// debug
+function log(...rest):void 
+{
+	trace('WebCam: ' , rest.join(' '));
+}
+
+// get the greatest common divisor
+function gcd (a:Number, b:Number):Number
+{
+	return (b == 0) ? a : gcd (b, a % b);
+}
+
