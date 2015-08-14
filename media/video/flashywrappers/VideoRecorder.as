@@ -47,7 +47,7 @@ package core.media.video.flashywrappers
 			override public function setup():void 
 			{
 				// camera etc
-				super.setup();
+				super.startCamera();
 				
 				// encoder
 				if (VideoEncoder.instance)
