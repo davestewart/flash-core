@@ -5,7 +5,6 @@ package core.media.video
 	import core.events.CameraEvent;
 	import core.events.MediaEvent;
 	import core.media.camera.Webcam;
-	import core.media.camera.WebcamWarning;
 	import flash.net.NetConnection;
 	
 	/**
@@ -23,44 +22,36 @@ package core.media.video
 			// properties
 				protected var _webcam					:Webcam;
 				protected var _settings					:CameraSettings;
-				protected var warning					:WebcamWarning;
+				
+			// variables
 								
 				
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoRecorder(width:int = 320, height:int = 180, connection:NetConnection = null)
+			public function VideoRecorder(width:int = 320, height:int = 180)
 			{
 				super(width, height);
 			}
 		
 			override protected function initialize():void 
 			{
-				// video
-				flipped						= true;
-				
-				// settings
-				_settings					= new CameraSettings();
-				settings.width				= 640;
-				settings.height				= 360;
-				settings.fps				= 15;
-				settings.quality			= 90;
-				settings.format				= 'mp4';
-				settings.bandwidth			= 0;
-				settings.keyframeInterval	= 15;
-				
-				// camera
-				_webcam						= new Webcam(settings);
-				webcam.addEventListener(CameraEvent.NO_CAMERA, onNoCamera);
-				webcam.addEventListener(CameraEvent.ACTIVATED, onCameraActivated);
-				webcam.addEventListener(CameraEvent.NOT_ACTIVATED, onCameraActivated);
-				webcam.addEventListener(CameraEvent.SIZE_CHANGE, onCameraSizeChange);
+				_flipped			= true;
+				_settings			= new CameraSettings(_width, _height, 25);
 			}
 			
 			override protected function build():void 
 			{
+				// super
 				super.build();
-				warning = new WebcamWarning(this);
+				
+				// camera
+				_webcam				= new Webcam(settings, video);
+				webcam.addEventListener(CameraEvent.NO_CAMERA, onNoCamera);
+				webcam.addEventListener(CameraEvent.ACTIVATED, onCameraActivated);
+				webcam.addEventListener(CameraEvent.NOT_ACTIVATED, onCameraActivated);
+				webcam.addEventListener(CameraEvent.ATTACHED, onVideoAttached);
+				webcam.addEventListener(CameraEvent.SIZE_CHANGE, onCameraSizeChange);
 			}
 			
 			
@@ -72,18 +63,31 @@ package core.media.video
 			 * 
 			 * This runs the async process of asking the user for permission to use the camera.
 			 * 
-			 * When the user chooses, the onCameraActivated() event fires
+			 * onCameraActivated() is fired when the user allows or denies the camera
 			 */
-			public function startCamera():void 
+			public function start():Boolean 
 			{
-				video.attachCamera(webcam.camera);
+				return webcam.start();
 			}
 			
-			public function stopCamera():void
+			/**
+			 * Sets the camera capture parameters
+			 * 
+			 * @param	width
+			 * @param	height
+			 * @param	fps
+			 */
+			public function setInputMode(width:Number, height:Number, fps:int = 25):void
 			{
-				video.attachCamera(null);
-				warning.hide();
-				clear();
+				settings.width	= width;
+				settings.height	= height;
+				settings.fps	= fps;
+				webcam.update();
+			}
+			
+			public function setOutputMode(width:Number, height:Number):void
+			{
+				// override in subclass
 			}
 			
 		
@@ -92,17 +96,18 @@ package core.media.video
 		
 			public function record(append:Boolean = false):Boolean
 			{
-				// debug
-					trace('Recording...');
-					
 				// exit early if camera is not available
 					if ( ! webcam.available )
 					{
-						dispatchEvent(new CameraEvent(CameraEvent.NOT_ACTIVATED));
+						dispatchEvent(new MediaEvent(MediaEvent.ERROR, 'unable to record, as there is no camera available'));
 						return false;
 					}
 					
-				// event
+				// debug
+					trace('Recording...');
+					
+				// events
+					dispatch(MediaEvent.RECORDING);
 					dispatch(MediaEvent.STARTED);
 					
 				// defer to subclass
@@ -112,14 +117,6 @@ package core.media.video
 					return true;
 			}
 			
-			public function pause():Boolean 
-			{
-				dispatch(MediaEvent.PAUSED);
-				_pause();
-				return true;
-				
-			}
-
 			public function stop():Boolean
 			{
 				dispatch(MediaEvent.STOPPED);
@@ -147,16 +144,6 @@ package core.media.video
 				throw new ImplementationError('set up the recoding process');
 			}
 			
-			protected function _pause():void 
-			{
-				throw new ImplementationError('pause the recording');
-			}
-		
-			protected function _resume():void 
-			{
-				throw new ImplementationError('resume the recording');
-			}
-		
 			protected function _stop():void 
 			{
 				throw new ImplementationError('finalize (such as flushing or encoding) the recording');
@@ -173,24 +160,24 @@ package core.media.video
 					
 			protected function onNoCamera(event:CameraEvent):void 
 			{
-				log('there is no camera!');
+				log('webcam: there is no camera!');
 			}
 
 			protected function onCameraActivated(event:CameraEvent):void 
 			{
 				log('status: ' + event.type);
 				log('webcam: ' + webcam);
-				
-				warning.show();
-
-				if (webcam.available)
-				{
-					//startCamera();
-				}
+			}
+			
+			protected function onVideoAttached(event:CameraEvent):void 
+			{
+				log('webcam: video attached ok');
+				dispatch(MediaEvent.READY);
 			}
 			
 			protected function onCameraSizeChange(event:CameraEvent):void 
 			{
+				// need to update this so it mintains aspect ratio
 				if (autosize)
 				{
 					width		= webcam.camera.width;

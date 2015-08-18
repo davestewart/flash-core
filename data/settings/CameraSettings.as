@@ -16,9 +16,21 @@ package core.data.settings
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function CameraSettings() 
+			public function CameraSettings(width:Number = 640, height:Number = 360, fps:Number = 25) 
 			{
-				super('VideoSettings', true, 'width height quality fps format bandwidth keyframeInterval');
+				// super
+				super('CameraSettings', true, 'width height fps quality format bandwidth keyframeInterval');
+				
+				// parameters
+				this.width				= width;
+				this.height				= height;
+				this.fps				= fps;
+				
+				// defaults
+				this.quality			= 90;
+				this.format				= 'mp4';
+				this.bandwidth			= 0;
+				this.keyframeInterval	= 25;
 			}
 			
 		

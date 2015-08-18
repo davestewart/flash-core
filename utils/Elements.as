@@ -332,11 +332,11 @@
 				stage.displayState			= StageDisplayState.FULL_SCREEN;
 				
 				// add onExit functionality
-				if (onExitFullscreen)
+				if (onExitFullscreen is Function)
 				{
-					stage.addEventListener(Event.FULLSCREEN, function(event:Event) 
+					stage.addEventListener(Event.FULLSCREEN, function(event:Event):void 
 					{ 
-						event.currentTarget.removeEventListener(event.type, arguments.callee);
+						Object(event.currentTarget).removeEventListener(event.type, arguments.callee);
 						onExitFullscreen();
 					});
 				}

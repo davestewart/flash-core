@@ -1,5 +1,7 @@
 package core.media.camera 
 {
+	import app.display.Document;
+	import core.tools.PixelMonitor;
 	import flash.events.ActivityEvent;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -7,6 +9,7 @@ package core.media.camera
 	import flash.events.StatusEvent;
 	import flash.media.Camera;
 	import flash.media.Microphone;
+	import flash.media.Video;
 	import flash.utils.setTimeout;
 	
 	import core.data.settings.CameraSettings;
@@ -29,9 +32,12 @@ package core.media.camera
 			// objects
 				protected var _camera				:Camera;
 				protected var _microphone			:Microphone;
+				protected var _video				:Video;
 													
 			// properties                       	
-				protected var _settings				:CameraSettings;
+				protected var _settings				:CameraSettings; // is this redundant now?
+				protected var _monitor				:PixelMonitor;
+				protected var _aspectRatio			:String;
 				
 			// flags
 				protected var _started				:Boolean;
@@ -42,37 +48,42 @@ package core.media.camera
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Webcam(settings:CameraSettings) 
+			public function Webcam(settings:CameraSettings, video:Video = null) 
 			{
-				_settings = settings;
-				initialize();
+				_settings	= settings;
+				_video		= video;
 			}
 			
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: public methods
+		
 			/**
 			 * Sets up listeners to configure the camera when the user has given permission
-			 * 
-			 * Called on class start
 			 */
-			protected function initialize ():void 
+			public function start ():Boolean 
 			{
 				if ( ! _started )
 				{
 					// get camera
 					_started	= true;
 					_camera		= Camera.getCamera();
+					_available	= _camera != null;
 					
-					// no camera
+					// camera
 					if (_camera )
 					{
+						// debug
 						log('available');
 						
-						// available
-						_available	= true;
+						// monitor video
+						if (video)
+						{
+							_monitor 	= new PixelMonitor(video);
+							_monitor.addEventListener(Event.CHANGE, onVideoChanged);
+							video.attachCamera(camera);
+						}
 
-						// events
-						//_camera.addEventListener(ActivityEvent.ACTIVITY, onCameraActivity, false, 0, true);
-						//_camera.addEventListener(Event.VIDEO_FRAME, onVideoFrame, false, 0, true);
-						
 						// this will always be muted on the first go, as the permissions dialog needs to show
 						if (_camera.muted)
 						{
@@ -84,18 +95,100 @@ package core.media.camera
 						{
 							setup();
 						}
+						
+						// return
+						return true;						
 					}
 					
-					// camera
+					// no camera
 					else
 					{
 						log('no camera');
 						dispatchEvent(new CameraEvent(CameraEvent.NO_CAMERA));
-						return;
+						return false;
 					}
+				}
+				return false;
+			}
+			
+			/**
+			 * Configures camera with new settings.
+			 * 
+			 * Should be called each time the settings object is modified
+			 */
+			public function update():void
+			{
+				if (camera)
+				{
+					// test
+						log('props:', settings.width, _settings.height, settings.bandwidth, settings.quality, settings.fps, settings.keyframeInterval);
+					
+					// keyframes
+						camera.setKeyFrameInterval(settings.keyframeInterval);
+						
+					// quality
+						camera.setQuality(settings.bandwidth, settings.quality);
+						
+					// size
+						camera.setMode(640, 360, settings.fps); // looks like we HAVE to set the webcam to a standard size here, or else teh quality gets stepped down to the next standard size
+
+					// test
+						//test(settings.width, settings.height);
+						
+					// update settings with new values
+						/*
+						settings.width		= camera.width;
+						settings.height		= camera.height;
+						settings.fps		= camera.fps;
+						*/
+						
+					// debug
+						log('props:', settings.width, _settings.height, settings.bandwidth, settings.quality, settings.fps, settings.keyframeInterval);
+						//log('rate:', rate);
+						
+					// event
+						dispatchEvent(new CameraEvent(CameraEvent.SIZE_CHANGE));
 				}
 			}
 			
+			public function stop():void 
+			{
+				_video.attachCamera(null);
+			}
+			
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: accessors
+		
+			public function get camera():Camera { return _camera; }
+			
+			public function get microphone():Microphone { return _microphone; }
+			
+			public function get settings():CameraSettings { return _settings; }
+			
+			public function get video():Video { return _video; }
+			public function set video(value:Video):void 
+			{
+				_video = value;
+				if (started)
+				{
+					video.attachCamera(camera);
+				}
+			}
+			
+			/// The camera has attempted to be started (Flash only gives one go at this)
+			public function get started():Boolean { return _started; }
+
+			/// A camera is available
+			public function get available():Boolean { return _available; }
+			
+			/// The camera is ready for use
+			public function get ready():Boolean { return _ready; }
+			
+		
+		// ---------------------------------------------------------------------------------------------------------------------
+		// { region: protected methods
+		
 			/**
 			 * Sets up the camera & microphone and flags complete
 			 * 
@@ -123,6 +216,10 @@ package core.media.camera
 					}
 					*/
 
+				// attach video
+					_video.attachCamera(_camera);
+					_monitor.start();
+					
 				// flag ready
 					_ready		= true;
 					
@@ -130,93 +227,41 @@ package core.media.camera
 					dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
 					
 				// update
-					update();
+					//update();
 			}
 			
-		
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: public methods
-		
-			public function update():void
+			protected function test(width:Number, height:Number):void 
 			{
-				if (camera)
+				// Detect aspect ratio supported by webcam
+				camera.setMode(4000, 2250, 25);
+				var camWidth		:Number		= camera.width;
+				var camHeight		:Number		= camera.height;
+				var ratio			:Number		= gcd (camWidth, camHeight);
+				var aspectRatio		:String		= camWidth / ratio +":" + camHeight / ratio;
+				
+				// debug
+				log("Camera dimensions = ", camWidth, "x", camHeight);
+				log("Camera aspect ratio = ", aspectRatio);
+				
+				// set mode according to spect ratio
+				if (aspectRatio == "16:9")
+					camera.setMode(640, 360, 25);
+				else
+					camera.setMode(640, 480, 25);
+											
+				// forcing the camera to 4:3 fixes green stripe issue
+				// camera.setMode(640, 480, 25);
+				if (camera.width < _settings.width)
 				{
-					// keyframes
-						camera.setKeyFrameInterval(settings.keyframeInterval);
-						
-					// size
-						
-						// Detect aspect ratio supported by webcam
-						camera.setMode(4000, 2250, 25);
-						var camWidth		:Number		= camera.width;
-						var camHeight		:Number		= camera.height;
-						var ratio			:Number		= gcd (camWidth, camHeight);
-						var aspectRatio		:String		= camWidth / ratio +":" + camHeight / ratio;
-						
-						// debug
-						log("Camera dimensions = ", camWidth, "x", camHeight);
-						log("Camera aspect ratio = ", aspectRatio);
-						
-						// set mode according to spect ratio
-						if (aspectRatio == "16:9")
-							camera.setMode(640, 360, 25);
-						else
-							camera.setMode(640, 480, 25);
-						
-						// forcing the camera to 4:3 fixes green stripe issue
-						// camera.setMode(640, 480, 25);
-						if (camera.width < _settings.width)
-						{
-							camera.setMode(settings.width, settings.height, settings.fps);
-							dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
-							log('The camera could not be set to the required size!');
-						}
-						/*
-						*/
-						
-					// variables
-						var rate:int = camera.width * camera.height; // alternative bandwidth
-						
-					// quality
-						camera.setQuality(settings.bandwidth, settings.quality);
-						
-					// update settings with new values
-						settings.width		= camera.width;
-						settings.height		= camera.height;
-						settings.fps		= camera.fps;
-						
-					// debug
-						log('props:', settings.width, _settings.height, settings.bandwidth, settings.quality, settings.fps, settings.keyframeInterval);
-						//log('rate:', rate);
-						
-					// event
-						dispatchEvent(new CameraEvent(CameraEvent.SIZE_CHANGE));
+					camera.setMode(settings.width, settings.height, settings.fps);
+					dispatchEvent(new CameraEvent(CameraEvent.SIZE_ERROR));
+					log('The camera could not be set to the required size!');
 				}
+				
+				// variables
+				// var rate:int = camera.width * camera.height; // alternative bandwidth
+						
 			}
-			
-		
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: accessors
-		
-			public function get camera():Camera { return _camera; }
-			
-			public function get microphone():Microphone { return _microphone; }
-			
-			public function get settings():CameraSettings { return _settings; }
-			
-			/// The camera has attempted to be started (Flash only gives one go at this)
-			public function get started():Boolean { return _started; }
-
-			/// A camera is available
-			public function get available():Boolean { return _available; }
-			
-			/// The camera is ready for use
-			public function get ready():Boolean { return _ready; }
-			
-		
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: protected methods
-		
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -241,26 +286,20 @@ package core.media.camera
 				}
 			}
 		
-			protected function onCameraActivity(event:ActivityEvent):void 
+			protected function onVideoChanged(event:Event):void 
 			{
-				/*
-				log('activity, '+ event);
-				_available = true;
-				log('camera activated successfully!');
-				camera.removeEventListener(ActivityEvent.ACTIVITY, onCameraActivity);
-				dispatchEvent(new CameraEvent(CameraEvent.ACTIVATED));
-				*/
+				dispatchEvent(new CameraEvent(CameraEvent.ATTACHED));
 			}
-				
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
 			override public function toString():String 
 			{
-				return '[object WebCam started="' +started+ '" available="' +available+ '" ready="' +ready+ '" ]';
+				return '[object WebCam available="' +available+ '" ready="' +ready+ '"]';
 			}
-		
+			
 	}
 
 }

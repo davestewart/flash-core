@@ -1,6 +1,7 @@
 package core.tools 
 {
 	import flash.display.BitmapData;
+	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -10,28 +11,30 @@ package core.tools
 	 * 
 	 * @author Dave Stewart
 	 */
-	public class PixelMonitor extends Sprite 
+	public class PixelMonitor extends EventDispatcher
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
 			// properties
-				protected var element	:Sprite;
+				protected var element	:DisplayObject;
 				protected var px		:int;
 				protected var py		:int;
 				protected var color		:Number;
 				
-			// variables
+			// objects
+				protected var timer		:Sprite;
 				
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function PixelMonitor(element:Sprite, px:int = -1, py:int = -1) 
+			public function PixelMonitor(element:DisplayObject, px:int = -1, py:int = -1) 
 			{
-				this.element = element;
+				this.element	= element;
+				this.timer		= new Sprite();
 				initialize(px, py);
 			}
 			
@@ -42,22 +45,20 @@ package core.tools
 				color 		= getColor();
 			}
 			
-			public function start():void 
-			{
-				addEventListener(Event.ENTER_FRAME, onEnterFrame);
-			}
-			
-			public function stop():void 
-			{
-				removeEventListener(Event.ENTER_FRAME, onEnterFrame);
-			}
-			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
+			public function start():void 
+			{
+				timer.addEventListener(Event.ENTER_FRAME, onEnterFrame);
+			}
 			
-		
+			public function stop():void 
+			{
+				timer.removeEventListener(Event.ENTER_FRAME, onEnterFrame);
+			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors

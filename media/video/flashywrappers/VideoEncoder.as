@@ -3,6 +3,7 @@ package core.media.video.flashywrappers
 	
 	import com.rainbowcreatures.*;
 	import com.rainbowcreatures.swf.*;
+	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
@@ -38,11 +39,11 @@ package core.media.video.flashywrappers
 			protected var encoder			:FWVideoEncoder;
 			
 			// accessor properties
-			protected var _target			:Sprite;
+			protected var _target			:DisplayObject;
 			protected var _fps				:int;
-			protected var _bitrate			:int;
-			protected var _realtime			:Boolean;
 			protected var _format			:String;
+			protected var _realtime			:Boolean;
+			protected var _bitrate			:int;
 			
 			// accessor variables
 			protected var _phase			:String				= PHASE_UNLOADED;
@@ -99,32 +100,23 @@ package core.media.video.flashywrappers
 				_fps					= 25;
 				_format					= 'mp4';
 				_bitrate				= 1000000;
-				_realtime				= false;
+				_realtime				= true;
 			}
 			
 			
 		// --------------------------------------------------------------------------------------------------------
 		// public functions
 		
-			/**
-			 * Call in advance of recording - it reinitializes the encoder
-			 */
-			public function initialize(target:Sprite = null):void 
+			public function reset():void 
 			{
-				// set target
-				if (target !== null)
-				{
-					_target = target;
-				}
-				
 				// throw an error if we've got no target
 				if (_target == null)
 				{
 					throw new ReferenceError('A target Sprite must be specified before initializing');
 				}
-			
+				
 				// re-initialize encoder
-				encoder.start(fps, 'audioOff', true, _target.width, _target.height, bitrate);
+				encoder.start(_fps, 'audioOff', _realtime, _target.width, _target.height, _bitrate);
 				
 				// phase
 				_phase = PHASE_READY;
@@ -141,8 +133,8 @@ package core.media.video.flashywrappers
 				// reiniialize if needs be
 				if (phase !== PHASE_READY)
 				{
-					trace('WARNING! Did not pre-initialize VideoEncoder. Re-initializing (there may be a delay) ...');
-					initialize();
+					trace('WARNING! Did not reset VideoEncoder. Resetting... (there may be a delay)');
+					reset();
 				}
 				
 				// reset
@@ -169,10 +161,11 @@ package core.media.video.flashywrappers
 		// --------------------------------------------------------------------------------------------------------
 		// accessors
 			
-			public function get target():Sprite { return _target; }
-			public function set target(value:Sprite):void 
+			public function get target():DisplayObject { return _target; }
+			public function set target(value:DisplayObject):void 
 			{
 				_target = value;
+				reset();
 			}
 			
 			public function get fps():int { return _fps; }
@@ -238,7 +231,7 @@ package core.media.video.flashywrappers
 				switch(event.code)
 				{
 					case 'ready':
-						initialize();
+						reset();
 						break;
 						
 					case 'encoded':

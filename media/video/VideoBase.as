@@ -91,6 +91,11 @@ package core.media.video
 				video.clear();
 			}
 			
+			public function setSize(width:Number, height:Number):void
+			{
+				this.width	= width;
+				this.height	= height;
+			}
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors

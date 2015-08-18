@@ -42,7 +42,7 @@ package core.tools
 			public function start():Timer
 			{
 				timeStart	= getTimer();
-				timeStop	= 0;
+				timeStop	= timeStart;
 				return this;
 			}
 			

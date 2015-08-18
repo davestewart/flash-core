@@ -5,6 +5,7 @@ package core.media.video.flashywrappers
 	import core.events.MediaEvent;
 	import core.media.video.VideoPlayer;
 	import flash.display.DisplayObjectContainer;
+	import flash.net.NetConnection;
 	import flash.net.NetStream;
 	import flash.net.NetStreamAppendBytesAction;
 	import flash.utils.ByteArray;
@@ -26,6 +27,7 @@ package core.media.video.flashywrappers
 			// properties
 				protected var bytes				:ByteArray;
 				protected var frames			:Vector.<Frame>;
+				protected var connection:NetConnection;
 				
 			// variables
 				
@@ -39,6 +41,12 @@ package core.media.video.flashywrappers
 				super(width, height);
 			}
 			
+			override protected function initialize():void 
+			{
+				super.initialize();
+				connection = new NetConnection();
+				connection.connect(null);
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
@@ -63,7 +71,7 @@ package core.media.video.flashywrappers
 				dispatchEvent(new MediaEvent(MediaEvent.LOADED));
 			}
 			
-			override public function play():void 
+			override public function play():Boolean 
 			{
 				// error if not bytes have been loaded
 				if (bytes == null)
@@ -72,8 +80,7 @@ package core.media.video.flashywrappers
 				}
 				
 				// set up the stream
-				setupStream();
-				stream.play(null);
+				var stream:ByteStream = new ByteStream();
 				
 				// attach stream to video
 				video.attachNetStream(stream);
@@ -101,12 +108,17 @@ package core.media.video.flashywrappers
 				// append this new buffer to the stream
 				stream.appendBytesAction(NetStreamAppendBytesAction.RESET_SEEK);
 				stream.appendBytes(buffer);
-				stream.appendBytesAction(NetStreamAppendBytesAction.END_SEQUENCE);			
+				stream.appendBytesAction(NetStreamAppendBytesAction.END_SEQUENCE);
+				
+				// return
+				return true;
 			}							
 		
 	}
 
 }
+import flash.net.NetConnection;
+import flash.net.NetStream;
 
 class Frame
 {
@@ -117,5 +129,21 @@ class Frame
 	{
 		pos 	= frame.position;
 		time	= frame.time;
+	}
+}
+
+class ByteStream extends NetStream
+{
+	public function ByteStream():void 
+	{
+		var connection:NetConnection = new NetConnection();
+		connection.connect(null);
+		super(connection);
+		play(null);
+	}
+	
+	public function onMetaData(data:*):void 
+	{
+		trace(data);
 	}
 }
