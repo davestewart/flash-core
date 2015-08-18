@@ -29,6 +29,7 @@ package core.display.components
 				protected var element				:DisplayObject;
 				
 			// behaviour
+				protected var backgroundColor		:Number;
 				protected var backgroundAlpha		:Number;
 				protected var cancelable			:Boolean;
 				
@@ -49,10 +50,6 @@ package core.display.components
 			{
 				// parameters
 					this.maxHeight	= maxHeight;
-					this.minHeight	= 300;
-					
-				// properties
-					backgroundAlpha	= 0.4
 				
 				// add child
 					parent.addChild(this);
@@ -63,14 +60,16 @@ package core.display.components
 			
 			protected function initialize():void 
 			{
-				
+				minHeight		= 300;
+				backgroundColor	= 0x000000;
+				backgroundAlpha	= 0.4;
 			}
 			
 			protected function build():void 
 			{
 				// build bg
 					background = new Sprite();
-					background.graphics.beginFill(0x000000, backgroundAlpha);
+					background.graphics.beginFill(backgroundColor, backgroundAlpha);
 					background.graphics.drawRect(0, 0, stage.stageWidth, stage.stageHeight);
 					background.graphics.endFill();
 					addChild(background);

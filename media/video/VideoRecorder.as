@@ -90,6 +90,16 @@ package core.media.video
 				// override in subclass
 			}
 			
+			public function getInputMode():Array
+			{
+				return [settings.width, settings.height, settings.fps];
+			}
+			
+			public function getOutputMode():Array
+			{
+				return []; // override in subclass
+			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
@@ -97,7 +107,7 @@ package core.media.video
 			public function record(append:Boolean = false):Boolean
 			{
 				// exit early if camera is not available
-					if ( ! webcam.available )
+					if ( ! webcam.ready )
 					{
 						dispatchEvent(new MediaEvent(MediaEvent.ERROR, 'unable to record, as there is no camera available'));
 						return false;

@@ -97,7 +97,11 @@ package core.media.video.flashywrappers
 				reset();
 			}
 			
-		
+			override public function getOutputMode():Array
+			{
+				return [_output.width, _output.height];
+			}
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
