@@ -98,7 +98,7 @@ package core.media.net
 					{
 						_stream = new NetStream(_connection);
 						stream.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
-						stream.client		= this;
+						stream.client	= new Client(onPlayStatus, onMetaData);
 					}
 					
 				// kill old values
@@ -469,7 +469,7 @@ package core.media.net
 			 * 
 			 * @param	data
 			 */
-			public function onPlayStatus(event:Object) :void
+			protected function onPlayStatus(event:Object) :void
 			{
 				//trace('>>  client    : ' + event.code);
 				stream.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, event));
@@ -485,7 +485,7 @@ package core.media.net
 			 * Called by the NetStream client
 			 * @param	data
 			 */
-			public function onMetaData(data:Object) :void
+			protected function onMetaData(data:Object) :void
 			{
 				if ( ! _metaData )
 				{
@@ -496,7 +496,7 @@ package core.media.net
 						_videoWidth		= int(data.frameWidth);
 						_videoHeight	= int(data.frameHeight);
 					}
-					else
+					else if ('width' in data)
 					{
 						_videoWidth		= int(data.width);
 						_videoHeight	= int(data.height);
@@ -528,4 +528,27 @@ package core.media.net
 		
 	}
 
+}
+
+class Client
+{
+	protected var _onPlayStatus		:Function;
+	protected var _onMetaData		:Function;
+	
+	public function Client(onPlayStatus:Function, onMetaData:Function)
+	{
+		_onPlayStatus	= onPlayStatus;
+		_onMetaData		= onMetaData;
+	}
+	
+	public function onPlayStatus(event:Object) :void
+	{
+		_onPlayStatus(event);
+	}						
+	
+	public function onMetaData(data:Object) :void
+	{
+		_onMetaData(data);
+	}
+			
 }
