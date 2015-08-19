@@ -1,4 +1,4 @@
-package core.media.core 
+package core.interfaces 
 {
 	
 	/**

@@ -1,6 +1,7 @@
 package core.display.elements 
 {
 	import app.display.panels.FormPanel;
+	import core.interfaces.IElement;
 	import flash.display.BlendMode;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;

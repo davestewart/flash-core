@@ -4,7 +4,7 @@ package core.data.forms
 	import flash.display.DisplayObjectContainer;
 	import flash.events.Event;
 	
-	import core.data.forms.IControl;
+	import core.interfaces.IControl;
 	
 	/**
 	 * ...

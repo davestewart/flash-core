@@ -1,4 +1,4 @@
-package core.display.elements
+package core.display.components
 {
 
 	import flash.display.MovieClip;
@@ -11,6 +11,7 @@ package core.display.elements
 	
 	/**
 	 * Core site Preloader clip. Override this in your application to 
+	 * 
 	 * @author Dave Stewart
 	 */
 	public class Preloader extends MovieClip 
