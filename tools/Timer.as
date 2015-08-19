@@ -42,7 +42,7 @@ package core.tools
 			public function start():Timer
 			{
 				timeStart	= getTimer();
-				timeStop	= timeStart;
+				timeStop	= -1;
 				return this;
 			}
 			
@@ -58,7 +58,7 @@ package core.tools
 		
 			public function get ticks():int
 			{
-				return (timeStop == 0 ? getTimer() : timeStop) - timeStart;
+				return (timeStop == -1 ? getTimer() : timeStop) - timeStart;
 			}
 			
 			public function get seconds():Number
