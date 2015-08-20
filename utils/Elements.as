@@ -137,6 +137,87 @@
 					return source;
 		}
 		
+		public static function align(source:DisplayObject, target:DisplayObject, align:String):void 
+		{
+			// vertical
+			if (/top/.test(align))
+			{
+				source.y	= target.y;
+			}
+			else if (/bottom/.test(align))
+			{
+				source.y	= target.y + (target.height - source.height);
+			}
+			else
+			{
+				source.y	= (target.height - source.height) / 2;
+			}
+			
+			// horizontal
+			if (/left/.test(align))
+			{
+				source.x	= target.x;
+			}
+			else if (/right/.test(align))
+			{
+				source.x	= target.x + (target.width - source.width);
+			}
+			else
+			{
+				source.x	= (target.width - source.width) / 2;
+			}
+		}
+		
+		public static function fit(source:DisplayObject, target:DisplayObject, mode:String):void
+		{
+			// reset source scale
+			source.scaleX = source.scaleY = 1;
+			
+			// source dimensions
+			var width	:Number		= source.width;
+			var height	:Number		= source.height;
+			
+			// aspect ratios
+			var b		:Number		= width / height;
+			var a		:Number		= target.width / target.height;
+			
+			// size
+			switch (mode) 
+			{
+				case 'cover':
+					if (a > b)
+					{
+						source.width	= target.width;
+						source.height	= height * source.scaleX;
+					}
+					else
+					{
+						source.height	= target.height;
+						source.width	= width * source.scaleY;
+					}
+					break;
+					
+				case 'fit':
+					if (a > b)
+					{
+						source.height	= target.height;
+						source.width	= width * source.scaleY;
+					}
+					else
+					{
+						source.width	= target.width;
+						source.height	= height * source.scaleX;
+					}
+					break;
+					
+				case 'match':
+				case 'scale':
+					source.width		= target.width;
+					source.height		= target.height;
+					break;
+			}
+		}
+		
 		/**
 		 * Draws a rectangle around the display object in case you can't see it on the stage
 		 * @param	element
