@@ -47,6 +47,7 @@ package core.media.video
 				
 				// events
 				addEventListener(MediaEvent.RESET, onReset);
+				addEventListener(MediaEvent.LOADED, onLoad, false, 100);
 				addEventListener(MediaEvent.METADATA, onMetaData);
 				addEventListener(MediaEvent.CLOSED, onClosed);
 			}
@@ -108,6 +109,15 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
+			protected function onLoad(event:MediaEvent):void 
+			{
+				trace('player load');
+				// set video size
+				video.width		= video.videoWidth;
+				video.height	= video.videoHeight;
+				viewport.redraw();
+			}
+			
 			protected function onReset(event:MediaEvent):void 
 			{
 				// re-attach stream to video if it's been renewed
@@ -119,13 +129,22 @@ package core.media.video
 			
 			public function onMetaData(event:MediaEvent) :void
 			{
+				// debug
+				trace('player metadata');
+				
+				// old set video size - left here whilst we ensure that the same functionality in the onLoad handler
+				/*
+				video.width		= media.videoWidth;
+				video.height	= media.videoHeight;
+				viewport.redraw();
+				*/
+
+				// autosize
 				if (_autosize)
 				{
-					if (_width !== media.videoWidth || _height !== media.videoHeight)
+					if (viewport.width !== media.videoWidth || viewport.height !== media.videoHeight)
 					{
-						_width		= media.videoWidth;
-						_height		= media.videoHeight;
-						draw();
+						viewport.setSize(media.videoWidth, media.videoHeight);
 						dispatchEvent(new Event(Event.RESIZE));
 					}
 				}
