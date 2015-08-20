@@ -15,6 +15,7 @@ package core.constants
 		public static const RIGHT			:String	= 'right';
 		public static const TOP				:String	= 'top';
 		public static const BOTTOM			:String	= 'bottom';
+		public static const CENTER			:String	= 'center';
 		
 		public static const TOP_LEFT		:String	= 'top_left';
 		public static const TOP_RIGHT		:String	= 'top_right';
