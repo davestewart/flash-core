@@ -98,6 +98,7 @@ package core.media.audio
 					channel		= sound.play(_position || seconds * 1000);
 					if (channel)
 					{
+						// TODO investiate why play() sometimes returns null
 						channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
 						timer.start();
 					}
