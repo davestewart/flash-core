@@ -137,14 +137,24 @@
 					return source;
 		}
 		
-		public static function align(source:DisplayObject, target:DisplayObject, align:String):void 
+		public static function align(source:DisplayObject, target:DisplayObject, align:String = ''):void 
 		{
+			// parameters
+			align = align || '';
+			
+			// optimise if source and target are the same size
+			if (source.width == target.width && source.height == target.height && align == '')
+			{
+				//source.x = source.y = 0;
+				//return;
+			}
+			
 			// vertical
-			if (/top/.test(align))
+			if (align.indexOf('top') !== -1)
 			{
 				source.y	= target.y;
 			}
-			else if (/bottom/.test(align))
+			else if (align.indexOf('bottom') !== -1)
 			{
 				source.y	= target.y + (target.height - source.height);
 			}
@@ -154,11 +164,11 @@
 			}
 			
 			// horizontal
-			if (/left/.test(align))
+			if (align.indexOf('left') !== -1)
 			{
 				source.x	= target.x;
 			}
-			else if (/right/.test(align))
+			else if (align.indexOf('right') !== -1)
 			{
 				source.x	= target.x + (target.width - source.width);
 			}
@@ -172,6 +182,12 @@
 		{
 			// reset source scale
 			source.scaleX = source.scaleY = 1;
+			
+			// exit early if no fitting
+			if (mode == '' || mode == 'none' || mode == null)
+			{
+				return;
+			}
 			
 			// source dimensions
 			var width	:Number		= source.width;
