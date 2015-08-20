@@ -49,6 +49,7 @@ package core.display.layout
 				_addChild(wrapper);
 
 				// interaction
+				tabEnabled			= false;
 				mouseEnabled		= false;
 			}
 			
@@ -95,10 +96,12 @@ package core.display.layout
 				invalidate();
 			}
 			
+			/*
 			override public function getChildAt(index:int):DisplayObject 
 			{
 				return wrapper.getChildAt(index);
 			}
+			*/
 			
 			override public function getChildByName(name:String):DisplayObject 
 			{
