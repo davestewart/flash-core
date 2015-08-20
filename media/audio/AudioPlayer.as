@@ -52,7 +52,8 @@ package core.media.audio
 					timer.addEventListener(TimerEvent.TIMER, onTimer);
 					
 				// state
-					_state = STOPPED;
+					_state		= STOPPED;
+					_position	= 0;
 					
 				// load
 					if (url)
@@ -84,7 +85,7 @@ package core.media.audio
 			
 			public function play(seconds:Number = 0):void
 			{
-				// stop any previous sond from playing
+				// stop any previous sound from playing
 					if (channel)
 					{
 						stopChannel();
@@ -95,8 +96,11 @@ package core.media.audio
 					
 				// play the sound and add events
 					channel		= sound.play(_position || seconds * 1000);
-					channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
-					timer.start();
+					if (channel)
+					{
+						channel.addEventListener(Event.SOUND_COMPLETE, onPlaybackComplete);
+						timer.start();
+					}
 			}
 			
 			public function pause():void
@@ -191,6 +195,7 @@ package core.media.audio
 		
 			protected function stopChannel():void 
 			{
+				_position = 0;
 				timer.stop();
 				if (channel)
 				{
