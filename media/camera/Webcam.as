@@ -50,10 +50,19 @@ package core.media.camera
 		
 			public function Webcam(settings:CameraSettings, video:Video = null) 
 			{
+				// parameters
 				_settings	= settings;
 				_video		= video;
+				
+				// get camera immediately
+				initialize();
 			}
 			
+			protected function initialize():void 
+			{
+				_camera		= Camera.getCamera();
+				_available	= _camera != null;
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
@@ -67,8 +76,6 @@ package core.media.camera
 				{
 					// get camera
 					_started	= true;
-					_camera		= Camera.getCamera();
-					_available	= _camera != null;
 					
 					// camera
 					if (_camera )
@@ -130,7 +137,7 @@ package core.media.camera
 						camera.setQuality(settings.bandwidth, settings.quality);
 						
 					// size
-						camera.setMode(640, 360, settings.fps); // looks like we HAVE to set the webcam to a standard size here, or else teh quality gets stepped down to the next standard size
+						camera.setMode(settings.width, settings.height, settings.fps); // looks like we HAVE to set the webcam to a standard size here, or else the quality gets stepped down to the next standard size
 
 					// test
 						//test(settings.width, settings.height);

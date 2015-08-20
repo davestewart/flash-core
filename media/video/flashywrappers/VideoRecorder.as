@@ -44,7 +44,7 @@ package core.media.video.flashywrappers
 				// super
 				super.build();
 				
-				// different video instance
+				// different video instance to digitize
 				_container	= new Sprite();
 				_output		= new Video();
 				_container.addChild(_output);
@@ -90,18 +90,7 @@ package core.media.video.flashywrappers
 				_encoder.reset();
 			}
 			
-			override public function setOutputMode(width:Number, height:Number):void 
-			{
-				_output.width	= width;
-				_output.height	= height;
-				reset();
-			}
-			
-			override public function getOutputMode():Array
-			{
-				return [_output.width, _output.height];
-			}
-			
+
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		

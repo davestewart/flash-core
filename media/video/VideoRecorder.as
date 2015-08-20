@@ -34,16 +34,14 @@ package core.media.video
 				super(width, height);
 			}
 		
-			override protected function initialize():void 
-			{
-				_flipped			= true;
-				_settings			= new CameraSettings(_width, _height, 25);
-			}
-			
 			override protected function build():void 
 			{
 				// super
 				super.build();
+				
+				// settings
+				flipped				= true;
+				_settings			= new CameraSettings(video.width, video.height, 25);
 				
 				// camera
 				_webcam				= new Webcam(settings, video);
@@ -71,33 +69,21 @@ package core.media.video
 			}
 			
 			/**
-			 * Sets the camera capture parameters
+			 * Sets the size of the camera mode (which also sets the size of the video)
 			 * 
 			 * @param	width
 			 * @param	height
-			 * @param	fps
 			 */
-			public function setInputMode(width:Number, height:Number, fps:int = 25):void
+			public function setCameraSize(width:Number, height:Number, fps:int = 25):void 
 			{
-				settings.width	= width;
-				settings.height	= height;
-				settings.fps	= fps;
+				// set camera settings
+				webcam.settings.width	= width;
+				webcam.settings.height	= height;
+				webcam.settings.fps		= fps;
 				webcam.update();
-			}
-			
-			public function setOutputMode(width:Number, height:Number):void
-			{
-				// override in subclass
-			}
-			
-			public function getInputMode():Array
-			{
-				return [settings.width, settings.height, settings.fps];
-			}
-			
-			public function getOutputMode():Array
-			{
-				return []; // override in subclass
+				
+				// update video
+				setVideoSize(width, height);
 			}
 			
 		

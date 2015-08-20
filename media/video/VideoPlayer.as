@@ -111,11 +111,15 @@ package core.media.video
 		
 			protected function onLoad(event:MediaEvent):void 
 			{
-				trace('player load');
 				// set video size
-				video.width		= video.videoWidth;
-				video.height	= video.videoHeight;
-				viewport.redraw();
+				/*
+				if (video.videoWidth > 0)
+				{
+					video.width		= video.videoWidth;
+					video.height	= video.videoHeight;
+					viewport.redraw();
+				}
+				*/
 			}
 			
 			protected function onReset(event:MediaEvent):void 
@@ -129,22 +133,18 @@ package core.media.video
 			
 			public function onMetaData(event:MediaEvent) :void
 			{
-				// debug
-				trace('player metadata');
-				
 				// old set video size - left here whilst we ensure that the same functionality in the onLoad handler
-				/*
 				video.width		= media.videoWidth;
 				video.height	= media.videoHeight;
 				viewport.redraw();
-				*/
 
-				// autosize
+				// set player size
 				if (_autosize)
 				{
 					if (viewport.width !== media.videoWidth || viewport.height !== media.videoHeight)
 					{
 						viewport.setSize(media.videoWidth, media.videoHeight);
+						viewport.redraw();
 						dispatchEvent(new Event(Event.RESIZE));
 					}
 				}

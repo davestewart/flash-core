@@ -51,6 +51,7 @@ package core.media.video.wowza
 				// append
 					if (append )
 					{
+						// TODO connect to server
 						stream.publish(format + ':' + url, 'append');
 					}
 					else
@@ -79,7 +80,7 @@ package core.media.video.wowza
 						// TODO implement proper handlers for permissions: http://help.adobe.com/en_US/as3/dev/WSfffb011ac560372f3fa68e8912e3ab6b8cb-8000.html#WS5b3ccc516d4fbf351e63e3d118a9b90204-7d37
 						
 						// attach the camera and microphone to the server
-							stream.attachCamera(camera);
+							stream.attachCamera(webcam.camera);
 							//stream.attachAudio(microphone);
 					}
 					

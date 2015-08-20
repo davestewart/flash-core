@@ -33,8 +33,6 @@ package core.media.video
 				// initial build
 					viewport			= new Viewport(width, height);
 					viewport.name		= 'viewport';
-					viewport.border		= true;
-					//viewport.crop		= false;
 					addChild(viewport);
 				
 				// code
