@@ -21,7 +21,7 @@ package core.display
 	public class Document extends Sprite 
 	{
 
-		public function Document(align:Boolean = false):void 
+		public function Document(align:Boolean = true):void 
 		{
 			// sort stage
 				stage.align				= align ? StageAlign.TOP_LEFT : '';
