@@ -1,19 +1,14 @@
-package core.display.elements 
+package core.display.shapes 
 {
-	import flash.display.Sprite;
-	import app.display.panels.FormPanel;
-	import flash.display.BlendMode;
-	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
-	import flash.display.Sprite;
-	import flash.events.Event;
+	import flash.display.Shape;
 	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class Invalidatable extends Sprite 
+	public class Rect extends Shape 
 	{
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
@@ -22,70 +17,75 @@ package core.display.elements
 				
 			
 			// properties
-				
+				protected var _width		:Number;
+				protected var _height		:Number;
+				protected var _color		:Number;
 				
 			// variables
-				
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Invalidatable() 
+			public function Rect(width:int = 100, height:int = 100, color:int = 0x00FF00, alpha:Number = 1) 
 			{
-				addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
+				// parameters
+					_width		= width;
+					_height		= height;
+					_color		= color;
+					
+				// display
+					this.alpha	= alpha;
+					draw();
 			}
-			
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
 			
 		
-		
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: drawing methods
+		// { region: accessors
 		
-			public function redraw():void
+			override public function set width(value:Number):void 
 			{
+				_width = value;
 				draw();
 			}
 			
-			public function invalidate():void 
+			override public function set height(value:Number):void 
 			{
-				addEventListener(Event.ENTER_FRAME, onInvalidate);
+				_height = value;
+				draw();
 			}
-		
+			
+			public function set color(value:Number):void 
+			{
+				_color = value;
+				draw();
+			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
 			protected function draw():void 
 			{
-				// override in subclass
+				graphics.clear();
+				graphics.beginFill(_color);
+				graphics.drawRect(0, 0, _width, _height);
 			}
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onInvalidate(event:Event):void 
-			{
-				removeEventListener(Event.ENTER_FRAME, onInvalidate);
-				draw();
-			}
 			
-			protected function onAddedToStage(event:Event):void 
-			{
-				removeEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
-				onInvalidate(null);
-			}
-			
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
 			
-		
 	}
 
 }
