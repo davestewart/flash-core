@@ -137,9 +137,6 @@ package core.media.net
 						return false;
 					}
 					
-				// set name
-					_url = url;
-					
 				// setup
 					reset();
 					
@@ -161,6 +158,9 @@ package core.media.net
 							}
 						}
 					}
+					
+				// set name
+					_url = url;
 					
 				// bind to the initial playback event
 					_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoad, false, 100);
