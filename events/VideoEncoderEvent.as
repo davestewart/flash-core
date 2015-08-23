@@ -35,6 +35,12 @@ package core.events
 				
 			// data event constants
 					
+				/// The encoder has captured a frame
+				public static const CAPTURED			:String		= 'VideoEncoderEvent.CAPTURED';
+
+				/// The encoder has processed a frame
+				public static const PROCESSED			:String		= 'VideoEncoderEvent.PROCESSED';
+
 				/// The encoder has captured or processed a frame
 				public static const UPDATE				:String		= 'VideoEncoderEvent.UPDATE';
 

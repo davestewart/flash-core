@@ -11,18 +11,18 @@ package core.interfaces
 		// properties
 		function set source(value:*):void;
 		function get source():*;
+		function get target():*;
 		function get phase():String;
+		function get frames():int;
+		function get progress():Number;
+		function get result():*;
 		
-		// public methods
+		// methods
 		function setup():void
 		function initialize():void
 		function start():void
 		function stop():void 
-		
-		// protected methods
-		function process():void 
-		function finish():void
-				
+		function destroy():void 				
 	}
 	
 }

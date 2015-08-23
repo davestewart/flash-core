@@ -1,5 +1,6 @@
 package core.media.encoders 
 {
+	import core.events.VideoEncoderEvent;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
 	import flash.events.TimerEvent;
@@ -252,6 +253,10 @@ package core.media.encoders
 			
 			public function get metadata():Object { return _metadata; }
 			
+			public function get url():Object { return _server + _streamName + '.' + _format; }
+			
+			override public function get result():* { return _url; }
+			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
@@ -333,6 +338,7 @@ package core.media.encoders
 			 */
 			override protected function onProcess(event:TimerEvent):void 
 			{
+				super.onProcess(event);
 				if (_stream.bufferLength == 0)
 				{
 					timer.stop();

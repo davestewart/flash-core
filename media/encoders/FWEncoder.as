@@ -3,6 +3,7 @@ package core.media.encoders
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
+	import flash.errors.IllegalOperationError;
 	import flash.events.Event;
 	import flash.events.StatusEvent;
 	import flash.geom.Matrix;
@@ -30,12 +31,10 @@ package core.media.encoders
 				protected static var  _encoder	:FWVideoEncoder
 		
 			// encoder properties
-				protected var _settings			:Settings;
 				protected var _realtime			:Boolean;
 				protected var _bitrate			:int;
 				
 			// source properties
-				protected var _clip				:DisplayObject;
 				protected var _rect				:Rectangle;
 				
 			// region properties
@@ -121,6 +120,12 @@ package core.media.encoders
 			 */
 			override public function initialize():void 
 			{
+				// complain if no source
+				if ( ! _source )
+				{
+					throw new IllegalOperationError('Set the source property before encoding');
+				}
+				
 				// phase
 				setPhase(PHASE_INITIALIZING);
 				
@@ -135,7 +140,7 @@ package core.media.encoders
 				var height	:Number		= _rect.height;
 				var fps		:int		= _target is Camera 
 											? _camera.fps 
-											: _clip.stage.frameRate;
+											: _target.stage.frameRate;
 				var audio	:String		= _microphone 
 											? 'audio' 
 											: 'audioOff';
@@ -281,14 +286,17 @@ package core.media.encoders
 				}
 				else if(value is DisplayObject)
 				{
-					_clip		= value;
-					_target		= value;
+					_source = _target = value;
 				}
 				else
 				{
 					throw new TypeError('The assigned source must be a DisplayObject, flash.media.Camera or core.media.camera.WebCam');
 				}
 			}
+			
+			override public function get progress():Number { return encoder.getEncodingProgress();  }
+			
+			override public function get result():* { return bytes; }
 			
 			/**
 			 * Gets or sets the rectangle used when capturing Camera frames
@@ -330,11 +338,6 @@ package core.media.encoders
 			public function get bytes():ByteArray { return _encoder.getVideo(); }
 			
 			/**
-			 * Get the encoding process
-			 */
-			public function get progress():Number { return encoder.getEncodingProgress();  }
-			
-			/**
 			 * Get the actual FW encoder
 			 */
 			public function get encoder():FWVideoEncoder { return _encoder; }
@@ -371,6 +374,7 @@ package core.media.encoders
 
 }
 
+// not used
 class Settings
 {
 	public var fps					:int			 = 25;

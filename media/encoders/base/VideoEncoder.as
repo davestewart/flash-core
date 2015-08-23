@@ -1,5 +1,6 @@
 package core.media.encoders.base 
 {
+	import core.interfaces.IVideoEncoder;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.TimerEvent;
@@ -11,7 +12,7 @@ package core.media.encoders.base
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class VideoEncoder extends EventDispatcher
+	public class VideoEncoder extends EventDispatcher implements IVideoEncoder
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -57,6 +58,10 @@ package core.media.encoders.base
 				
 			public function get frames():int { return _frames; }
 			
+			public function get progress():Number { return 0; }
+			
+			public function get result():* { return null; }
+			
 			public function get format():String { return _format; }
 			public function set format(value:String):void 
 			{
@@ -70,7 +75,6 @@ package core.media.encoders.base
 				}
 			}
 			
-		
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
@@ -217,8 +221,14 @@ package core.media.encoders.base
 			 */
 			protected function onFrame(event:Event):void 
 			{
+				// capture
 				capture();
+				
+				// update frames
 				_frames++
+				
+				// dispatch events
+				dispatch(VideoEncoderEvent.CAPTURED, _frames);
 				dispatch(VideoEncoderEvent.UPDATE, 'capturing');
 			}
 			
@@ -231,7 +241,8 @@ package core.media.encoders.base
 			{
 				// override in subclass; manage flushing or encoding
 				
-				// dispatch an update event
+				// dispatch events
+				dispatch(VideoEncoderEvent.PROCESSED, progress);
 				dispatch(VideoEncoderEvent.UPDATE, 'processing');
 			}
 			
