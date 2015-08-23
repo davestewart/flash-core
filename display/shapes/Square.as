@@ -29,12 +29,10 @@ package core.display.shapes
 			{
 				// graphics
 					graphics.beginFill(color);
-					graphics.drawRect(0, 0, 100, 100);
+					graphics.drawRect(0, 0, width, height);
 					
 				// display
 					this.alpha		= alpha;
-					this.width		= width;
-					this.height		= height;
 			}
 		
 		

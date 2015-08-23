@@ -165,6 +165,17 @@ package core.utils
 			// return
 				return props;
 		}
+		
+		
+		static public function keys(obj:Object):Array
+		{
+			var keys:Array = [];
+			for (var name in obj)
+			{
+				keys.push(name);
+			}
+			return keys;
+		}
 
 	
 	}
