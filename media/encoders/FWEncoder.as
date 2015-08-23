@@ -1,23 +1,22 @@
 package core.media.encoders 
 {
-	import com.rainbowcreatures.swf.FWVideoEncoder;
-	import core.events.VideoEncoderEvent;
-	import core.media.camera.Webcam;
-	import core.media.encoders.base.WebcamEncoder;
 	import flash.display.BitmapData;
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.events.StatusEvent;
-	import flash.events.TimerEvent;
 	import flash.geom.Matrix;
 	import flash.geom.Rectangle;
 	import flash.media.Camera;
-	import flash.net.NetConnection;
-	import flash.net.NetStream;
 	import flash.utils.ByteArray;
 	import flash.utils.getTimer;
-	import flash.utils.Timer;
+	
+	import com.rainbowcreatures.swf.FWVideoEncoder;
+	
+	import core.events.VideoEncoderEvent;
+	import core.media.camera.Webcam;
+	import core.media.encoders.base.WebcamEncoder;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart

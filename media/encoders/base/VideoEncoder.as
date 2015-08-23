@@ -1,13 +1,11 @@
 package core.media.encoders.base 
 {
-	import core.events.MediaEvent;
-	import core.events.VideoEncoderEvent;
-	import core.interfaces.IVideoEncoder;
 	import flash.events.Event;
+	import flash.events.EventDispatcher;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
-	import flash.events.EventDispatcher;
-	import flash.utils.setTimeout;
+	
+	import core.events.VideoEncoderEvent;
 	
 	/**
 	 * ...

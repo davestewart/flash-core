@@ -1,9 +1,10 @@
 package core.media.encoders.base 
 {
-	import core.media.encoders.base.VideoEncoder;
 	import flash.media.Camera;
 	import flash.media.Microphone;
+	
 	import core.media.camera.Webcam;
+	import core.media.encoders.base.VideoEncoder;
 	
 	/**
 	 * ...
