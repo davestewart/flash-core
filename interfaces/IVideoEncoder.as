@@ -1,25 +1,28 @@
 package core.interfaces 
 {
+	import flash.events.IEventDispatcher;
 	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public interface IVideoEncoder 
+	public interface IVideoEncoder extends IEventDispatcher
 	{
-
-		function start():Boolean
+		// properties
+		function set source(value:*):void;
+		function get source():*;
+		function get phase():String;
 		
-		function capture():void
-		
+		// public methods
+		function setup():void
+		function initialize():void
+		function start():void
 		function stop():void 
 		
+		// protected methods
 		function process():void 
-		
 		function finish():void
-		
-		function reset():void
-		
+				
 	}
 	
 }
