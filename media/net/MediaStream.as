@@ -96,9 +96,9 @@ package core.media.net
 				// create a new stream if one doesn't exist
 					if ( ! stream )
 					{
-						_stream = new NetStream(_connection);
+						_stream			= new NetStream(_connection);
+						stream.client	= new NetStreamClient(onPlayStatus, onMetaData);
 						stream.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
-						stream.client	= new Client(onPlayStatus, onMetaData);
 					}
 					
 				// kill old values
@@ -530,25 +530,3 @@ package core.media.net
 
 }
 
-class Client
-{
-	protected var _onPlayStatus		:Function;
-	protected var _onMetaData		:Function;
-	
-	public function Client(onPlayStatus:Function, onMetaData:Function)
-	{
-		_onPlayStatus	= onPlayStatus;
-		_onMetaData		= onMetaData;
-	}
-	
-	public function onPlayStatus(event:Object) :void
-	{
-		_onPlayStatus(event);
-	}						
-	
-	public function onMetaData(data:Object) :void
-	{
-		_onMetaData(data);
-	}
-			
-}
