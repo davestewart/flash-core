@@ -1,5 +1,5 @@
 ﻿package core.utils {
-	import core.display.utils.Identifier;
+	import core.tools.Identifier;
 	import core.utils.Objects;
 	import flash.display.Bitmap;
 	import flash.display.BitmapData;

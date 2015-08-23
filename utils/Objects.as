@@ -170,7 +170,7 @@ package core.utils
 		static public function keys(obj:Object):Array
 		{
 			var keys:Array = [];
-			for (var name in obj)
+			for (var name:String in obj)
 			{
 				keys.push(name);
 			}
