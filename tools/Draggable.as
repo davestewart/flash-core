@@ -1,4 +1,4 @@
-package core.display.components 
+package core.tools 
 {
 	import flash.display.Stage;
 	import flash.events.MouseEvent;
@@ -8,7 +8,7 @@ package core.display.components
 	import flash.ui.Keyboard;
 	import flash.utils.Dictionary;
 	
-	import gs.TweenLite;
+	import com.greensock.TweenLite;
 
 	/**
 	 * @usage	Convert any display object into a draggable object
@@ -40,7 +40,7 @@ package core.display.components
 			 * Whether to make the user use CTRL or SHIFT to drag the object
 			 * @param	state		
 			 */
-			public static function useModifierKeys(state:Boolean = true)
+			public static function useModifierKeys(state:Boolean = true):Class
 			{
 				Draggable._useModifierKeys = state;
 				return Draggable;
@@ -52,7 +52,7 @@ package core.display.components
 			 * @param	time		The amount of tiem in seconds the object should animate back to its starting position if CTRL is pressed
 			 * @param	children	Whether to affect the entire object, or the children of the object
 			 */
-			public static function create(element:DisplayObject, time:Number = 0.25, children:Boolean = false, mouseMoveHandler:Function = null, mouseUpHandler:Function = null)
+			public static function create(element:DisplayObject, time:Number = 0.25, children:Boolean = false, mouseMoveHandler:Function = null, mouseUpHandler:Function = null):Class
 			{
 				// create a new dictionary to hold any objects
 					if (Draggable.elements == null)
@@ -74,7 +74,7 @@ package core.display.components
 			 * Stop an object from being draggable
 			 * @param	element
 			 */
-			public static function destroy(element:DisplayObject)
+			public static function destroy(element:DisplayObject):Class
 			{
 				if (element)
 				{
@@ -127,7 +127,7 @@ package core.display.components
 			 */
 			public static function onMouseDown(event:MouseEvent):void 
 			{
-				var allowDrag = true;
+				var allowDrag:Boolean = true;
 				if (Draggable._useModifierKeys && ! (event.ctrlKey || event.shiftKey))
 				{
 					allowDrag = false;
