@@ -27,7 +27,7 @@ package core.display.layout
 				public static const NONE	:String			= 'none';
 				
 			// elements
-				protected var viewport		:Rect;
+				protected var window		:Rect;
 				
 			// properties
 				protected var _mode			:String;
@@ -43,14 +43,14 @@ package core.display.layout
 				// super
 				super();
 				
-				// viewport
-				viewport			= new Rect(width, height);
-				viewport.visible	= false;
-				viewport.name		= 'viewport';
-				_addChild(viewport);
+				// window
+				window			= new Rect(width, height);
+				window.visible	= false;
+				window.name		= 'window';
+				_addChild(window);
 				
 				// mask
-				wrapper.mask		= viewport;
+				wrapper.mask		= window;
 				
 				// parameters
 				this.mode			= mode;
@@ -69,8 +69,8 @@ package core.display.layout
 			 */
 			public function setSize(width:Number, height:Number):void 
 			{
-				viewport.width	= width;
-				viewport.height	= height;
+				window.width	= width;
+				window.height	= height;
 				invalidate();
 			}
 			
@@ -78,17 +78,17 @@ package core.display.layout
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			override public function get width():Number { return viewport.width; }
+			override public function get width():Number { return window.width; }
 			override public function set width(value:Number):void 
 			{
-				viewport.width = value;
+				window.width = value;
 				invalidate();
 			}
 			
-			override public function get height():Number { return viewport.height; }
+			override public function get height():Number { return window.height; }
 			override public function set height(value:Number):void 
 			{
-				viewport.height = value;
+				window.height = value;
 				invalidate();
 			}
 		
@@ -99,10 +99,10 @@ package core.display.layout
 				invalidate();
 			}
 			
-			public function get crop():Boolean { return wrapper.mask === viewport; }
+			public function get crop():Boolean { return wrapper.mask === window; }
 			public function set crop(value:Boolean):void 
 			{
-				wrapper.mask = value ? viewport : null;
+				wrapper.mask = value ? window : null;
 			}
 			
 			public function get align():String { return _align; }
@@ -125,7 +125,7 @@ package core.display.layout
 				if (wrapper.numChildren)
 				{
 					// if everything is the same size, skip fitting and just align
-					if (wrapper.width == viewport.width && wrapper.height == viewport.height)
+					if (wrapper.width == window.width && wrapper.height == window.height)
 					{
 						wrapper.x = wrapper.y = 0;
 					}
@@ -133,8 +133,8 @@ package core.display.layout
 					// otherwise, fit and align
 					else
 					{
-						Elements.fit(wrapper, viewport, mode);
-						Elements.align(wrapper, viewport, align);
+						Elements.fit(wrapper, window, mode);
+						Elements.align(wrapper, window, align);
 					}
 				}
 			}
