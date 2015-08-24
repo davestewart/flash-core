@@ -14,7 +14,7 @@ package core.media.encoders
 	
 	import com.rainbowcreatures.swf.FWVideoEncoder;
 	
-	import core.events.VideoEncoderEvent;
+	import core.events.EncoderEvent;
 	import core.media.camera.Webcam;
 	import core.media.encoders.base.WebcamEncoder;
 	
@@ -158,10 +158,10 @@ package core.media.encoders
 				if (phase !== PHASE_INITIALIZED)
 				{
 					// function
-					function onInitialize(event:VideoEncoderEvent):void
+					function onInitialize(event:EncoderEvent):void
 					{
 						// remove listener
-						removeEventListener(VideoEncoderEvent.INITIALIZED, onInitialize);
+						removeEventListener(EncoderEvent.INITIALIZED, onInitialize);
 						
 						// warn if there was a significant delay
 						time = getTimer() - time;
@@ -181,7 +181,7 @@ package core.media.encoders
 					log('WARNING! initialize() was not called before start()');
 
 					// initialize
-					addEventListener(VideoEncoderEvent.INITIALIZED, onInitialize);
+					addEventListener(EncoderEvent.INITIALIZED, onInitialize);
 					initialize();
 					return;
 				}

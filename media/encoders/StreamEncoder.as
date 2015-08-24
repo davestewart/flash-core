@@ -1,6 +1,6 @@
 package core.media.encoders 
 {
-	import core.events.VideoEncoderEvent;
+	import core.events.EncoderEvent;
 	import flash.events.Event;
 	import flash.events.NetStatusEvent;
 	import flash.events.TimerEvent;

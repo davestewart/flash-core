@@ -6,7 +6,7 @@ package core.interfaces
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public interface IVideoEncoder extends IEventDispatcher
+	public interface IEncoder extends IEventDispatcher
 	{
 		// properties
 		function set source(value:*):void;

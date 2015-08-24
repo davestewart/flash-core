@@ -1,18 +1,18 @@
 package core.media.encoders.base 
 {
-	import core.interfaces.IVideoEncoder;
+	import core.interfaces.IEncoder;
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.TimerEvent;
 	import flash.utils.Timer;
 	
-	import core.events.VideoEncoderEvent;
+	import core.events.EncoderEvent;
 	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class VideoEncoder extends EventDispatcher implements IVideoEncoder
+	public class VideoEncoder extends EventDispatcher implements IEncoder
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -228,8 +228,8 @@ package core.media.encoders.base
 				_frames++
 				
 				// dispatch events
-				dispatch(VideoEncoderEvent.CAPTURED, _frames);
-				dispatch(VideoEncoderEvent.UPDATE, 'capturing');
+				dispatch(EncoderEvent.CAPTURED, _frames);
+				dispatch(EncoderEvent.UPDATE, 'capturing');
 			}
 			
 			/**
@@ -242,8 +242,8 @@ package core.media.encoders.base
 				// override in subclass; manage flushing or encoding
 				
 				// dispatch events
-				dispatch(VideoEncoderEvent.PROCESSED, progress);
-				dispatch(VideoEncoderEvent.UPDATE, 'processing');
+				dispatch(EncoderEvent.PROCESSED, progress);
+				dispatch(EncoderEvent.UPDATE, 'processing');
 			}
 			
 			
@@ -264,23 +264,23 @@ package core.media.encoders.base
 				switch(value)
 				{
 					case PHASE_READY:
-						dispatch(VideoEncoderEvent.READY);
+						dispatch(EncoderEvent.READY);
 						break;
 					
 					case PHASE_INITIALIZED:
-						dispatch(VideoEncoderEvent.INITIALIZED);
+						dispatch(EncoderEvent.INITIALIZED);
 						break;
 					
 					case PHASE_CAPTURING:
-						dispatch(VideoEncoderEvent.CAPTURING);
+						dispatch(EncoderEvent.CAPTURING);
 						break;
 					
 					case PHASE_PROCESSING:
-						dispatch(VideoEncoderEvent.PROCESSING);
+						dispatch(EncoderEvent.PROCESSING);
 						break;
 					
 					case PHASE_FINISHED:
-						dispatch(VideoEncoderEvent.FINISHED);
+						dispatch(EncoderEvent.FINISHED);
 						break;
 					
 					default:
@@ -289,14 +289,14 @@ package core.media.encoders.base
 			}
 			
 			/**
-			 * Convenience method to dispatches a VideoEncoderEvent
+			 * Convenience method to dispatches an EncoderEvent
 			 * 
 			 * @param	type
 			 * @param	data
 			 */
 			protected function dispatch(type:String, data:* = null):void 
 			{
-				dispatchEvent(new VideoEncoderEvent(type, data));
+				dispatchEvent(new EncoderEvent(type, data));
 			}
 			
 			/**
@@ -315,7 +315,7 @@ package core.media.encoders.base
 			protected function error(value:*):void 
 			{
 				//log( '<ERROR!>' + value);
-				dispatch(VideoEncoderEvent.ERROR, value);
+				dispatch(EncoderEvent.ERROR, value);
 			}
 		
 			

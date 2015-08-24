@@ -6,7 +6,7 @@ package core.events
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class VideoEncoderEvent extends Event 
+	public class EncoderEvent extends Event 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -15,37 +15,37 @@ package core.events
 			// phase event constants
 					
 				/// The encoder has not yet loaded or connected
-				public static const NOT_READY			:String		= 'VideoEncoderEvent.NOT_READY';
+				public static const NOT_READY			:String		= 'EncoderEvent.NOT_READY';
 
 				/// The encoder has finished setup, and is ready to be initialized
-				public static const READY				:String		= 'VideoEncoderEvent.READY';
+				public static const READY				:String		= 'EncoderEvent.READY';
 
 				/// The encoder has been initializedand is ready to record
-				public static const INITIALIZED			:String		= 'VideoEncoderEvent.INITIALIZED';
+				public static const INITIALIZED			:String		= 'EncoderEvent.INITIALIZED';
 
 				/// The encoder has started the encoding or streaming process
-				public static const CAPTURING			:String		= 'VideoEncoderEvent.CAPTURING';
+				public static const CAPTURING			:String		= 'EncoderEvent.CAPTURING';
 
 				/// The encoder has started processing the captured data
-				public static const PROCESSING			:String		= 'VideoEncoderEvent.PROCESSING';
+				public static const PROCESSING			:String		= 'EncoderEvent.PROCESSING';
 
 				/// The encoder has finished processing any captured data
-				public static const FINISHED			:String		= 'VideoEncoderEvent.FINISHED';
+				public static const FINISHED			:String		= 'EncoderEvent.FINISHED';
 				
 				
 			// data event constants
 					
 				/// The encoder has captured a frame
-				public static const CAPTURED			:String		= 'VideoEncoderEvent.CAPTURED';
+				public static const CAPTURED			:String		= 'EncoderEvent.CAPTURED';
 
 				/// The encoder has processed a frame
-				public static const PROCESSED			:String		= 'VideoEncoderEvent.PROCESSED';
+				public static const PROCESSED			:String		= 'EncoderEvent.PROCESSED';
 
 				/// The encoder has captured or processed a frame
-				public static const UPDATE				:String		= 'VideoEncoderEvent.UPDATE';
+				public static const UPDATE				:String		= 'EncoderEvent.UPDATE';
 
 				/// There was an error
-				public static const ERROR				:String		= 'VideoEncoderEvent.ERROR';
+				public static const ERROR				:String		= 'EncoderEvent.ERROR';
 
 				
 			// properties
@@ -56,7 +56,7 @@ package core.events
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { instantiation
 					
-			public function VideoEncoderEvent(type:String, data:* = null, bubbles:Boolean=false, cancelable:Boolean=false) 
+			public function EncoderEvent(type:String, data:* = null, bubbles:Boolean=false, cancelable:Boolean=false) 
 			{
 				this.data = data;
 				super(type, bubbles, cancelable);
@@ -68,12 +68,12 @@ package core.events
 					
 			public override function clone():Event 
 			{ 
-				return new VideoEncoderEvent(type, bubbles, cancelable);
+				return new EncoderEvent(type, bubbles, cancelable);
 			} 
 			
 			public override function toString():String 
 			{ 
-				return formatToString("VideoEncoderEvent", "type", "bubbles", "cancelable", "eventPhase"); 
+				return formatToString("EncoderEvent", "type", "bubbles", "cancelable", "eventPhase"); 
 			}
 			
 	}

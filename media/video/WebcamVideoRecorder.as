@@ -1,8 +1,8 @@
 package core.media.video 
 {
 	import core.events.MediaEvent;
-	import core.events.VideoEncoderEvent;
-	import core.interfaces.IVideoEncoder;
+	import core.events.EncoderEvent;
+	import core.interfaces.IEncoder;
 	import core.media.encoders.base.WebcamEncoder;
 	import flash.errors.IllegalOperationError;
 
@@ -20,7 +20,7 @@ package core.media.video
 				
 			
 			// properties
-				protected var _encoder:IVideoEncoder;
+				protected var _encoder:IEncoder;
 				
 			// variables
 				
@@ -46,13 +46,13 @@ package core.media.video
 				
 				// encoder
 				encoder.setup();
-				encoder.addEventListener(VideoEncoderEvent.READY, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.INITIALIZED, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.CAPTURING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.CAPTURED, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.PROCESSING, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.PROCESSED, onEncoderEvent);
-				encoder.addEventListener(VideoEncoderEvent.FINISHED, onEncoderEvent);
+				encoder.addEventListener(EncoderEvent.READY, onEncoderEvent);
+				encoder.addEventListener(EncoderEvent.INITIALIZED, onEncoderEvent);
+				encoder.addEventListener(EncoderEvent.CAPTURING, onEncoderEvent);
+				encoder.addEventListener(EncoderEvent.CAPTURED, onEncoderEvent);
+				encoder.addEventListener(EncoderEvent.PROCESSING, onEncoderEvent);
+				encoder.addEventListener(EncoderEvent.PROCESSED, onEncoderEvent);
+				encoder.addEventListener(EncoderEvent.FINISHED, onEncoderEvent);
 			}
 			
 		
@@ -73,7 +73,7 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			public function get encoder():IVideoEncoder { return _encoder; }
+			public function get encoder():IEncoder { return _encoder; }
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -85,7 +85,7 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onEncoderEvent(event:VideoEncoderEvent):void 
+			protected function onEncoderEvent(event:EncoderEvent):void 
 			{
 				// forward event
 				dispatchEvent(event);
