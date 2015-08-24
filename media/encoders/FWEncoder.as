@@ -34,7 +34,7 @@ package core.media.encoders
 				protected var _realtime			:Boolean;
 				protected var _bitrate			:int;
 				
-			// source properties
+			// input properties
 				protected var _rect				:Rectangle;
 				
 			// region properties
@@ -100,7 +100,6 @@ package core.media.encoders
 					
 					// properties
 					allowedFormats	= ['mp4', 'ogg'];
-					_format			= 'mp4';
 					
 					// default properties
 					_format					= 'mp4';
@@ -120,10 +119,10 @@ package core.media.encoders
 			 */
 			override public function initialize():void 
 			{
-				// complain if no source
-				if ( ! _source )
+				// complain if no input
+				if ( ! _input )
 				{
-					throw new IllegalOperationError('Set the source property before encoding');
+					throw new IllegalOperationError('Set the input property before encoding');
 				}
 				
 				// phase
@@ -132,15 +131,15 @@ package core.media.encoders
 				// set rect if it doesn't exist
 				if ( ! _rect )
 				{
-					_rect = new Rectangle(0, 0, _target.width, _target.height);
+					_rect = new Rectangle(0, 0, _source.width, _source.height);
 				}
 								
 				// variables
 				var width	:Number		= _rect.width;
 				var height	:Number		= _rect.height;
-				var fps		:int		= _target is Camera 
+				var fps		:int		= _source is Camera 
 											? _camera.fps 
-											: _target.stage.frameRate;
+											: _source.stage.frameRate;
 				var audio	:String		= _microphone 
 											? 'audio' 
 											: 'audioOff';
@@ -187,13 +186,13 @@ package core.media.encoders
 				}
 				
 				// set up for capture
-				if (_target is Camera)
+				if (_source is Camera)
 				{
-					_target.addEventListener(Event.VIDEO_FRAME, onFrame);
+					_source.addEventListener(Event.VIDEO_FRAME, onCapture);
 				}
 				else
 				{
-					_target.addEventListener(Event.ENTER_FRAME, onFrame);
+					_source.addEventListener(Event.ENTER_FRAME, onCapture);
 				}
 				
 				// phase
@@ -206,7 +205,7 @@ package core.media.encoders
 			override protected function capture():void 
 			{
 				// capture
-				if (_target is Camera)
+				if (_source is Camera)
 				{
 					//trace('capturing camera');
 					var frame:ByteArray = new ByteArray();
@@ -218,30 +217,30 @@ package core.media.encoders
 					if (_bitmap)
 					{
 						//trace('capturing bitmap');
-						_bitmap.draw(_target, _matrix);
+						_bitmap.draw(_source, _matrix);
 						_encoder.addVideoFrame(_bitmap.getPixels(new Rectangle(0, 0, _bitmap.width, _bitmap.height)));
 					}
 					else
 					{
 						//trace('capturing display object');
-						_encoder.capture(_target);
+						_encoder.capture(_source);
 					}
 				}
 			}
 
 			/**
-			 * stops capturing of the source, and finishes encoding the data
+			 * stops capturing of the input, and finishes encoding the data
 			 */
 			override public function stop():void 
 			{
 				// remove all event listeners
-				if (_target is Camera)
+				if (_source is Camera)
 				{
-					_target.removeEventListener(Event.VIDEO_FRAME, onFrame);
+					_source.removeEventListener(Event.VIDEO_FRAME, onCapture);
 				}
 				else
 				{
-					_target.removeEventListener(Event.ENTER_FRAME, onFrame);
+					_source.removeEventListener(Event.ENTER_FRAME, onCapture);
 				}
 				
 				// set phase
@@ -274,29 +273,34 @@ package core.media.encoders
 		// { region: accessors
 		
 			/**
-			 * Assigns the source object
+			 * Assigns the input object
 			 * 
-			 * @param	source	A Camera, Webcam or DisplayObject
+			 * @param	input	A Camera, Webcam or DisplayObject
 			 */
-			override public function set source(value:*):void 
+			override public function set input(value:*):void 
 			{
 				if ( (value is Camera) || (value is Webcam) )
 				{
-					super.source = value;
+					super.input = value;
 				}
 				else if(value is DisplayObject)
 				{
-					_source = _target = value;
+					_input = _source = value;
 				}
 				else
 				{
-					throw new TypeError('The assigned source must be a DisplayObject, flash.media.Camera or core.media.camera.WebCam');
+					throw new TypeError('The assigned input must be a DisplayObject, flash.media.Camera or core.media.camera.WebCam');
 				}
 			}
 			
-			override public function get progress():Number { return encoder.getEncodingProgress();  }
+			override public function get output():* { return bytes; }
 			
-			override public function get result():* { return bytes; }
+			/**
+			 * Returns the encoded video's bytes
+			 */
+			public function get bytes():ByteArray { return _encoder.getVideo(); }
+			
+			override public function get progress():Number { return encoder.getEncodingProgress();  }
 			
 			/**
 			 * Gets or sets the rectangle used when capturing Camera frames
@@ -331,11 +335,6 @@ package core.media.encoders
 			{
 				_bitrate = value;
 			}
-			
-			/**
-			 * Returns the encoded video's bytes
-			 */
-			public function get bytes():ByteArray { return _encoder.getVideo(); }
 			
 			/**
 			 * Get the actual FW encoder

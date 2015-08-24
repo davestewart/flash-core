@@ -84,7 +84,6 @@ package core.media.encoders
 					
 					// formats
 					allowedFormats	= ['mp4', 'flv'];
-					_format			= 'mp4';
 					
 					// metadata
 					_metadata = 
@@ -158,7 +157,7 @@ package core.media.encoders
 				}
 				
 				// video frame handler for camera
-				_camera.addEventListener(Event.VIDEO_FRAME, onFrame);
+				_camera.addEventListener(Event.VIDEO_FRAME, onCapture);
 				
 				// attach the camera and microphone to the stream
 				_stream.attachCamera(camera);
@@ -188,7 +187,7 @@ package core.media.encoders
 			override public function stop():void 
 			{
 				// video frame handler for camera
-				_camera.removeEventListener(Event.VIDEO_FRAME, onFrame);
+				_camera.removeEventListener(Event.VIDEO_FRAME, onCapture);
 
 				// disable audio so that mp4 will record
 				_stream.attachAudio(null);
@@ -255,7 +254,7 @@ package core.media.encoders
 			
 			public function get url():Object { return _server + _streamName + '.' + _format; }
 			
-			override public function get result():* { return _url; }
+			override public function get output():* { return _url; }
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------

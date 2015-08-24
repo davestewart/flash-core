@@ -46,12 +46,12 @@ package core.media.encoders.base
 		// { region: accessors
 		
 			/**
-			 * Assigns the source (always a camera) object
+			 * Assigns the input (always a camera) object
 			 */
-			override public function set source(value:*):void 
+			override public function set input(value:*):void 
 			{
 				// properties
-				_source		= value;
+				_input		= value;
 				
 				// inputs
 				if (value is Camera)
@@ -65,7 +65,7 @@ package core.media.encoders.base
 				}
 				else
 				{
-					throw new TypeError('The assigned source must be a flash.media.Camera or core.media.camera.Webcam instance');
+					throw new TypeError('The assigned input must be a flash.media.Camera or core.media.camera.Webcam instance');
 				}
 			}
 			
@@ -73,7 +73,7 @@ package core.media.encoders.base
 			public function set camera(value:Camera):void 
 			{
 				_camera = value;
-				_target	= value;
+				_source	= value;
 			}
 			
 			public function get microphone():Microphone { return _microphone; }
