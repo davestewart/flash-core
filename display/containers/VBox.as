@@ -1,4 +1,4 @@
-package core.display.layout 
+package core.display.containers 
 {
 	import core.display.elements.Element;
 	import flash.display.DisplayObject;
@@ -9,7 +9,7 @@ package core.display.layout
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class HBox extends Element 
+	public class VBox extends Element
 	{
 		
 		
@@ -27,7 +27,7 @@ package core.display.layout
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function HBox(parent:DisplayObjectContainer, spacing:int = 3, elements:Array = null) 
+			public function VBox(parent:DisplayObjectContainer, spacing:int = 3, elements:Array = null) 
 			{
 				super(parent);
 				_spacing = spacing;
@@ -39,8 +39,8 @@ package core.display.layout
 					}
 				}
 			}
-
 			
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
@@ -54,7 +54,7 @@ package core.display.layout
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			override protected function draw():void 
+			protected override function draw():void 
 			{
 				// super
 					super.draw();
@@ -68,7 +68,7 @@ package core.display.layout
 					{
 						child		= getChildAt(i);
 						lastChild	= getChildAt(i - 1);
-						child.x		= lastChild.x + lastChild.width + _spacing;
+						child.y		= lastChild.y + lastChild.height + _spacing;
 					}
 			}
 		

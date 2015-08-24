@@ -1,6 +1,6 @@
-package core.display.layout 
+package core.display.containers 
 {
-	import core.display.layout.Container;
+	import core.display.containers.Container;
 	import flash.display.DisplayObject;
 	import flash.display.Sprite;
 	import flash.events.Event;

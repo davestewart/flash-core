@@ -5,7 +5,7 @@ package core.media.video
 	import flash.events.Event;
 	import flash.media.Video;
 		
-	import core.display.layout.Viewport;
+	import core.display.containers.Viewport;
 	
 	/**
 	 * Base class to place a video screen, potentially with mask, on the page
