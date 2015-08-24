@@ -9,6 +9,7 @@
 	import flash.display.Stage;
 	import flash.display.StageDisplayState;
 	import flash.events.Event;
+	import flash.events.FullScreenEvent;
 	import flash.geom.ColorTransform;
 	import flash.geom.Matrix;
 	import flash.geom.Point;
@@ -422,21 +423,43 @@
 			var stage:Stage = element.stage;
 			if (stage && stage.displayState != StageDisplayState.FULL_SCREEN)
 			{
-				// set full screen
-				// @see http://help.adobe.com/en_US/as3/dev/WS44B1892B-1668-4a80-8431-6BA0F1947766.html
-				var rect:Rectangle			= getScreenBounds(element); 
-				stage.fullScreenSourceRect	= rect; 
-				stage.displayState			= StageDisplayState.FULL_SCREEN;
-				
 				// add onExit functionality
-				if (onExitFullscreen is Function)
+				stage.addEventListener(FullScreenEvent.FULL_SCREEN, function(event:Event):void 
 				{
-					stage.addEventListener(Event.FULLSCREEN, function(event:Event):void 
-					{ 
+					// reposition
+					root.x			= pt1.x;
+					root.y			= pt1.y;
+					root.scaleX		= 1;
+					root.scaleY		= 1;
+					
+					// exit callback
+					if (onExitFullscreen is Function)
+					{
 						Object(event.currentTarget).removeEventListener(event.type, arguments.callee);
 						onExitFullscreen();
-					});
-				}
+					}
+				});
+				
+				// variables
+				var pt1		:Point			= new Point(element.root.x, element.root.y);
+				var pt2		:Point			= element.localToGlobal(new Point());
+				var root	:DisplayObject	= element.root;
+				
+				// set full screen
+				stage.displayState			= StageDisplayState.FULL_SCREEN_INTERACTIVE;
+				
+				// scale
+				var scale	:Number			= element.root.stage.stageWidth / element.width;
+				
+				// debug
+				trace(element.root.stage.stageWidth, element.width, scale);
+				
+				// position
+				root.scaleX					= scale;
+				root.scaleY					= scale;
+				root.x						= - pt2.x;
+				root.y						= - pt2.y;
+				
 			}
 		}
 
