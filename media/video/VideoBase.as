@@ -1,5 +1,6 @@
 package core.media.video 
 {
+	import core.events.MediaEvent;
 	import flash.display.Sprite;
 	import flash.events.Event;
 	import flash.media.Video;
@@ -138,6 +139,16 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
+			protected function dispatch(eventName:String, data:* = null):void 
+			{
+				dispatchEvent(new MediaEvent(eventName, data, true));
+			}
+		
+			protected function log(...rest):void 
+			{
+				trace(this + ' -> ', rest);
+			}
+			
 	}
 
 }

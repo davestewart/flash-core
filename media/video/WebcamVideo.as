@@ -1,18 +1,16 @@
 package core.media.video 
 {
 	import core.data.settings.CameraSettings;
-	import core.errors.ImplementationError;
 	import core.events.CameraEvent;
 	import core.events.MediaEvent;
 	import core.media.camera.Webcam;
-	import flash.net.NetConnection;
 	
 	/**
 	 * Starts a webcam and attaches it to the video
 	 * 
 	 * @author Dave Stewart
 	 */
-	public class VideoRecorder extends VideoBase 
+	public class WebcamVideo extends VideoBase 
 	{
 		
 		
@@ -29,7 +27,7 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoRecorder(width:int = 320, height:int = 180)
+			public function WebcamVideo(width:int = 320, height:int = 180)
 			{
 				super(width, height);
 			}
@@ -45,11 +43,11 @@ package core.media.video
 				
 				// camera
 				_webcam				= new Webcam(settings, video);
-				webcam.addEventListener(CameraEvent.NO_CAMERA, onNoCamera);
-				webcam.addEventListener(CameraEvent.ACTIVATED, onCameraActivated);
-				webcam.addEventListener(CameraEvent.NOT_ACTIVATED, onCameraActivated);
-				webcam.addEventListener(CameraEvent.ATTACHED, onVideoAttached);
-				webcam.addEventListener(CameraEvent.SIZE_CHANGE, onCameraSizeChange);
+				_webcam.addEventListener(CameraEvent.NO_CAMERA, onCameraEvent);
+				_webcam.addEventListener(CameraEvent.ACTIVATED, onCameraEvent);
+				_webcam.addEventListener(CameraEvent.NOT_ACTIVATED, onCameraEvent);
+				_webcam.addEventListener(CameraEvent.ATTACHED, onCameraEvent);
+				_webcam.addEventListener(CameraEvent.SIZE_CHANGE, onCameraEvent);				
 			}
 			
 			
@@ -90,28 +88,7 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function record():Boolean
-			{
-				// exit early if camera is not available
-				if ( ! webcam.ready )
-				{
-					dispatchEvent(new MediaEvent(MediaEvent.ERROR, 'unable to record, as there is no camera available'));
-					return false;
-				}
-				
-				// events
-				dispatch(MediaEvent.RECORDING);
-				dispatch(MediaEvent.STARTED);
-					
-				// return
-				return true
-			}
 			
-			public function stop():void
-			{
-				dispatch(MediaEvent.STOPPED);
-			}
-
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
@@ -131,50 +108,53 @@ package core.media.video
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
-					
-			protected function onNoCamera(event:CameraEvent):void 
+		
+			protected function onCameraEvent(event:CameraEvent):void 
 			{
-				log('webcam: there is no camera!');
-			}
-
-			protected function onCameraActivated(event:CameraEvent):void 
-			{
-				log('status: ' + event.type);
-				log('webcam: ' + webcam);
-			}
-			
-			protected function onVideoAttached(event:CameraEvent):void 
-			{
-				log('webcam: video attached ok');
-				dispatch(MediaEvent.READY);
-			}
-			
-			protected function onCameraSizeChange(event:CameraEvent):void 
-			{
-				// need to update this so it mintains aspect ratio
-				if (autosize)
+				// forward all events
+				dispatchEvent(event);
+				
+				// take action
+				switch(event.type)
 				{
-					width		= webcam.camera.width;
-					height		= webcam.camera.height;
+					case CameraEvent.NO_CAMERA:
+						log('webcam: there is no camera!');
+						break;
+					
+					case CameraEvent.ACTIVATED:
+					case CameraEvent.NOT_ACTIVATED:
+						log('status: ' + event.type);
+						log('webcam: ' + webcam);
+						break;
+					
+					case CameraEvent.ATTACHED:
+						log('webcam: video attached ok');
+						dispatch(MediaEvent.READY);
+						break;
+					
+					case CameraEvent.SIZE_CHANGE:
+						if (autosize)
+						{
+							// need to update this so it mintains aspect ratio (did I do this?)
+							width		= webcam.camera.width;
+							height		= webcam.camera.height;
+						}
+						break;
+					
+					default:
+						
 				}
 			}
-			
+					
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
 			override public function toString():String 
 			{
-				return '[object VideoRecorder camera.width="' +settings.width + '" camera.height="' +settings.height+ '" fps="' +settings.fps + '" quality="' +settings.quality + '" bandwidth="' +settings.bandwidth + '"]';
+				return '[object WebcamVideo camera.width="' +settings.width + '" camera.height="' +settings.height+ '" fps="' +settings.fps + '" quality="' +settings.quality + '" bandwidth="' +settings.bandwidth + '"]';
 			}
 			
 	}
 
 }
-
-// debug
-function log(...rest):void 
-{
-	trace('VideoRecorder: ' , rest);
-}
-

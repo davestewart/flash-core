@@ -204,7 +204,7 @@ package core.media.net
 							dispatch(MediaEvent.RESUMED);
 						}
 						
-						// instrcu stream to play
+						// play stream
 						_stream.resume();
 						return true;
 					}
