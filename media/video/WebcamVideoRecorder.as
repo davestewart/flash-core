@@ -45,14 +45,8 @@ package core.media.video
 				initializeEncoder();
 				
 				// encoder
-				encoder.setup();
-				encoder.addEventListener(EncoderEvent.READY, onEncoderEvent);
-				encoder.addEventListener(EncoderEvent.INITIALIZED, onEncoderEvent);
-				encoder.addEventListener(EncoderEvent.CAPTURING, onEncoderEvent);
-				encoder.addEventListener(EncoderEvent.CAPTURED, onEncoderEvent);
-				encoder.addEventListener(EncoderEvent.PROCESSING, onEncoderEvent);
-				encoder.addEventListener(EncoderEvent.PROCESSED, onEncoderEvent);
-				encoder.addEventListener(EncoderEvent.FINISHED, onEncoderEvent);
+				addEncoderListeners();
+				_encoder.setup();
 			}
 			
 		
@@ -61,12 +55,12 @@ package core.media.video
 		
 			public function record():void
 			{
-				encoder.start();
+				_encoder.start();
 			}
 			
 			public function stop():void
 			{
-				encoder.stop();
+				_encoder.stop();
 			}
 		
 		
@@ -74,6 +68,15 @@ package core.media.video
 		// { region: accessors
 		
 			public function get encoder():IEncoder { return _encoder; }
+			public function set encoder(value:IEncoder):void 
+			{
+				if (_encoder)
+				{
+					removeEncoderListeners();
+				}
+				_encoder = value;
+				addEncoderListeners();
+			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -95,7 +98,27 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			
+			protected function addEncoderListeners():void 
+			{
+				_encoder.addEventListener(EncoderEvent.READY, onEncoderEvent);
+				_encoder.addEventListener(EncoderEvent.INITIALIZED, onEncoderEvent);
+				_encoder.addEventListener(EncoderEvent.CAPTURING, onEncoderEvent);
+				_encoder.addEventListener(EncoderEvent.CAPTURED, onEncoderEvent);
+				_encoder.addEventListener(EncoderEvent.PROCESSING, onEncoderEvent);
+				_encoder.addEventListener(EncoderEvent.PROCESSED, onEncoderEvent);
+				_encoder.addEventListener(EncoderEvent.FINISHED, onEncoderEvent);
+			}
+		
+			protected function removeEncoderListeners():void 
+			{
+				_encoder.removeEventListener(EncoderEvent.READY, onEncoderEvent);
+				_encoder.removeEventListener(EncoderEvent.INITIALIZED, onEncoderEvent);
+				_encoder.removeEventListener(EncoderEvent.CAPTURING, onEncoderEvent);
+				_encoder.removeEventListener(EncoderEvent.CAPTURED, onEncoderEvent);
+				_encoder.removeEventListener(EncoderEvent.PROCESSING, onEncoderEvent);
+				_encoder.removeEventListener(EncoderEvent.PROCESSED, onEncoderEvent);
+				_encoder.removeEventListener(EncoderEvent.FINISHED, onEncoderEvent);
+			}
 		
 	}
 
