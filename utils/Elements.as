@@ -14,6 +14,7 @@
 	import flash.geom.Matrix;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.media.Video;
 	import flash.text.TextField;
 	import flash.text.TextFormat;
 
@@ -410,7 +411,7 @@
 				trgData.copyPixels(srcData, rect, pt);
 
 			// return data
-				return trgData;
+				return srcData;
 		}
 		
 		static public function getBitmap(src:DisplayObject, alpha:Boolean = false, color:int = 0x000000):Bitmap
