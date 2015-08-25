@@ -264,7 +264,7 @@ package core.media.encoders.base
 			 * 
 			 * @param	value
 			 */
-			protected function setPhase(value:String):void 
+			protected function setPhase(value:String, data:* = null):void 
 			{
 				// set phase
 				_phase = value;
@@ -273,23 +273,23 @@ package core.media.encoders.base
 				switch(value)
 				{
 					case PHASE_READY:
-						dispatch(EncoderEvent.READY);
+						dispatch(EncoderEvent.READY, data);
 						break;
 					
 					case PHASE_INITIALIZED:
-						dispatch(EncoderEvent.INITIALIZED);
+						dispatch(EncoderEvent.INITIALIZED, data);
 						break;
 					
 					case PHASE_CAPTURING:
-						dispatch(EncoderEvent.CAPTURING);
+						dispatch(EncoderEvent.CAPTURING, data);
 						break;
 					
 					case PHASE_PROCESSING:
-						dispatch(EncoderEvent.PROCESSING);
+						dispatch(EncoderEvent.PROCESSING, data);
 						break;
 					
 					case PHASE_FINISHED:
-						dispatch(EncoderEvent.FINISHED);
+						dispatch(EncoderEvent.FINISHED, data);
 						break;
 					
 					default:

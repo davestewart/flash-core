@@ -90,9 +90,6 @@ package core.media.encoders
 					{
 						description : ''
 					};
-					
-					// set up flushing timer
-					timer.addEventListener(TimerEvent.TIMER, onProcess);
 				}
 			}
 			
@@ -133,7 +130,7 @@ package core.media.encoders
 			override public function start():void 
 			{
 				// initialize if not already
-				if (phase !== PHASE_READY)
+				if (phase !== PHASE_INITIALIZED)
 				{
 					initialize();
 				}
@@ -215,7 +212,8 @@ package core.media.encoders
 				_stream.close();
 				
 				// finish
-				setPhase(PHASE_FINISHED);
+				setPhase(PHASE_FINISHED, url);
+				
 			}
 			
 			/**
@@ -224,7 +222,7 @@ package core.media.encoders
 			override public function destroy():void 
 			{
 				// nullify timer
-				super();
+				super.destroy();
 
 				// nullify stream
 				close();
@@ -254,7 +252,7 @@ package core.media.encoders
 			
 			public function get url():Object { return _server + _streamName + '.' + _format; }
 			
-			override public function get output():* { return _url; }
+			override public function get output():* { return url; }
 			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -267,7 +265,7 @@ package core.media.encoders
 			protected function onConnectionStatus(event:NetStatusEvent):void
 			{
 				// debug
-					log(event);
+					log(event.info.code);
 						
 				// action
 					switch(event.info.code)
@@ -289,7 +287,7 @@ package core.media.encoders
 			protected function onNetStatus(event:NetStatusEvent):void 
 			{
 				// debug
-					log(event);
+					log(event.info.code);
 				
 				// action
 					// @see http://help.adobe.com/en_US/as3/dev/WS901d38e593cd1bac-3d11a09612fffaf8447-8000.html

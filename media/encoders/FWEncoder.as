@@ -73,7 +73,7 @@ package core.media.encoders
 				// super
 				super();
 				
-				// chekc that encoder has loaded
+				// check that encoder has loaded
 				if ( ! _encoder )
 				{
 					throw new Error('The FWVideoEcoder has not loaded. Run FWEncoder.load() to load it');
