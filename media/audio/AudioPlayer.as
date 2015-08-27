@@ -119,8 +119,8 @@ package core.media.audio
 			public function stop():void 
 			{
 				pause();
+				_position	= 0;
 				_state		= STOPPED;
-				position	= 0;
 			}
 			
 			public function close():void 
@@ -196,7 +196,6 @@ package core.media.audio
 		
 			protected function stopChannel():void 
 			{
-				_position = 0;
 				timer.stop();
 				if (channel)
 				{
@@ -210,18 +209,18 @@ package core.media.audio
 		
 			protected function onSoundLoaded(event:Event):void
 			{
-				dispatchEvent(new MediaEvent(MediaEvent.LOADED));
+				dispatch(MediaEvent.LOADED);
 			}
 		
 			protected function onTimer(event:TimerEvent = null):void 
 			{
-				dispatchEvent(new MediaEvent(MediaEvent.PROGRESS));
+				dispatch(MediaEvent.PROGRESS);
 			}
 		
 			protected function onPlaybackComplete(event:Event):void 
 			{
 				// events
-					dispatchEvent(new MediaEvent(MediaEvent.COMPLETE));
+					dispatch(MediaEvent.COMPLETE);
 					
 				// state
 					_position	= 0;
@@ -238,7 +237,10 @@ package core.media.audio
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			
+				protected function dispatch(eventName:String):void 
+				{
+					dispatchEvent(new MediaEvent(eventName));
+				}
 	}
 
 }
