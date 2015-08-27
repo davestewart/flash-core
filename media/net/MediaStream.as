@@ -173,7 +173,7 @@ package core.media.net
 			}
 		
 			/**
-			 * Load and play the stream immediately
+			 * Play the stream
 			 * 
 			 * @param	streamName
 			 */
@@ -186,6 +186,7 @@ package core.media.net
 						if (_ended)
 						{
 							_rewind();
+							// TODO do we need to add an listener here if there is a delay on seek?
 						}
 						
 						// flags
@@ -204,6 +205,9 @@ package core.media.net
 							dispatch(MediaEvent.RESUMED);
 						}
 						
+						// playing event
+						dispatch(MediaEvent.PLAYING);
+						
 						// play stream
 						_stream.resume();
 						return true;
@@ -217,6 +221,7 @@ package core.media.net
 				if (_stream)
 				{
 					_rewind();
+					// TODO do we need to add a listener here in case there is a delay after seeking?
 					return play();
 				}
 				return false;
@@ -367,17 +372,16 @@ package core.media.net
 						// error events
 							case 'NetStream.Play.StreamNotFound':
 							case 'NetStream.Play.Failed':
-								dispatch(MediaEvent.ERROR)
+								dispatch(MediaEvent.ERROR);
 								break;
 							
 						// play events
 							case 'NetStream.Play.Start':
-								dispatch(MediaEvent.PLAYING)
 								_ended = false;
 								break;
 							
 							case 'NetStream.Play.Stop':
-								dispatch(MediaEvent.STOPPED)
+								dispatch(MediaEvent.STOPPED);
 								break;
 							
 							// this gets called when the stream has completed playing (the event is forwarded from the client)
@@ -408,7 +412,7 @@ package core.media.net
 								break;
 								
 							case 'NetStream.Play.MetaData':
-								dispatch(MediaEvent.METADATA, event.info)
+								dispatch(MediaEvent.METADATA, event.info);
 								break;
 								
 							
@@ -422,7 +426,7 @@ package core.media.net
 								break;
 							
 							case 'NetStream.Unpause.Notify':
-								dispatch(MediaEvent.PLAYING)
+								// events here moved to methods
 								break;
 							
 						// publish events
