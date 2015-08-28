@@ -22,13 +22,13 @@ package core.media.audio
 		// { region: variables
 		
 			// constants
-				public static const LOADING		:String	= 'AudioPlayer.LOADING';
-				public static const BUFFERING	:String	= 'AudioPlayer.BUFFERING';
-				public static const LOADED		:String	= 'AudioPlayer.LOADED';
+				//public static const LOADING		:String	= 'AudioPlayer.LOADING';
+				//public static const BUFFERING	:String	= 'AudioPlayer.BUFFERING';
+				//public static const LOADED		:String	= 'AudioPlayer.LOADED';
 				public static const PLAYING		:String	= 'AudioPlayer.PLAYING';
 				public static const PAUSED		:String	= 'AudioPlayer.PAUSED';
 				public static const STOPPED		:String	= 'AudioPlayer.STOPPED';				
-				public static const CLOSED		:String	= 'AudioPlayer.CLOSED';				
+				//public static const CLOSED		:String	= 'AudioPlayer.CLOSED';				
 			
 			// properties
 				protected var request			:URLRequest;
@@ -96,6 +96,12 @@ package core.media.audio
 					
 				// play the sound and add events
 					channel		= sound.play(_position || seconds * 1000);
+					
+					if (_position == 0)
+					{
+						dispatch(MediaEvent.STARTED);
+					}
+					
 					if (channel)
 					{
 						// TODO investiate why play() sometimes returns null
