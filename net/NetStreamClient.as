@@ -1,4 +1,4 @@
-package core.media.net 
+package core.net 
 {
 	/**
 	 * ...
@@ -16,6 +16,7 @@ package core.media.net
 			// properties
 				protected var _onPlayStatus		:Function;
 				protected var _onMetaData		:Function;
+				protected var _onCuePoint		:Function;
 				
 				
 			// variables
@@ -25,10 +26,11 @@ package core.media.net
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function NetStreamClient(onPlayStatus:Function, onMetaData:Function)
+			public function NetStreamClient(onPlayStatus:Function, onMetaData:Function, onCuePoint:Function = null)
 			{
 				_onPlayStatus	= onPlayStatus;
 				_onMetaData		= onMetaData;
+				_onCuePoint		= onCuePoint;
 			}
 			
 		
@@ -43,6 +45,11 @@ package core.media.net
 			public function onMetaData(data:Object) :void
 			{
 				_onMetaData(data);
+			}
+					
+			public function onCuePoint(data:Object) :void
+			{
+				_onCuePoint(data);
 			}
 					
 		
