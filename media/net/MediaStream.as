@@ -1,292 +1,131 @@
 package core.media.net 
 {
+	import core.events.MediaEvent;
+	import flash.events.NetStatusEvent;
+	import flash.events.TimerEvent;
+	import flash.utils.Timer;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
-	import flash.events.NetStatusEvent;
 	import flash.events.StatusEvent;
-	import flash.net.NetConnection;
-	import flash.net.NetStream;
 	
-	import core.events.MediaEvent;
-
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class MediaStream extends EventDispatcher
+	public class MediaStream extends EventDispatcher 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
 			// objects
-				protected var _target					:IEventDispatcher;             
-				protected var _connection				:NetConnection;             
-				protected var _stream					:NetStream;
-				
-			// stream variables
-				protected var _url						:String;
-				protected var _bufferTime				:Number;
-				protected var _metaData					:Object;
-				protected var _videoWidth				:int;
-				protected var _videoHeight				:int;
-				protected var _duration					:int;
-				
-			// play properties
-				protected var _repeat					:Boolean;
-				protected var _autorewind				:Boolean;
-				
-			// play state
-				protected var _active					:Boolean;
-				protected var _playing					:Boolean;
-				protected var _paused					:Boolean;
-				protected var _ended					:Boolean;
-				
-			// info
-				protected var _status					:String;
-				protected var _alwaysRenew				:Boolean;
-				
-			// variables
-				
+				protected var _target				:IEventDispatcher;             
+													
+			// stream variables             		
+				protected var _url					:String;			
+													
+			// play properties              		
+				protected var _repeat				:Boolean;
+				protected var _duration				:Number;
+				protected var _position				:Number;
+													
+			// play state                   		
+				protected var _playing				:Boolean;
+				protected var _paused				:Boolean;
+				protected var _ended				:Boolean;
+						
+			// variables		
+				protected var timer					:Timer;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function MediaStream(target:IEventDispatcher = null, connection:NetConnection = null) 
+			public function MediaStream(target:IEventDispatcher = null) 
 			{
-				// super
-					_target = target || this;
+				// target
+				_target = target || this;
 				
-				// connect
-					if (connection is NetConnection)
-					{
-						_connection = connection;
-					}
-					else
-					{
-						_connection = new NetConnection();
-						_connection.connect(null);
-					};
-					
 				// initialize
-					initialize();
-					reset();
+				initialize();
+				reset();
 			}
 			
 			protected function initialize():void 
 			{
-				_duration	= -1;
-				_bufferTime	= 2;
-			}
-		
-			public function reset(renew:Boolean = false):void 
-			{
-				// sometimes we want to create a new NetStream object (note that any attached videos or mics will need to be reattached!)
-					if (_alwaysRenew || renew)
-					{
-						if (stream)
-						{
-							stream.removeEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
-							stream.dispose();
-							_stream = null;
-						}
-					}
+				// setup timer for progress events
+				timer = new Timer(250);
+				timer.addEventListener(TimerEvent.TIMER, onUpdate);
 				
-				// create a new stream if one doesn't exist
-					if ( ! stream )
-					{
-						_stream			= new NetStream(_connection);
-						stream.client	= new NetStreamClient(onPlayStatus, onMetaData);
-						stream.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
-					}
-					
-				// kill old values
-					_url				= '';
-					_metaData			= null;
-					_duration			= 0;
-					_videoWidth			= 0;
-					_videoHeight		= 0;
-					
-				// stream properties
-					stream.bufferTime	= _bufferTime;
-					
-				// dispatch a ready event
-					dispatch(MediaEvent.RESET);
+				// state
+				_position	= 0;
 			}
 			
-		
+			public function reset():void 
+			{
+				// override in subclass
+			}
+			
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
 			/**
-			 * Load the steam and pause it immediately upon loading
+			 * Loads a media URL
 			 * 
-			 * @param	streamName
+			 * @param	url			The URL of the media stream
+			 * @param	autoplay	Whether to autoplay the media when loaded
 			 */
-			public function load(url:String, autoplay:Boolean = false):Boolean 
+			public function load(url:String, autoplay:Boolean = true):Boolean
 			{
-				// don't load the same stream twice
-					if (url === _url)
-					{
-						// but if autoplay is set, and it's already loaded, play it
-						if (autoplay)
-						{
-							return play();
-						}
-						return false;
-					}
-					
-				// setup
-					reset();
-					
-				// callback
-					function onLoad(event:NetStatusEvent):void 
-					{
-						if (event.info.code == 'NetStream.Play.Start')
-						{
-							event.stopImmediatePropagation();
-							_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
-							dispatch(MediaEvent.LOADED)
-							if( ! autoplay )
-							{
-								_stream.pause();
-							}
-							else
-							{
-								play();
-							}
-						}
-					}
-					
-				// set name
-					_url = url;
-					
-				// bind to the initial playback event
-					_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoad, false, 100);
-					
-				// play the url
-					_stream.play(url);
-					
-				// return
-					return true;
-			}
-		
-			/**
-			 * Play the stream
-			 * 
-			 * @param	streamName
-			 */
-			public function play():Boolean
-			{
-				if (_stream)
-				{
-					if ( ! _playing )
-					{
-						if (_ended)
-						{
-							_rewind();
-							// TODO do we need to add an listener here if there is a delay on seek?
-						}
-						
-						// flags
-						_active		= true;
-						_playing	= true;
-						_paused		= false;
-						
-						// media events. should these be fired only when the first netstream event fires?
-						if (_stream.time == 0 || _ended)
-						{
-							_ended = false;
-							dispatch(MediaEvent.STARTED) // PLAYING will also fire, but driven by the NetStream.
-						}
-						else
-						{
-							dispatch(MediaEvent.RESUMED);
-						}
-						
-						// playing event
-						dispatch(MediaEvent.PLAYING);
-						
-						// play stream
-						_stream.resume();
-						return true;
-					}
-				}
+				// override in subclass
 				return false;
 			}
 			
-			public function replay():Boolean
+			/**
+			 * Plays the media stream from the specified time (in seconds)
+			 * 
+			 * @param	seconds		The optional time to start playing the media stream from. If the value is not supplied, the media will play from its current position
+			 */
+			public function play(seconds:Number = NaN):Boolean
 			{
-				if (_stream)
-				{
-					_rewind();
-					// TODO do we need to add a listener here in case there is a delay after seeking?
-					return play();
-				}
+				// override in subclass
 				return false;
 			}
-
+			
+			/**
+			 * Pauses the media stream
+			 */
 			public function pause():Boolean
 			{
-				if (_stream && (! _paused) && ( ! _ended) )
-				{
-					_paused		= true;
-					_playing	= false;
-					_stream.pause();
-					dispatch(MediaEvent.PAUSED);
-					return true;
-				}
+				// override in subclass
 				return false;
 			}
 			
-			public function stop():Boolean
+			/**
+			 * Resumes the media stream
+			 */
+			public function resume():Boolean
 			{
-				if (_stream && _active)
-				{
-					_active		= false;
-					_paused		= false;
-					_playing	= false;
-					_rewind();
-					_stream.pause();
-					dispatch(MediaEvent.STOPPED);
-					return true;
-				}
+				play();
 				return false;
 			}
 			
-			public function rewind():Boolean
+			/**
+			 * Stops and rewinds the media stream
+			 */
+			public function stop():Boolean 
 			{
-				if (_stream)
-				{
-					_rewind()
-					dispatch(MediaEvent.REWIND);
-					return true;
-				}
+				// override in subclass
 				return false;
 			}
 			
-			public function close():Boolean 
+			/**
+			 * Closes the media stream
+			 */
+			public function close():Boolean
 			{
-				// properties
-				_playing		= false;
-				_paused			= false;
-				_active			= false;
-				_ended			= false;
-				
-				// stream
-				if (_stream)
-				{
-					_stream.removeEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
-					if (_connection)
-					{
-						_stream.dispose();
-					}
-					_stream			= null;
-					_url		= null;
-					dispatch(MediaEvent.CLOSED);
-					return true;
-				}
+				// override in subclass
 				return false;
 			}
 			
@@ -294,226 +133,67 @@ package core.media.net
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			public function get stream():NetStream { return _stream; }
-		
+			/// the url of the loaded media
 			public function get url():String { return _url; }
 			public function set url(value:String):void 
 			{
 				load(url);
 			}
 			
+			/// a flag indicating whether to automatically repeat the playing of the media once it has reached the end
 			public function get repeat():Boolean { return _repeat; }
-			public function set repeat(value:Boolean):void 
-			{
-				_repeat = value;
+			public function set repeat(value:Boolean):void { _repeat = value;
 			}
 			
-			public function get autorewind():Boolean { return _autorewind; }
-			public function set autorewind(value:Boolean):void 
+			/// gets the duration of the media in seconds, if known. if not kown, returns -1
+			public function get duration():Number { return _duration; }
+			
+			/// gets or sets the position of the media, in seconds. if the media is playing, it will seek and continue to play
+			public function get position():Number { return -1 }
+			public function set position(seconds:Number):void 
 			{
-				_autorewind = value;
+				// override in subclass
 			}
 			
-			public function get bufferTime():Number { return _bufferTime; }
-			public function set bufferTime(value:Number):void 
-			{
-				_bufferTime = value;
-			}
-			
-			public function get metadata():Object { return _metaData; }
-			
-			public function get videoWidth():int { return _videoWidth; }
-			public function get videoHeight():int { return _videoHeight; }
-			
-			public function get duration():int{ return _duration; }
-			
-			public function get active():Boolean { return _active; }
-			
+			/// indicates the media is currently playing
 			public function get playing():Boolean { return _playing; }
 			
+			/// indicates the media is currently paused
 			public function get paused():Boolean { return _paused; }
 			
+			/// indicates the media has played through to the end, but has not yet been rewound
+			public function get stopped():Boolean { return ! (_playing || _paused); }
+			
+			/// indicates the media has played through to the end, but has not yet been rewound
 			public function get ended():Boolean { return _ended; }
 			
-			public function get status():String { return _status; }
+			/// returns the ended state of the media, that is, the media has played through to the end, but has not yet been rewound
+			public function get active():Boolean { return _playing || _paused; }
 			
-					
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected function _rewind():void 
-			{
-				if (_stream)
-				{
-					_ended = false;
-					_stream.seek(0);
-				}
-			}
+			
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onNetStatus(event:NetStatusEvent):void 
+			protected function onUpdate(event:TimerEvent):void 
 			{
-				// forward event
-					dispatchEvent(event);
-					
-				// debug
-					//trace('>   netstream : ' + event.info.code);
-					
-				// status
-					_status = event.info.description;
-					
-				// action
-					// @see http://help.adobe.com/en_US/as3/dev/WS901d38e593cd1bac-3d11a09612fffaf8447-8000.html
-					switch(event.info.code)
-					{
-						// error events
-							case 'NetStream.Play.StreamNotFound':
-							case 'NetStream.Play.Failed':
-								dispatch(MediaEvent.ERROR);
-								break;
-							
-						// play events
-							case 'NetStream.Play.Start':
-								_ended = false;
-								break;
-							
-							case 'NetStream.Play.Stop':
-								dispatch(MediaEvent.STOPPED);
-								break;
-							
-							// this gets called when the stream has completed playing (the event is forwarded from the client)
-							case 'NetStream.Play.Complete':
-								
-								// properties
-								_ended		= true;
-								_playing	= false;
-								
-								// events
-								dispatch(MediaEvent.COMPLETE);
-								dispatch(MediaEvent.FINISHED);
-								
-								// repeat, rewind or pause
-								if (_repeat)
-								{
-									replay();
-								}
-								else if (_autorewind)
-								{
-									rewind();
-									stop();
-								}
-								else
-								{
-									_stream.pause();
-								}
-								break;
-								
-							case 'NetStream.Play.MetaData':
-								dispatch(MediaEvent.METADATA, event.info);
-								break;
-								
-							
-						// seek events
-							case 'NetStream.SeekStart.Notify':
-								
-								break;
-							
-							case 'NetStream.Seek.Notify':
-								
-								break;
-							
-							case 'NetStream.Unpause.Notify':
-								// events here moved to methods
-								break;
-							
-						// publish events
-							case 'NetStream.Publish.Start':
-								dispatch(MediaEvent.RECORDING);
-								break;
-							
-							case 'NetStream.Unpublish.Success':
-								if ( ! paused )
-								{
-									dispatch(MediaEvent.PROCESSED);
-								}
-								break;
-							
-						// record events
-							case 'NetStream.Record.Start':
-								
-								break;
-							
-							case 'NetStream.Record.Stop':
-								// called just before 'NetStream.Unpublish.Success':
-								break;
-							
-						// buffer events
-							case 'NetStream.Buffer.Full':
-								
-								break;
-							
-							case 'NetStream.Buffer.Flush':
-								
-								break;
-							
-							case 'NetStream.Buffer.Empty':
-
-								break;
-							
-							default:
-							
-					}
+				dispatch(MediaEvent.UPDATED);
 			}
 			
-			/**
-			 * Called by the NetStream client, playback only
-			 * 
-			 * @param	data
-			 */
-			protected function onPlayStatus(event:Object) :void
+			protected function onLoadProgress(event:NetStatusEvent):void 
 			{
-				//trace('>>  client    : ' + event.code);
-				stream.dispatchEvent(new NetStatusEvent(NetStatusEvent.NET_STATUS, false, false, event));
-				/**
-				if (event.code == 'NetStream.Play.Complete')
-				{
-					_repeat ? replay() : stop();
-				}
-				**/
-			}						
-			
-			/**
-			 * Called by the NetStream client
-			 * @param	data
-			 */
-			protected function onMetaData(data:Object) :void
-			{
-				if ( ! _metaData )
-				{
-					// assign metadata
-					_metaData = data;
-					if ('frameWidth' in data)
-					{
-						_videoWidth		= int(data.frameWidth);
-						_videoHeight	= int(data.frameHeight);
-					}
-					else if ('width' in data)
-					{
-						_videoWidth		= int(data.width);
-						_videoHeight	= int(data.height);
-					}
-					_duration		= int(data.duration);
-					
-					// dispatch metadata event
-					dispatch(MediaEvent.METADATA, data);
-				}
+				dispatch(MediaEvent.PROGRESS, event);
 			}
-			
-			
-			
+		
+			protected function onLoadError(event:NetStatusEvent):void 
+			{
+				dispatch(MediaEvent.ERROR, event);
+			}
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
@@ -521,16 +201,18 @@ package core.media.net
 			protected function dispatch(eventName:String, data:* = null):void 
 			{
 				//trace('>>> media     : ' + eventName);
-				_target.dispatchEvent(new MediaEvent(eventName, data, true));
+				
+				var event:MediaEvent = new MediaEvent(eventName, data);
+				_target.dispatchEvent(event);
+				
+				_target.dispatchEvent(new MediaEvent(MediaEvent.EVENT, event));
 			}
 		
 			protected function log(message:String, status:String = 'status'):void
 			{
 				dispatchEvent(new StatusEvent(StatusEvent.STATUS, false, false, message, status));
 			}
-						
 		
 	}
 
 }
-
