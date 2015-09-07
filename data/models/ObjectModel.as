@@ -35,16 +35,17 @@ package core.data.models {
 			 * Initializes the model with incoming data
 			 * 
 			 * To override 1:1 mapping of properties, and create your own structures, add a custom handler
-			 * by adding a public function named set_<property_name>()
+			 * by adding a public function named set_propertyName() where "propertyName" is the key in the 
+			 * incoming data that you want to override
 			 * 
 			 * For example, this method would build a custom Users vector from an Array of Objects:
 			 * 
 			 *      public function set_users(data:Array):void
 			 * 		{
 			 * 			users = new Vector.<UserModel>();
-			 * 			for each(var user in data)
+			 * 			for each(var user:Object in data)
 			 * 			{
-			 * 				users.push(UserModel(user));
+			 * 				users.push(new UserModel(user));
 			 * 			}
 			 * 		}
 			 * 

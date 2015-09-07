@@ -3,35 +3,20 @@ package core.media.data
 	/**
 	 * @author Dave Stewart
 	 */
-	dynamic public class MetaData 
+	dynamic public class Metadata 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
-		
-			/// A number that is the width of the FLV file, in pixels.
-			public var width			:int;
-
-			/// A number that is the height of the FLV file, in pixels.
-			public var height			:int;
-
-			/// A number that specifies the duration of the video file, in seconds.
-			public var duration			:Number;
-
-			/// A number that is the frame rate of the FLV file.
-			public var framerate		:int;
-
-			/// A description of the file
-			public var description		:String;
-			
+					
 			// store original values
-			protected var _data		:Object;
+			protected var _data			:Object;
 
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function MetaData(data:Object) 
+			public function Metadata(data:Object) 
 			{
 				_data = data;
 				initialize();
@@ -49,7 +34,7 @@ package core.media.data
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
-			public function getData()
+			public function getData():*
 			{
 				return _data;
 			}
