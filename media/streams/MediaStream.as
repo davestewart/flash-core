@@ -1,12 +1,14 @@
-package core.media.net 
+package core.media.streams 
 {
-	import core.events.MediaEvent;
-	import flash.events.NetStatusEvent;
-	import flash.events.TimerEvent;
-	import flash.utils.Timer;
+	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
+	import flash.events.NetStatusEvent;
 	import flash.events.StatusEvent;
+	import flash.events.TimerEvent;
+	import flash.utils.Timer;
+	
+	import core.events.MediaEvent;
 	
 	/**
 	 * ...
@@ -20,22 +22,19 @@ package core.media.net
 		
 			// objects
 				protected var _target				:IEventDispatcher;             
-													
-			// stream variables             		
-				protected var _url					:String;			
-													
-			// play properties              		
+				
+			// stream variables
+				protected var _url					:String;
+				protected var _state				:StreamState;
+				
+			// play properties
+				protected var _autoplay				:Boolean;
+				protected var _autorewind			:Boolean;
 				protected var _repeat				:Boolean;
+				
+			// position properties
 				protected var _duration				:Number;
 				protected var _position				:Number;
-													
-			// play state                   		
-				protected var _playing				:Boolean;
-				protected var _paused				:Boolean;
-				protected var _ended				:Boolean;
-						
-			// variables		
-				protected var timer					:Timer;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -53,11 +52,12 @@ package core.media.net
 			
 			protected function initialize():void 
 			{
-				// setup timer for progress events
-				timer = new Timer(250);
-				timer.addEventListener(TimerEvent.TIMER, onUpdate);
+				// setup states
+				_state = new StreamState();
+				_state.addEventListener(MediaEvent.STATE_CHANGE, onStateChange);
+				_state.addEventListener(MediaEvent.UPDATED, onUpdated);
 				
-				// state
+				// properties
 				_position	= 0;
 			}
 			
@@ -78,6 +78,27 @@ package core.media.net
 			 */
 			public function load(url:String, autoplay:Boolean = true):Boolean
 			{
+				// don't load the same stream twice
+				if (url === _url)
+				{
+					// but if autoplay is set, and it's already loaded, play it
+					if (_state.loaded && autoplay)
+					{
+						return play();
+					}
+					return false;
+				}
+				
+				// reset / setup
+				reset();
+				
+				// properties
+				_url			= url;
+				_autoplay		= autoplay;
+				
+				// update state
+				_state.loading	= true;
+				
 				// override in subclass
 				return false;
 			}
@@ -107,7 +128,10 @@ package core.media.net
 			 */
 			public function resume():Boolean
 			{
-				play();
+				if (_state.paused)
+				{
+					play();
+				}
 				return false;
 			}
 			
@@ -140,11 +164,9 @@ package core.media.net
 				load(url);
 			}
 			
-			/// a flag indicating whether to automatically repeat the playing of the media once it has reached the end
-			public function get repeat():Boolean { return _repeat; }
-			public function set repeat(value:Boolean):void { _repeat = value;
-			}
-			
+			// access to the stream state object
+			public function get state():StreamState { return _state; }
+						
 			/// gets the duration of the media in seconds, if known. if not kown, returns -1
 			public function get duration():Number { return _duration; }
 			
@@ -155,20 +177,17 @@ package core.media.net
 				// override in subclass
 			}
 			
-			/// indicates the media is currently playing
-			public function get playing():Boolean { return _playing; }
+			/// a flag indicating whether to automatically repeat the playing of the media once it has reached the end
+			public function get repeat():Boolean { return _repeat; }
+			public function set repeat(value:Boolean):void { _repeat = value;
+			}
 			
-			/// indicates the media is currently paused
-			public function get paused():Boolean { return _paused; }
-			
-			/// indicates the media has played through to the end, but has not yet been rewound
-			public function get stopped():Boolean { return ! (_playing || _paused); }
-			
-			/// indicates the media has played through to the end, but has not yet been rewound
-			public function get ended():Boolean { return _ended; }
-			
-			/// returns the ended state of the media, that is, the media has played through to the end, but has not yet been rewound
-			public function get active():Boolean { return _playing || _paused; }
+			/// set the video to rewind automatically (and thus show the first frame) when the video has completed playing
+			public function get autorewind():Boolean { return _autorewind; }
+			public function set autorewind(value:Boolean):void 
+			{
+				_autorewind = value;
+			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -180,31 +199,35 @@ package core.media.net
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onUpdate(event:TimerEvent):void 
+			protected function onStateChange(event:MediaEvent):void 
 			{
-				dispatch(MediaEvent.UPDATED);
+				dispatch(MediaEvent.STATE_CHANGE, event.data);
+				dispatch(event.data);
 			}
 			
-			protected function onLoadProgress(event:NetStatusEvent):void 
-			{
-				dispatch(MediaEvent.PROGRESS, event);
-			}
-		
-			protected function onLoadError(event:NetStatusEvent):void 
+			protected function onLoadError(event:Event):void 
 			{
 				dispatch(MediaEvent.ERROR, event);
 			}
 		
+			protected function onUpdated(event:MediaEvent):void 
+			{
+				dispatch(event.type);
+			}
+			
+
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
 			protected function dispatch(eventName:String, data:* = null):void 
 			{
-				//trace('>>> media     : ' + eventName);
-				
+				// create the event
 				var event:MediaEvent = new MediaEvent(eventName, data);
+				
+				// dispatch the event
 				_target.dispatchEvent(event);
 				
+				// dispatch the EVENT event
 				_target.dispatchEvent(new MediaEvent(MediaEvent.EVENT, event));
 			}
 		

@@ -1,17 +1,15 @@
-package core.media.net 
+package core.media.streams 
 {
-	import core.media.data.VideoMetadata;
-	import core.net.NetStreamClient;
-	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
 	import flash.events.NetStatusEvent;
-	import flash.events.SecurityErrorEvent;
-	import flash.events.StatusEvent;
 	import flash.net.NetConnection;
 	import flash.net.NetStream;
 	
 	import core.events.MediaEvent;
-
+	import core.media.data.VideoMetadata;
+	import core.net.NetStreamClient;
+	import core.utils.defer;
+	
 	/**
 	 * ...
 	 * @author Dave Stewart
@@ -25,16 +23,17 @@ package core.media.net
 			// objects                             
 				protected var _connection			:NetConnection;             
 				protected var _stream				:NetStream;
-				                                   
-			// play properties                     
-				protected var _autorewind			:Boolean;
-			
+				
+			// seek properties
+				protected var _onSeek				:Function;			// seeking is asynchronous, so we need a callback to fire once complete
+				protected var _seekTime				:Number;			// flashplayer has a bug where stream.time is not accurate after a seek, so we cache the intended time
+				
 			// video properties                    
 				protected var _bufferTime			:Number;
 				protected var _metadata				:VideoMetadata;
-
+				
 			// variables                           
-				                                   
+				
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -50,6 +49,9 @@ package core.media.net
 				// super
 				super.initialize();
 				
+				// state
+				_state.addEventListener(MediaEvent.PROGRESS, onLoadProgress);
+				
 				// connection
 				_connection = new NetConnection();
 				_connection.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
@@ -57,10 +59,13 @@ package core.media.net
 				_connection.connect(null);
 				
 				// variables
-				_duration	= -1;
-				_bufferTime	= 2;
+				_duration	= 0;
+				_bufferTime	= 0;
 			}
-		
+			
+			/**
+			 * Resets the stream, the media state and its properties
+			 */
 			override public function reset():void // renew:Boolean = false
 			{
 				// kill old stream
@@ -71,15 +76,16 @@ package core.media.net
 				}
 			
 				// create new stream
-				_stream				= new NetStream(_connection);
-				_stream.client		= new NetStreamClient(onPlayStatus, onMetaData);
-				_stream.bufferTime	= _bufferTime;
+				_stream					= new NetStream(_connection);
+				_stream.client			= new NetStreamClient(onPlayStatus, onMetaData);
+				_stream.bufferTime		= _bufferTime;
+				//_stream.inBufferSeek	= true;
 				_stream.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
 				
 				// reset values
-				_url				= '';
-				_metadata			= null;
-				_duration			= 0;
+				_url					= '';
+				_metadata				= null;
+				_duration				= 0;
 				
 				// dispatch a ready event
 				dispatch(MediaEvent.RESET);
@@ -90,53 +96,20 @@ package core.media.net
 		// { region: public methods
 		
 			/**
-			 * Load the steam and pause it immediately upon loading
+			 * Loads the steam from a URL and optionally plays it once loaded
 			 * 
 			 * @param	streamName
 			 */
 			override public function load(url:String, autoplay:Boolean = false):Boolean 
 			{
-				// don't load the same stream twice
-				if (url === _url)
+				// super
+				if (super.load(url, autoplay))
 				{
-					// but if autoplay is set, and it's already loaded, play it
-					if (autoplay)
-					{
-						return play();
-					}
-					return false;
+					return true;
 				}
 				
-				// setup
-				reset();
-				
-				// callback
-				function onLoad(event:NetStatusEvent):void 
-				{
-					if (event.info.code == 'NetStream.Play.Start')
-					{
-						event.stopImmediatePropagation();
-						_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoad);
-						dispatch(MediaEvent.LOADED)
-						if( ! autoplay )
-						{
-							_stream.pause();
-						}
-						else
-						{
-							play();
-						}
-					}
-				}
-				
-				// set name
-				_url = url;
-				
-				// bind to the initial playback event
-				_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoad, false, 100);
-				
-				// play the url
-				dispatch(MediaEvent.OPENED);
+				// load the url
+				_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoadComplete, false, 100);
 				_stream.play(url);
 				
 				// return
@@ -144,117 +117,140 @@ package core.media.net
 			}
 			
 			/**
-			 * Play the stream
+			 * Plays or resumes the stream, optionally from a particular time in seconds
 			 * 
 			 * @param	streamName
 			 */
-			override public function play(seconds:Number = NaN):Boolean
+			override public function play(seconds:Number = -1):Boolean
 			{
 				if (_stream)
 				{
-					if ( ! _playing )
+					if ( ! _state.playing )
 					{
 						// ended
-						if (_ended)
+						if (_state.ended && position > 0)
 						{
-							seconds = 0;
+							_seek(0, play);
+							return true;
 						}
 						
 						// seek
-						if ( ! isNaN(seconds) )
+						if (seconds > -1)
 						{							
-							_stream.seek(seconds);
-						}
-						
-						// stopped (at beginning)
-						if (stopped)
-						{
-							dispatch(MediaEvent.STARTED); // PLAYING will also fire, but driven by the NetStream. Or will it?
-						}
-						
-						// paused (anywhere)
-						else
-						{
-							dispatch(MediaEvent.RESUMED);
+							_seek(seconds, play);
+							return true;
 						}
 						
 						// play
 						_stream.resume();
 						
-						// reset flags
-						_playing	= true;
-						_paused		= false;
-						_ended		= false;
-						
 						// event
-						dispatch(MediaEvent.PLAYING);
-						dispatch(MediaEvent.UPDATED);
-						timer.start();
+						_state.paused
+							? dispatch(MediaEvent.RESUMED)
+							: dispatch(MediaEvent.STARTED);;
+						
+						// update state
+						_state.playing	= true;
+						
+						// return
 						return true;
 					}
 				}
 				return false;
 			}
 			
+			/**
+			 * Replays the video from the first frame
+			 * 
+			 * @return
+			 */
 			public function replay():Boolean
 			{
 				if (_stream)
 				{
-					_rewind();
-					// TODO do we need to add a listener here in case there is a delay after seeking?
-					return play();
+					_seek(0, play);
+					return true;
 				}
 				return false;
 			}
 
+			/**
+			 * Pauses the video at the current position
+			 * 
+			 * @return
+			 */
 			override public function pause():Boolean
 			{
-				if (_stream && (! _paused) && ( ! _ended) )
+				if (_stream && _state.playing)
 				{
-					_paused		= true;
-					_playing	= false;
-					_pause();
-					dispatch(MediaEvent.PAUSED);
+					_stream.pause();
+					_state.paused = true;
 					return true;
 				}
 				return false;
 			}
 			
+			/**
+			 * Stops the video and returns it to the first frame
+			 * 
+			 * @return
+			 */
 			override public function stop():Boolean
 			{
-				if (_stream && active)
+				if (_stream && ! _state.stopped)
 				{
-					_paused		= false;
-					_playing	= false;
-					_rewind();
-					_pause();
-					dispatch(MediaEvent.STOPPED);
+					_stream.pause();
+					_seek(0, function():void {
+						_state.stopped = true;
+					});
 					return true;
 				}
 				return false;
 			}
 			
+			/**
+			 * Rewinds the video
+			 * 
+			 * @return
+			 */
 			public function rewind():Boolean
 			{
-				if (_stream)
+				if (_stream && position !== 0)
 				{
-					_rewind();
-					dispatch(MediaEvent.REWIND);
+					_rewind(function ():void 
+					{
+						_state.playing
+							? _state.playing = true
+							: _state.paused
+								? _state.paused = true
+								: null;
+					});
 					return true;
 				}
 				return false;
 			}
 			
+			/**
+			 * Closes the video stream
+			 * 
+			 * @return
+			 */
 			override public function close():Boolean 
 			{
 				if (_stream)
 				{
-					stop();
+					// update stream
+					_stream.pause();
 					_stream.removeEventListener(NetStatusEvent.NET_STATUS, onNetStatus);
 					_stream.dispose();
-					_stream		= null;
-					_url		= null;
+					
+					// update state
+					_state.stopped	= true;
+					_stream			= null;
+					_url			= null;
 					dispatch(MediaEvent.CLOSED);
+					
+					// return
 					return true;
 				}
 				return false;
@@ -268,19 +264,10 @@ package core.media.net
 			public function get stream():NetStream { return _stream; }
 		
 			/// set or get the position of the video stream
-			override public function get position():Number { return _stream.time; }
+			override public function get position():Number { return isNaN(_seekTime) ? _stream.time : _seekTime; }
 			override public function set position(seconds:Number):void
-			{ 
-				playing
-					? play(seconds)
-					: _stream.seek(seconds);
-			}
-			
-			/// set the video to rewind automatically (and thus show the first frame) when the video has completed playing
-			public function get autorewind():Boolean { return _autorewind; }
-			public function set autorewind(value:Boolean):void 
 			{
-				_autorewind = value;
+				_seek(seconds);
 			}
 			
 			/// get or set the buffertime of the stream
@@ -298,35 +285,71 @@ package core.media.net
 			
 			/// get the height of the video stream, if available via the stream's metadata
 			public function get height():int { return _metadata ? _metadata.height : NaN; }
-			
+						
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected function _rewind():void 
+			/**
+			 * Seeks to a time, and sets up a callback to fire once seeked
+			 * 
+			 * @param	seconds		The time in seconds to seek to
+			 * @param	callback	An optional callback to fire once seeked
+			 */
+			protected function _seek(seconds:Number, callback:Function = null):void 
 			{
-				if (_stream)
-				{
-					_ended = false;
-					_stream.seek(0);
-					dispatch(MediaEvent.UPDATED);
-				}
+				// properties
+				_seekTime		= seconds;
+				_onSeek			= callback;
+				_state.seeking	= true;
+				
+				// code
+				_stream.seek(seconds);
 			}
-		
-			protected function _pause():void 
+			
+			/**
+			 * Rewinds to 0, and sets up a callback to fire once seeked
+			 * 
+			 * @param	callback	An optional callback to fire once seeked
+			 */
+			protected function _rewind(callback:Function = null):void 
 			{
-				if (_stream)
-				{
-					_stream.pause();
-					dispatch(MediaEvent.UPDATED);
-					timer.stop();
-				}
+				_seek(0, function():void{
+					dispatch(MediaEvent.REWIND);
+					if (callback is Function)
+					{
+						callback();
+					}
+				});
 			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
+			protected function onLoadProgress(event:MediaEvent):void 
+			{
+				trace('loaded: ' + _stream.bytesLoaded, _stream.bytesTotal);
+			}
+		
+			protected function onLoadComplete(event:NetStatusEvent):void 
+			{
+				if (event.info.code == 'NetStream.Play.Start')
+				{
+					_stream.removeEventListener(NetStatusEvent.NET_STATUS, onLoadComplete);
+					_state.loaded = true;
+					if(_autoplay)
+					{
+						play();
+					}
+					else
+					{
+						//_state.stopped = true;
+						_stream.pause();
+					}
+				}
+			}
+			
 			protected function onNetStatus(event:NetStatusEvent):void 
 			{
 				// debug
@@ -345,12 +368,14 @@ package core.media.net
 					// error events
 						case 'NetStream.Play.StreamNotFound':
 						case 'NetStream.Play.Failed':
+							_stream = null;
+							_url	= null;
 							dispatch(MediaEvent.ERROR, event);
 							break;
 						
 					// play events
 						case 'NetStream.Play.Start':
-							_ended = false;
+							_state.ended = false;
 							break;
 						
 						case 'NetStream.Play.Stop':
@@ -361,27 +386,31 @@ package core.media.net
 						case 'NetStream.Play.Complete':
 							
 							// events
-							dispatch(MediaEvent.COMPLETE);
+							_state.ended = true;
 							
-							// repeat, rewind or pause
+							// repeat
 							if (_repeat)
 							{
-								_stream.seek(0);
 								dispatch(MediaEvent.REPEAT);
+								_seek(0, function ():void 
+								{
+									_state.playing = true;
+								});
 							}
+							
+							// rewind
 							else if (_autorewind)
 							{
-								rewind();
-								stop();
-								dispatch(MediaEvent.FINISHED);
+								_rewind(function():void {
+									_stream.pause();
+									_state.stopped = true;
+									dispatch(MediaEvent.FINISHED);
+								});
 							}
+							
+							// end
 							else
 							{
-								_ended		= true;
-								_playing	= false;
-								_paused		= false;
-								_pause();
-								dispatch(MediaEvent.STOPPED);
 								dispatch(MediaEvent.FINISHED);
 							}
 							break;
@@ -393,20 +422,29 @@ package core.media.net
 						
 					// seek events
 						case 'NetStream.SeekStart.Notify':
-							// nothing to do here
+							// the seek method handles
 							break;
 						
+						// fired when a seek has finished
 						case 'NetStream.Seek.Notify':
-						case 'NetStream.Seek.Complete':
-							// need to fire next events here
-							// stopped
-							// repeat
-							// rewound
-							if (_onSeek !== null)
+							
+							// fire any callbacks
+							if (_onSeek is Function)
 							{
 								_onSeek();
 								_onSeek = null;
 							}
+							else
+							{
+								dispatch(MediaEvent.UPDATED);
+							}
+							
+							// defer reset of seekTime
+							defer(function():void { _seekTime = NaN; } );
+							
+							break;
+							
+						case 'NetStream.Seek.Complete':
 							break;
 						
 						case 'NetStream.Pause.Notify':
@@ -442,12 +480,17 @@ package core.media.net
 			 */
 			protected function onMetaData(data:Object) :void
 			{
-				// TODO use new metadata class
-				if ( ! _metadata )
+				if (_metadata == null)
 				{
 					// assign metadata
 					_metadata	= new VideoMetadata(data);
-					_duration	= Number(data.duration);
+					_duration	= _metadata.duration;
+					
+					// reduce buffertime if longer than the video
+					if (_bufferTime > _duration)
+					{
+						_bufferTime = _duration / 2;
+					}
 					
 					// dispatch metadata event
 					dispatch(MediaEvent.METADATA, data);
