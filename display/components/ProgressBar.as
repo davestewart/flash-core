@@ -35,8 +35,8 @@ package core.display.components
 				super(parent);
 				
 				// size
-				this.width		= width;
-				this.height		= height;
+				this.width	= width;
+				this.height	= height;
 				
 				// property
 				value			= 0;
@@ -54,10 +54,24 @@ package core.display.components
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
+			override public function get width():Number { return super.width; }
+			override public function set width(value:Number):void 
+			{
+				fg.width	= value;
+				bg.width	= value;
+			}
+			
+			override public function get height():Number { return super.height; }
+			override public function set height(value:Number):void 
+			{
+				fg.height	= value;
+				bg.height	= value;
+			}
+		
 			public function get value():Number { return fg.scaleX; }
 			public function set value(value:Number):void 
 			{
-				fg.scaleX = value;
+				fg.scaleX	= value;
 			}
 		
 			
