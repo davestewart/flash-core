@@ -1,5 +1,6 @@
 package core.media.data 
 {
+	import core.utils.Objects;
 	/**
 	 * @author Dave Stewart
 	 */
@@ -28,9 +29,18 @@ package core.media.data
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoMetadata(data:Object) 
+			public function VideoMetadata(data:Object = null) 
 			{
+				// super
 				super(data);
+				
+				// framerate
+				if ('videoframerate' in data)
+				{
+					framerate = data.videoframerate;
+				}
+				
+				// width / height
 				if ('frameWidth' in data)
 				{
 					width		= int(data.frameWidth);
@@ -47,7 +57,10 @@ package core.media.data
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 
-			
+			public function toString():String 
+			{
+				return Objects.formatToString(this, 'VideoMetadata', 'width height duration framerate description');
+			}
 	}
 
 }
