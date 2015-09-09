@@ -64,7 +64,6 @@ package core.media.streams
 					_stopped	= false;
 					dispatch(MediaEvent.LOADING);
 				}
-				startTimer();
 			}
 			
 			// indicates the media is currently in a loading state
@@ -81,7 +80,6 @@ package core.media.streams
 					_stopped	= true;
 					dispatch(MediaEvent.LOADED);
 				}
-				stopTimer();
 			}
 			
 			
@@ -201,7 +199,7 @@ package core.media.streams
 		
 			protected function onTimer(event:TimerEvent):void 
 			{
-				dispatchEvent(new MediaEvent(_loading ? MediaEvent.PROGRESS : MediaEvent.UPDATED));
+				dispatchEvent(new MediaEvent(MediaEvent.UPDATED));
 			}
 	
 		

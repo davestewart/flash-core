@@ -49,9 +49,6 @@ package core.media.streams
 				// super
 				super.initialize();
 				
-				// state
-				_state.addEventListener(MediaEvent.PROGRESS, onLoadProgress);
-				
 				// connection
 				_connection = new NetConnection();
 				_connection.addEventListener(NetStatusEvent.NET_STATUS, onNetStatus);

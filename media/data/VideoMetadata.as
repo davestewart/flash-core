@@ -1,6 +1,8 @@
 package core.media.data 
 {
 	import core.utils.Objects;
+	import core.media.data.Metadata;
+	
 	/**
 	 * @author Dave Stewart
 	 */

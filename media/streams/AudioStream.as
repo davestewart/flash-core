@@ -40,11 +40,6 @@ package core.media.streams
 				super(target);
 			}
 			
-			override protected function initialize():void 
-			{
-				super.initialize();
-			}
-			
 			override public function reset():void 
 			{
 				// channel
@@ -56,10 +51,7 @@ package core.media.streams
 				// remove any listeners
 				if (_sound)
 				{
-					_sound.removeEventListener(Event.COMPLETE, onLoadComplete);
-					_sound.removeEventListener(Event.ID3, onMetadata);
-					_sound.removeEventListener(ProgressEvent.PROGRESS, onLoadProgress);
-					_sound.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
+					removeListeners();
 				}
 				
 				// reset all variables
@@ -82,9 +74,9 @@ package core.media.streams
 				// load new sound
 				_sound			= new Sound(new URLRequest(url));
 				_sound.addEventListener(Event.COMPLETE, onLoadComplete);
-				_sound.addEventListener(Event.ID3, onMetadata);
 				_sound.addEventListener(ProgressEvent.PROGRESS, onLoadProgress);
 				_sound.addEventListener(IOErrorEvent.IO_ERROR, onLoadError);
+				_sound.addEventListener(Event.ID3, onMetadata);
 				
 				// return
 				return true;
@@ -282,9 +274,7 @@ package core.media.streams
 			protected function onLoadComplete(event:Event):void
 			{
 				// remove event listeners
-				_sound.removeEventListener(Event.COMPLETE, onLoadComplete);
-				_sound.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
-				_sound.removeEventListener(IOErrorEvent.IO_ERROR, onLoadProgress);
+				removeListeners();
 				
 				// update
 				_state.loaded = true;
@@ -295,12 +285,7 @@ package core.media.streams
 		
 			override protected function onLoadError(event:Event):void
 			{
-				// remove event listeners
-				_sound.removeEventListener(Event.COMPLETE, onLoadComplete);
-				_sound.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
-				_sound.removeEventListener(IOErrorEvent.IO_ERROR, onLoadProgress);
-				
-				// dispatch error
+				removeListeners();
 				dispatch(MediaEvent.ERROR, event);
 			}
 		
@@ -336,7 +321,13 @@ package core.media.streams
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		
-			
+			protected function removeListeners():void 
+			{
+				_sound.removeEventListener(Event.COMPLETE, onLoadComplete);
+				_sound.removeEventListener(IOErrorEvent.IO_ERROR, onLoadError);
+				_sound.removeEventListener(IOErrorEvent.IO_ERROR, onLoadProgress);
+				_sound.removeEventListener(Event.ID3, onMetadata);
+			}
 		
 	}
 
