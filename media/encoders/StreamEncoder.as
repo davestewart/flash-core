@@ -296,6 +296,7 @@ package core.media.encoders
 						// publish events
 							case 'NetStream.Publish.Start':
 								//onStart(); // the recording has started
+								//TODO investigate if we're doing anything here
 								break;
 							
 							case 'NetStream.Unpublish.Success':
