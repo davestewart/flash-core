@@ -347,7 +347,7 @@ package core.media.streams
 				{
 					for (var i:int = 0; i < _seekpoints.length; i++) 
 					{
-						if (_seekpoints[i] > seconds)
+						if (_seekpoints[i] >= seconds)
 						{
 							return _seekpoints[i];
 						}
