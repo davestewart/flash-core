@@ -78,17 +78,6 @@ package core.media.streams
 			 */
 			public function load(url:String, autoplay:Boolean = true):Boolean
 			{
-				// don't load the same stream twice
-				if (url === _url)
-				{
-					// but if autoplay is set, and it's already loaded, play it
-					if (_state.loaded && autoplay)
-					{
-						return play();
-					}
-					return false;
-				}
-				
 				// reset / setup
 				reset();
 				
@@ -182,7 +171,14 @@ package core.media.streams
 			public function set repeat(value:Boolean):void { _repeat = value;
 			}
 			
-			/// set the video to rewind automatically (and thus show the first frame) when the video has completed playing
+			/// set the stream to automatically play when loaded
+			public function get autoplay():Boolean { return _autoplay; }
+			public function set autoplay(value:Boolean):void 
+			{
+				_autoplay = value;
+			}
+			
+			/// set the stream to rewind automatically (and thus show the first frame) when the video has completed playing
 			public function get autorewind():Boolean { return _autorewind; }
 			public function set autorewind(value:Boolean):void 
 			{

@@ -35,7 +35,12 @@ package core.media.streams
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function AudioStream(target:IEventDispatcher=null) 
+			/**
+			 * AudioStream constructor
+			 * 
+			 * @param	target		An optional target object to dispatch events from. Defaults to the AudioStream instance
+			 */
+			public function AudioStream(target:IEventDispatcher = null)
 			{
 				super(target);
 			}
@@ -66,10 +71,7 @@ package core.media.streams
 			override public function load(url:String, autoplay:Boolean = false):Boolean 
 			{
 				// super
-				if (super.load(url, autoplay))
-				{
-					return true;
-				}
+				super.load(url, autoplay);
 				
 				// load new sound
 				_sound			= new Sound(new URLRequest(url));
@@ -84,7 +86,7 @@ package core.media.streams
 			
 			override public function play(seconds:Number = -1):Boolean
 			{
-				if (_state.loaded && ! _state.playing)
+				if (! _state.playing)
 				{
 					// get the position to start at
 					seconds		= seconds > -1 

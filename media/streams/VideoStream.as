@@ -24,22 +24,25 @@ package core.media.streams
 				protected var _connection			:NetConnection;             
 				protected var _stream				:NetStream;
 				
-			// seek properties
-				protected var _onSeek				:Function;			// seeking is asynchronous, so we need a callback to fire once complete
-				protected var _seekTime				:Number;			// flashplayer has a bug where stream.time is not accurate after a seek, so we cache the intended time
-				
 			// video properties                    
-				protected var _bufferTime			:Number;
 				protected var _metadata				:VideoMetadata;
+				protected var _bufferTime			:Number;
 				
-			// variables                           
-				
+			// seek properties
+				protected var _seekpoints			:Array;
+				protected var _seekTime				:Number;			// flashplayer has a bug where stream.time is not accurate after a seek, so we cache the intended time
+				protected var _onSeek				:Function;			// seeking is asynchronous, so we need a callback to fire once complete
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function VideoStream(target:IEventDispatcher = null) 
+			/**
+			 * VideoStream constructor
+			 * 
+			 * @param	target		An optional target object to dispatch events from. Defaults to the VideoStream instance
+			 */
+			public function VideoStream(target:IEventDispatcher = null)
 			{
 				super(target);
 			}
@@ -100,10 +103,7 @@ package core.media.streams
 			override public function load(url:String, autoplay:Boolean = false):Boolean 
 			{
 				// super
-				if (super.load(url, autoplay))
-				{
-					return true;
-				}
+				super.load(url, autoplay);
 				
 				// load the url
 				_stream.addEventListener(NetStatusEvent.NET_STATUS, onLoadComplete, false, 100);
@@ -122,6 +122,14 @@ package core.media.streams
 			{
 				if (_stream)
 				{
+					// play when loaded
+					if ( ! _state.loaded )
+					{
+						_autoplay = true;
+						return true;
+					}
+					
+					// play if not playing
 					if ( ! _state.playing )
 					{
 						// ended
@@ -144,7 +152,7 @@ package core.media.streams
 						// event
 						_state.paused
 							? dispatch(MediaEvent.RESUMED)
-							: dispatch(MediaEvent.STARTED);;
+							: dispatch(MediaEvent.STARTED);
 						
 						// update state
 						_state.playing	= true;
@@ -165,6 +173,11 @@ package core.media.streams
 			{
 				if (_stream)
 				{
+					if (_state.loading)
+					{
+						_autoplay = true;
+						return true;
+					}
 					_seek(0, play);
 					return true;
 				}
@@ -282,6 +295,9 @@ package core.media.streams
 			
 			/// get the height of the video stream, if available via the stream's metadata
 			public function get height():int { return _metadata ? _metadata.height : NaN; }
+			
+			/// the video's keyframes
+			public function get seekpoints():Array { return _seekpoints; }
 						
 			
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -296,12 +312,12 @@ package core.media.streams
 			protected function _seek(seconds:Number, callback:Function = null):void 
 			{
 				// properties
-				_seekTime		= seconds;
+				_seekTime		= getSeekPoint(seconds);
 				_onSeek			= callback;
 				_state.seeking	= true;
 				
 				// code
-				_stream.seek(seconds);
+				_stream.seek(_seekTime);
 			}
 			
 			/**
@@ -318,6 +334,34 @@ package core.media.streams
 						callback();
 					}
 				});
+			}
+			
+			/**
+			 * Gets a valid seek point, or returns a capped value if no seekpoints
+			 * 
+			 * @param	seconds
+			 */
+			protected function getSeekPoint(seconds:Number):Number 
+			{
+				if (_seekpoints && _seekpoints.length)
+				{
+					for (var i:int = 0; i < _seekpoints.length; i++) 
+					{
+						if (_seekpoints[i] > seconds)
+						{
+							return _seekpoints[i];
+						}
+					}
+					return _seekpoints[_seekpoints.length - 1]
+				}
+				else
+				{
+					return seconds < 0
+						? 0
+						: seconds > _duration
+							? _duration - 1
+							: seconds;
+				}
 			}
 			
 		
@@ -425,6 +469,12 @@ package core.media.streams
 						// fired when a seek has finished
 						case 'NetStream.Seek.Notify':
 							
+							// state
+							_state.seeking = false;
+							
+							// event
+							dispatch(MediaEvent.SEEKED);
+							
 							// fire any callbacks
 							if (_onSeek is Function)
 							{
@@ -483,6 +533,15 @@ package core.media.streams
 					_metadata	= new VideoMetadata(data);
 					_duration	= _metadata.duration;
 					
+					// seekpoints
+					var seekpoints:Array = data['seekpoints'] || data['seekPoints'];
+					if (seekpoints)
+					{
+						_seekpoints = seekpoints.map(function(o:Object, i:int, a:Array):Number { 
+							return o.time;
+						} );
+					}
+				
 					// reduce buffertime if longer than the video
 					if (_bufferTime > _duration)
 					{

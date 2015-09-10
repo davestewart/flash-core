@@ -61,7 +61,7 @@ package core.media.streams
 					_playing	= false;
 					_paused		= false;
 					_ended		= false;
-					_stopped	= false;
+					_stopped	= true;
 					dispatch(MediaEvent.LOADING);
 				}
 			}
@@ -74,10 +74,6 @@ package core.media.streams
 				if (value)
 				{
 					_loading	= false;
-					_playing	= false;
-					_paused		= false;
-					_ended		= false;
-					_stopped	= true;
 					dispatch(MediaEvent.LOADED);
 				}
 			}
@@ -116,6 +112,7 @@ package core.media.streams
 					_paused		= false;
 					_stopped	= false;
 					_ended		= false;
+					_seeking	= false;
 					dispatch(MediaEvent.PLAYING);
 					startTimer();
 				}
@@ -131,6 +128,7 @@ package core.media.streams
 					_playing	= false;
 					_stopped	= false;
 					_ended		= false;
+					_seeking	= false;
 					dispatch(MediaEvent.PAUSED);
 					stopTimer();
 				}
@@ -146,6 +144,7 @@ package core.media.streams
 					_playing	= false;
 					_paused		= false;
 					_stopped	= false;
+					_seeking	= false;
 					dispatch(MediaEvent.ENDED);
 					stopTimer();
 				}
@@ -161,6 +160,7 @@ package core.media.streams
 					_playing	= false;
 					_paused		= false;
 					_ended		= false;
+					_seeking	= false;
 					dispatch(MediaEvent.STOPPED);
 					stopTimer();
 				}
@@ -199,7 +199,10 @@ package core.media.streams
 		
 			protected function onTimer(event:TimerEvent):void 
 			{
-				dispatchEvent(new MediaEvent(MediaEvent.UPDATED));
+				if ( ! _seeking )
+				{
+					dispatchEvent(new MediaEvent(MediaEvent.UPDATED));
+				}
 			}
 	
 		
