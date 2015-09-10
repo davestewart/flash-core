@@ -4,7 +4,7 @@ package core.media.data
 	 * @see http://help.adobe.com/en_US/as3/dev/WSD30FA424-950E-43ba-96C8-99B926943FE7.html	
 	 * @author Dave Stewart
 	 */
-	dynamic public class FLVMetaData extends VideoMetadata
+	dynamic public class FLVMetadata extends VideoMetadata
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ package core.media.data
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function FLVMetaData(data:Object) 
+			public function FLVMetadata(data:Object) 
 			{
 				super(data);
 			}
