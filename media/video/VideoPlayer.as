@@ -4,7 +4,7 @@ package core.media.video
 	import flash.net.NetStream;
 	
 	import core.events.MediaEvent;
-	import core.media.net.MediaStream;
+	import core.media.streams.VideoStream;
 	
 	/**
 	 * Instantiates MediaStream object, and manages playback
@@ -24,8 +24,7 @@ package core.media.video
 
 			
 			// objects
-				protected var _stream					:NetStream;
-				protected var _media					:MediaStream;
+				protected var _media					:VideoStream;
 				
 			// video properties
 
@@ -42,13 +41,12 @@ package core.media.video
 			override protected function initialize():void 
 			{
 				// objects
-				_media		= new MediaStream(this);
-				_stream		= media.stream;
+				_media		= new VideoStream(this);
 				
 				// events
 				addEventListener(MediaEvent.RESET, onReset);
 				addEventListener(MediaEvent.LOADED, onLoad, false, 100);
-				addEventListener(MediaEvent.METADATA, onMetaData);
+				addEventListener(MediaEvent.METADATA, onMetadata);
 				addEventListener(MediaEvent.CLOSED, onClosed);
 			}
 			
@@ -96,7 +94,7 @@ package core.media.video
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			public function get media():MediaStream { return _media; }
+			public function get media():VideoStream { return _media; }
 			
 			
 			
@@ -124,26 +122,22 @@ package core.media.video
 			
 			protected function onReset(event:MediaEvent):void 
 			{
-				// re-attach stream to video if it's been renewed
-				if (_stream !== media.stream)
-				{
-					video.attachNetStream(media.stream);
-				}
+				video.attachNetStream(media.stream);
 			}
 			
-			public function onMetaData(event:MediaEvent) :void
+			public function onMetadata(event:MediaEvent) :void
 			{
 				// old set video size - left here whilst we ensure that the same functionality in the onLoad handler
-				video.width		= media.videoWidth;
-				video.height	= media.videoHeight;
+				video.width		= media.width;
+				video.height	= media.height;
 				viewport.redraw();
 
 				// set player size
 				if (_autosize)
 				{
-					if (viewport.width !== media.videoWidth || viewport.height !== media.videoHeight)
+					if (viewport.width !== media.width || viewport.height !== media.height)
 					{
-						viewport.setSize(media.videoWidth, media.videoHeight);
+						viewport.setSize(media.width, media.height);
 						viewport.redraw();
 						dispatchEvent(new Event(Event.RESIZE));
 					}
