@@ -1,20 +1,24 @@
 package core.display.containers 
 {
+	import core.display.elements.Element;
+	import core.geom.Size;
 	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
 	import flash.display.Shape;
 	import flash.display.Sprite;
 	import flash.events.Event;
+	import flash.geom.Rectangle;
 	
 	import core.display.elements.Invalidatable;
-	import core.display.shapes.Rect;
-	import core.utils.Elements;
 	
 	/**
-	 * Base container class for any elements needing to wrap and manipulate other elements 
+	 * Base container class for any elements needing to wrap and manipulate other elements
+	 * 
+	 * Manages adding and removing elements, as well as dispatching resize events
 	 * 
 	 * @author Dave Stewart
 	 */
-	public class Container extends Invalidatable 
+	public class Container extends Element 
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -24,97 +28,102 @@ package core.display.containers
 				
 			
 			// elements
-				protected var overlay		:Shape;
-				public var wrapper			:Sprite;
+				public var content			:Sprite;
 				
 				
 			// properties
-				protected var _border		:Boolean;
-				
+			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Container() 
+			public function Container(parent:DisplayObjectContainer = null) 
 			{
-				// overlay
-				overlay				= new Shape();
-				overlay.name		= 'overlay';
-				_addChild(overlay);
-				
-				// wrapper
-				wrapper				= new Sprite();
-				wrapper.name		= 'wrapper';
-				wrapper.addEventListener(Event.RESIZE, onContentResized);
-				_addChild(wrapper);
-
-				// interaction
-				tabEnabled			= false;
-				mouseEnabled		= false;
+				super(parent);
 			}
 			
-
+			override protected function initialize():void 
+			{
+				tabEnabled			= false;
+			}
+			
+			override protected function build():void 
+			{
+				// wrapper
+				content				= new Sprite();
+				content.name		= 'content';
+				content.addEventListener(Event.RESIZE, onContentResized);
+				_addChild(content);
+			}
+			
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
 			override public function addChild(child:DisplayObject):DisplayObject 
 			{
-				return wrapper.addChild(child);
 				invalidate();
+				return content.addChild(child);
 			}
 			
 			override public function addChildAt(child:DisplayObject, index:int):DisplayObject 
 			{
-				return wrapper.addChildAt(child, index);
 				invalidate();
+				return content.addChildAt(child, index);
 			}
 			
 			public function addChildren(...elements):DisplayObject 
 			{
-				for each(var element:DisplayObject in elements)
+				invalidate();
+				if (elements.length)
 				{
-					wrapper.addChild(element);
+					if(elements[0] is Array)
+					{
+						elements = elements[0];
+					}
+					for each(var element:DisplayObject in elements)
+					{
+						element && content.addChild(element);
+					}
 				}
 				return this;
 			}
 			
 			override public function removeChild(child:DisplayObject):DisplayObject 
 			{
-				return wrapper.removeChild(child);
 				invalidate();
+				return content.removeChild(child);
 			}
 			
 			override public function removeChildAt(index:int):DisplayObject 
 			{
-				return super.removeChildAt(index);
 				invalidate();
+				return content.removeChildAt(index);
 			}
 			
 			override public function removeChildren(beginIndex:int = 0, endIndex:int = 2147483647):void 
 			{
-				wrapper.removeChildren(beginIndex, endIndex);
 				invalidate();
+				content.removeChildren(beginIndex, endIndex);
 			}
 			
-			/*
 			override public function getChildAt(index:int):DisplayObject 
 			{
-				return wrapper.getChildAt(index);
+				return content.getChildAt(index);
 			}
-			*/
 			
 			override public function getChildByName(name:String):DisplayObject 
 			{
-				return wrapper.getChildByName(name);
+				return content.getChildByName(name);
 			}
 		
 			public function clear():void 
 			{
-				if (wrapper.numChildren > 0)
+				if (content.numChildren > 0)
 				{
-					while (wrapper.numChildren > 0)
+					while (content.numChildren > 0)
 					{
-						wrapper.removeChildAt(0);
+						content.removeChildAt(0);
 					}
 					invalidate();
 				}
@@ -124,27 +133,42 @@ package core.display.containers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			public function get border():Boolean { return _border; }
-			public function set border(value:Boolean):void 
+			override public function get numChildren():int { return content.numChildren; }
+			
+			public function get rect():Rectangle
 			{
-				_border = value;
-				invalidate();
+				return new Rectangle(content.x, content.y, content.width, content.height);
 			}
 			
-		
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
 			override protected function draw():void
 			{
-				// debug
-				overlay.graphics.clear();
-				if (border)
+				// exit early if no content
+				if ( ! content )
 				{
-					overlay.graphics.lineStyle(0.25, 0x000000, 1, true);
-					overlay.graphics.drawRect(0.5, 0.5, width - 1, height - 1);
-					_addChild(overlay);
+					return;
 				}
+				
+				// get current size
+				var width	:Number	= this.width;
+				var height	:Number	= this.height;
+				
+				// layout
+				layout();
+				
+				// check if size has changed
+				if (width !== this.width || height !== this.height)
+				{
+					dispatchEvent(new Event(Event.RESIZE));
+				}
+			}
+			
+			protected function layout():void 
+			{
+				// lay out contents
 			}
 			
 		
@@ -153,31 +177,32 @@ package core.display.containers
 		
 			protected function onContentResized(event:Event):void 
 			{
+				event.stopPropagation();
 				invalidate();
 			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: utilities
+		// { region: proxied add/remove methods (for subclasses and any external classes that REALLY need to add something to the top level)
 		
 			/**
-			 * Proxied addChild() method to add elements (masks, etc) directly to the container
+			 * Proxied addChild() method for subclasses, in order to add elements (masks, etc) directly
 			 * 
 			 * @param	child
 			 * @return
 			 */
-			protected function _addChild(child:DisplayObject):DisplayObject 
+			public function _addChild(child:DisplayObject):DisplayObject 
 			{
 				return super.addChild(child);
 			}
 			
-			protected function _addChildAt(child:DisplayObject, index:int):DisplayObject 
+			public function _addChildAt(child:DisplayObject, index:int):DisplayObject 
 			{
 				return super.addChildAt(child, index);
 			}
 		
 			/**
-			 * Proxied removeChild() method to remove elements (masks, etc) directly from the container
+			 * Proxied removeChild() method for subclasses, to remove elements (masks, etc) directly from the container
 			 * 
 			 * @param	child
 			 * @return

@@ -1,16 +1,13 @@
-package core.display.components 
+package core.display.containers 
 {
-	import com.greensock.plugins.ColorTransformPlugin;
-	import com.greensock.plugins.TweenPlugin;
-	import com.greensock.TweenLite;
-	import core.display.elements.Element;
-	import core.utils.Elements;
 	import flash.display.DisplayObject;
-	import flash.display.DisplayObjectContainer;
 	import flash.display.Sprite;
 	import flash.events.Event;
-	import flash.events.MouseEvent;
 
+	import com.greensock.TweenLite;
+	
+	import core.display.elements.Element;
+	
 	/**
 	 * Slider Class
 	 * 
@@ -297,7 +294,6 @@ package core.display.components
 
 import core.display.elements.Element;
 import flash.display.DisplayObject;
-import flash.display.Sprite;
 
 class Slide extends Element
 {

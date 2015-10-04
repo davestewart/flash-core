@@ -30,34 +30,33 @@ package core.display.containers
 				protected var window		:Rect;
 				
 			// properties
-				protected var _mode			:String;
 				protected var _crop			:Boolean;
+				protected var _scaling		:String;
 				protected var _align		:String;
 				
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Viewport(width:uint = 320, height:uint = 180, mode:String = COVER, crop:Boolean = true) 
+			public function Viewport(width:uint = 320, height:uint = 180, scaling:String = COVER, crop:Boolean = true) 
 			{
 				// super
 				super();
 				
-				// window
-				window			= new Rect(width, height);
-				window.visible	= false;
-				window.name		= 'window';
+				// window (building this here, not in build() so to not need to create redumndant _width and _height variables)
+				window				= new Rect(width, height);
+				window.visible		= false;
+				window.name			= 'window';
 				_addChild(window);
 				
 				// mask
-				wrapper.mask		= window;
+				content.mask		= window;
 				
 				// parameters
-				this.mode			= mode;
+				this.scaling		= scaling;
 				this.crop			= crop;
 			}
 			
-
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
@@ -92,19 +91,28 @@ package core.display.containers
 				invalidate();
 			}
 		
-			public function get mode():String { return _mode; }
-			public function set mode(value:String):void 
+			/**
+			 * Crops the contained content using the width and height of the container
+			 */
+			public function get crop():Boolean { return content.mask === window; }
+			public function set crop(value:Boolean):void 
 			{
-				_mode = value;
+				content.mask = value ? window : null;
+			}
+			
+			/**
+			 * Sets the scaling mode of the content
+			 */
+			public function get scaling():String { return _scaling; }
+			public function set scaling(value:String):void 
+			{
+				_scaling = value;
 				invalidate();
 			}
 			
-			public function get crop():Boolean { return wrapper.mask === window; }
-			public function set crop(value:Boolean):void 
-			{
-				wrapper.mask = value ? window : null;
-			}
-			
+			/**
+			 * Sets the alignment mode of the content
+			 */
 			public function get align():String { return _align; }
 			public function set align(value:String):void 
 			{
@@ -116,25 +124,21 @@ package core.display.containers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			override protected function draw():void
+			override protected function layout():void
 			{
-				// debug
-				super.draw();
-				
-				// size
-				if (wrapper.numChildren)
+				if (content.numChildren)
 				{
 					// if everything is the same size, skip fitting and just align
-					if (wrapper.width == window.width && wrapper.height == window.height)
+					if (content.width == window.width && content.height == window.height)
 					{
-						wrapper.x = wrapper.y = 0;
+						content.x = content.y = 0;
 					}
 					
 					// otherwise, fit and align
 					else
 					{
-						Elements.fit(wrapper, window, mode);
-						Elements.align(wrapper, window, align);
+						Elements.fit(content, window, _scaling);
+						Elements.align(content, window, _align);
 					}
 				}
 			}

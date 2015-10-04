@@ -1,18 +1,14 @@
 package core.display.elements 
 {
-	import app.display.panels.FormPanel;
-	import core.interfaces.IElement;
 	import flash.display.BlendMode;
 	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.display.Sprite;
-	import flash.events.Event;
 	
 	/**
 	 * ...
 	 * @author Dave Stewart
 	 */
-	public class Element extends Sprite implements IElement
+	public class Element extends Invalidatable
 	{
 		
 		
@@ -23,8 +19,6 @@ package core.display.elements
 				
 			
 			// variables
-				private var numRedraws		:int;
-				private var totalRedraws	:int;
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
@@ -33,38 +27,42 @@ package core.display.elements
 			/**
 			 * 
 			 * @param	parent		An optional parent to attach to
-			 * @param	redraws		An optional number of redraws when invalidated. defaults to 1, but can be set higher (for example for flash components)
 			 */
-			public function Element(parent:DisplayObjectContainer = null, redraws:int = 1) 
+			public function Element(parent:DisplayObjectContainer = null) 
 			{
+				// add to stage
 				if (parent)
 				{
 					parent.addChild(this);
 				}
-				totalRedraws = redraws;
+				
+				// properties
 				blendMode = BlendMode.LAYER;
+				
+				// build
 				initialize();
 				build();
 			}
 		
-			static public function create(parent:DisplayObjectContainer):Element 
-			{
-				return new Element(parent);
-			}
-			
 			protected function initialize():void 
 			{
-				
+				// override in subclass
 			}
 			
 			protected function build():void 
 			{
-				
+				// override in subclass
 			}
 		
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: display methods
+		
+			public function move(x:Number, y:Number):void 
+			{
+				this.x = x;
+				this.y = y;
+			}
 		
 			public function show():void
 			{
@@ -75,48 +73,15 @@ package core.display.elements
 			{
 				visible = false;
 			}
-		
+			
 			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: children methods
 		
 			override public function addChild(child:DisplayObject):DisplayObject 
 			{
-				super.addChild(child);
 				invalidate();
-				return child;
-			}
-			
-			public function addChildren(...elements):DisplayObject 
-			{
-				for each(var element:DisplayObject in elements)
-				{
-					addChild(element);
-				}
-				return this;
-			}
-			
-			public function clear():void
-			{
-				while (numChildren > 0)
-				{
-					removeChildAt(0);
-				}
-			}
-			
-			
-		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: drawing methods
-		
-			public function redraw():void
-			{
-				draw();
-			}
-			
-			public function invalidate():void 
-			{
-				numRedraws = 0;
-				addEventListener(Event.ENTER_FRAME, onInvalidate, false, 0, true);
+				return super.addChild(child);
 			}
 			
 			
@@ -125,28 +90,18 @@ package core.display.elements
 		
 			
 		
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
-		
-			protected function draw():void 
-			{
-				
-			}
+
+			
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onInvalidate(event:Event):void 
-			{
-				if (++numRedraws == totalRedraws)
-				{
-					removeEventListener(Event.ENTER_FRAME, onInvalidate);
-				}
-				draw();
-			}
 			
-			
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities

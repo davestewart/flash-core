@@ -1,17 +1,17 @@
-package core.display.containers 
+package core.display.containers.boxes 
 {
-	import core.display.elements.Element;
-	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.display.Sprite;
+	import flash.geom.Rectangle;
 	
 	/**
-	 * ...
+	 * Horizontal Box
+	 * 
+	 * Lays out children horizontally
+	 * 
 	 * @author Dave Stewart
 	 */
-	public class HBox extends Element 
+	public class HBox extends DBox 
 	{
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
@@ -20,7 +20,6 @@ package core.display.containers
 				
 			
 			// variables
-				protected var _spacing:int;
 				
 			
 		
@@ -29,15 +28,8 @@ package core.display.containers
 		
 			public function HBox(parent:DisplayObjectContainer, spacing:int = 3, elements:Array = null) 
 			{
-				super(parent);
-				_spacing = spacing;
-				if (elements)
-				{
-					for (var i:int = 0; i < elements.length; i++) 
-					{
-						addChild(elements[i]);
-					}
-				}
+				super(parent, 'x', spacing);
+				addChildren(elements);
 			}
 
 			
@@ -49,28 +41,50 @@ package core.display.containers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
-			
+			override public function get rect():Rectangle 
+			{
+				return new Rectangle(content.x, content.y, _wrap ? _size - (padding * 2) : content.width, content.height); 
+			}
 		
+			override public function get width():Number 
+			{
+				return _wrap 
+						? _size 
+						: content.width + (_padding * 2);
+			}
+			
+			override public function set width(value:Number):void 
+			{
+				if (value - (padding * 2) >= 0)
+				{
+					_size = value;
+					_wrap = true;
+					invalidate();
+				}
+			}
+			
+			public function get innerWidth():Number
+			{
+				return _wrap
+						? _size - (padding * 2)
+						: content.width;
+			}
+			
+			public function set innerWidth(value:Number):void 
+			{
+				if (value >= 0)
+				{
+					_size = value + (padding * 2);
+					_wrap = true;
+					invalidate();
+				}
+			}
+			
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			override protected function draw():void 
-			{
-				// super
-					super.draw();
-				
-				// variables
-					var child		:DisplayObject;
-					var lastChild	:DisplayObject;
-
-				// align elements
-					for (var i:int = 1; i < numChildren; i++)
-					{
-						child		= getChildAt(i);
-						lastChild	= getChildAt(i - 1);
-						child.x		= lastChild.x + lastChild.width + _spacing;
-					}
-			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers

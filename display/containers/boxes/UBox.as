@@ -1,37 +1,48 @@
-package core.display.elements 
+package core.display.containers.boxes 
 {
-	import flash.display.Sprite;
-	import flash.events.Event;
+	import flash.display.DisplayObject;
+	import flash.display.DisplayObjectContainer;
+	
+	import core.display.containers.Container;
+	import core.display.elements.Element;
 	
 	/**
-	 * ...
+	 * Universal Box
+	 * 
+	 * Base class for other box / layout classes to inherit from
+	 * 
+	 * Provides access to padding (edge) and spacing (between children)
+	 * 
 	 * @author Dave Stewart
 	 */
-	public class Invalidatable extends Sprite
+	public class UBox extends Container
 	{
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
 		
-			// constants
+			// stage intances
 				
 			
-			// properties
-				
-				
 			// variables
+				protected var _spacing		:int;
+				protected var _padding		:int;
 				
-				
-			
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: instantiation
 		
-			public function Invalidatable() 
+			public function UBox(parent:DisplayObjectContainer = null, spacing:int = 3, padding:int = 0) 
 			{
+				// super
+				super(parent);
 				
+				// properties
+				_spacing = spacing;
+				_padding = padding;
 			}
 			
-			
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
@@ -39,38 +50,41 @@ package core.display.elements
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
-		// { region: drawing methods
+		// { region: accessors
 		
-			public function invalidate():void 
+			public function get spacing():int { return _spacing; }
+			public function set spacing(value:int):void 
 			{
-				addEventListener(Event.ENTER_FRAME, onInvalidate);
+					_spacing = value;
+					invalidate();
+				if (value >= 0)
+				{
+				}
 			}
-		
-			public function redraw():void
+			
+			public function get padding():int { return _padding; }			
+			public function set padding(value:int):void 
 			{
-				draw();
+				if (value >= 0)
+				{
+					_padding = value;
+					invalidate();
+				}
 			}
 			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected function draw():void 
-			{
-				// override in subclass
-			}
+			
 		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
 		
-			protected function onInvalidate(event:Event):void 
-			{
-				removeEventListener(Event.ENTER_FRAME, onInvalidate);
-				draw();
-			}
 			
-			
+		
+		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: utilities
 		

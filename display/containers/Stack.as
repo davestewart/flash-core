@@ -177,7 +177,7 @@ package core.display.containers
 				}
 			}
 			
-			override public function clear():void 
+			public function clear():void 
 			{
 				while (numChildren) 
 				{

@@ -1,17 +1,17 @@
-package core.display.containers 
+package core.display.containers.boxes 
 {
-	import core.display.elements.Element;
-	import flash.display.DisplayObject;
 	import flash.display.DisplayObjectContainer;
-	import flash.display.Sprite;
+	import flash.geom.Rectangle;
 	
 	/**
-	 * ...
+	 * Vertical Box
+	 * 
+	 * Lays out chlidren vertically
+	 * 
 	 * @author Dave Stewart
 	 */
-	public class VBox extends Element
+	public class VBox extends DBox 
 	{
-		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: variables
@@ -20,7 +20,6 @@ package core.display.containers
 				
 			
 			// variables
-				protected var _spacing:int;
 				
 			
 		
@@ -29,18 +28,11 @@ package core.display.containers
 		
 			public function VBox(parent:DisplayObjectContainer, spacing:int = 3, elements:Array = null) 
 			{
-				super(parent);
-				_spacing = spacing;
-				if (elements)
-				{
-					for (var i:int = 0; i < elements.length; i++) 
-					{
-						addChild(elements[i]);
-					}
-				}
+				super(parent, 'y', spacing);
+				addChildren(elements);
 			}
+
 			
-		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: public methods
 		
@@ -49,28 +41,50 @@ package core.display.containers
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: accessors
 		
+			override public function get rect():Rectangle
+			{
+				return new Rectangle(content.x, content.y, content.width, _wrap ? _size - (padding * 2) : content.height); 
+			}
 			
-		
+			override public function get height():Number 
+			{
+				return _wrap 
+						? _size 
+						: content.height + (_padding * 2);
+			}
+			
+			override public function set height(value:Number):void 
+			{
+				if (value - (padding * 2) >= 0)
+				{
+					_size = value;
+					_wrap = true;
+					invalidate();
+				}
+			}
+			
+			public function get innerHeight():Number
+			{
+				return _wrap
+					? _size - (padding * 2)
+					: content.height;
+			}
+			
+			public function set innerHeight(value:Number):void 
+			{
+				if (value >= 0)
+				{
+					_size = value + (padding * 2);
+					_wrap = true;
+					invalidate();
+				}
+			}
+			
+			
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: protected methods
 		
-			protected override function draw():void 
-			{
-				// super
-					super.draw();
-				
-				// variables
-					var child		:DisplayObject;
-					var lastChild	:DisplayObject;
-
-				// align elements
-					for (var i:int = 1; i < numChildren; i++)
-					{
-						child		= getChildAt(i);
-						lastChild	= getChildAt(i - 1);
-						child.y		= lastChild.y + lastChild.height + _spacing;
-					}
-			}
+			
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
