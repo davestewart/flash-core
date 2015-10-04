@@ -128,16 +128,19 @@ package core.display.containers.boxes
 					child[axisB]	= sizeB;
 					sizeA			+= child[propA] + spacing;
 				}
-				
-				// outline
-				/*
-				
-				graphics.lineStyle(1, 0x000000, 1, true);
-				graphics.drawRect(0.5, 0.5, r.width + padding * 2 - 1, r.height + padding * 2 - 1); // outer
-				graphics.drawRect(r.x + 0.5, r.y + 0.5, r.width - 1, r.height - 1); // inner
-				*/
 			}
 			
+			/**
+			override protected function drawDebug():void 
+			{
+				graphics.clear();
+				var r:Rectangle = rect;
+				graphics.lineStyle(0.1, 0x000000, 0.5, true);
+				graphics.drawRect(0, 0, r.width + padding * 2, r.height + padding * 2); // outer
+				graphics.drawRect(r.x, r.y, r.width, r.height); // inner
+			}
+			**/
+		
 		
 		// ---------------------------------------------------------------------------------------------------------------------
 		// { region: handlers
