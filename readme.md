@@ -77,14 +77,15 @@ Note that the library's files **must** reside in a folder called `core` for the 
 
 ### To install using Git sub-modules
 
-1. Open a console window in the project folder that will contain the `core` folder
-2. Run the following code `git submodule add git@github.com:davestewart/flash-core.git core`
+1. Decide where you want to install the library (for example `src/core`)
+2. Open a console window in the **Git root** of the project (otherwise the following command will fail)
+3. Run the following code `git submodule add https://github.com/davestewart/flash-core.git src/core` (you'll need to change `src/` if your path is different)
 
 
 ### To install manually
 
 1. Click "Download ZIP" in the top right of this page
-2. Unzip to a project folder called `core` 
+2. Unzip to a project source folder (for example `src/core`) 
 
 
 ### IDE setup
