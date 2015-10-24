@@ -30,16 +30,18 @@ Flash Core is designed to sit within your `src` folder, in a locally-namespaced 
 
 Typical project setup is as follows:
 
-    +- project
-         +- assets            // fla, fonts, etc
-         +- bin               // deployment folder
-         +- lib               // actionscript libraries
-         +- src
-         |   +- app           // application-specific code
-         |   +- core          // this library
-         |   +- dev           // development test code
-         |   +- Main.as
-         +- Project.as3proj
+```javascript
+
++- project
+	+- assets
+	+- bin
+	+- lib               // fully-qualified libraries
+	+- src               
+	    +- app           // application-specific code
+	    +- core          // this library
+	    +- dev           // development test code
+	    +- Main.as
+```
 
 This results in 3 top-level namespaces for your project, siloing your development and intentions:
 
@@ -49,23 +51,25 @@ This results in 3 top-level namespaces for your project, siloing your developmen
 
 A typical class in a project using Flash Core might be set out like so:
 
-	package dev.media 
+```actionscript
+package dev.media 
+{
+	import flash.display.DisplayObjectContainer;
+	import flash.events.MouseEvent;
+	import flash.utils.setTimeout;
+	
+	import core.display.containers.boxes.HBox;
+	import core.display.containers.boxes.VBox;
+	import core.display.Document;
+	
+	import app.media.VideoPlayer;
+	
+	import dev.components.ui.Button;
+	
+	public class AppPlayerTest extends Document 
 	{
-		import flash.display.DisplayObjectContainer;
-		import flash.events.MouseEvent;
-		import flash.utils.setTimeout;
-		
-		import core.display.containers.boxes.HBox;
-		import core.display.containers.boxes.VBox;
-		import core.display.Document;
-		
-		import app.media.VideoPlayer;
-		
-		import dev.components.ui.Button;
-		
-		public class AppPlayerTest extends Document 
-		{
-			...
+		...
+```
 
 As you can see the introduction of top-level (non TLD-based) namespaces makes it much easier to grok a class' dependencies and role.
 
