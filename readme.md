@@ -1,5 +1,7 @@
 # Flash Core
 
+![flash-core](https://cloud.githubusercontent.com/assets/132681/10712951/d449d23e-7aa1-11e5-9412-f6149c9fece9.png)
+
 ## Overview
 
 Flash Core is a growing collection of ActionScript classes I use in every project.
